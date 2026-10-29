@@ -9,7 +9,6 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.Sheets;
 import net.minecraft.client.renderer.block.model.BakedQuad;
-import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.resources.model.BakedModel;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponents;
@@ -27,7 +26,7 @@ import java.util.Set;
 
 /** Reuses the authored models, keeping the opaque housing out of the emissive pass. */
 final class LampModuleRenderer {
-    static final RenderType EMISSIVE = RenderType.entityTranslucentEmissive(TextureAtlas.LOCATION_BLOCKS, false);
+    static final RenderType EMISSIVE = LampRenderTypes.EMISSIVE;
     // Shared by the 1x1 and 2x1 models, red and amber: glass tube (lens) and filament (emitter).
     private static final Set<ResourceLocation> LENS = Set.of(texture("lamp_glass_red"), texture("lamp_glass_amber"));
     private static final Set<ResourceLocation> EMITTER = Set.of(texture("lamp_filament_on"),

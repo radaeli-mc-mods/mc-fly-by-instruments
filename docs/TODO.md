@@ -14,6 +14,11 @@ continuar funcionando no estado atual enquanto não forem tratados.
   Há cintilação visual aleatória relatada com Complementary Reimagined Ultra;
   mudar para o perfil Basic não resolveu. Identificar a causa e conferir que
   módulos ligados e desligados continuam distinguíveis individualmente.
+  Causa provável do sumiço/nuvem na frente vista de baixo para cima (Complementary,
+  Solas): o passe aceso usava `entityTranslucentEmissive`, que não escreve
+  profundidade, e o pack desenha céu e nuvens por cima. Corrigido com
+  `LampRenderTypes.EMISSIVE` (mesmo shader, escreve profundidade); **falta
+  confirmar no jogo** com os dois packs.
 
 ## Revisão dos sensores (2026-10-21)
 
