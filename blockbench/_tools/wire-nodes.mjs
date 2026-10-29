@@ -23,11 +23,12 @@ export function writeNodeBlockstate(assets, name, flags = {}) {
   writeFileSync(new URL(`blockstates/${name}.json`, assets), `${JSON.stringify({ variants }, null, 2)}\n`);
 }
 
-// The nodes are small: the item shows them enlarged, standing on their host face.
-export function writeNodeItem(assets, name) {
+// The nodes are small: the item shows them enlarged, standing on their host face. `gui` centres each node in
+// the slot ({ translation, scale }): the nodes sit low in the block space, so the lift depends on the model.
+export function writeNodeItem(assets, name, gui) {
   const view = (rotation, translation, scale) => ({ rotation, translation, scale: [scale, scale, scale] });
   const display = {
-    gui: view([30, 225, 0], [0, 3, 0], 1.6),
+    gui: view([30, 225, 0], [0, gui.translation, 0], gui.scale),
     ground: view([0, 0, 0], [0, 3, 0], 0.8),
     fixed: view([-90, 0, 0], [0, 0, -4], 1.4),
     thirdperson_righthand: view([75, 45, 0], [0, 3, 2], 0.8),

@@ -8,5 +8,5 @@ const assets = new URL(`../../src/main/resources/assets/${NS}/`, root);
 const result = exportBlockModel({ projectUrl: new URL('wire_support.bbmodel', root), assetsUrl: assets,
   model: 'wire_support' });
 writeNodeBlockstate(assets, 'wire_support');
-writeNodeItem(assets, 'wire_support');
+writeNodeItem(assets, 'wire_support', { translation: 6.5, scale: 1.25 });
 console.log(`Exported wire_support: ${result.cubes} cubes; ${result.textures.join(', ')}.`);

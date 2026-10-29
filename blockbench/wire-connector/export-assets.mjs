@@ -19,5 +19,5 @@ stem.from = [stem.from[0], 0, stem.from[2]];
 for (const face of Object.values(stem.faces)) face.uv = [face.uv[0], face.uv[1], face.uv[2], face.uv[1] + 1];
 writeFileSync(modelUrl('wire_connector_slim'), `${JSON.stringify(model, null, 2)}\n`);
 writeNodeBlockstate(assets, 'wire_connector', { slim: 'wire_connector_slim' });
-writeNodeItem(assets, 'wire_connector');
+writeNodeItem(assets, 'wire_connector', { translation: 10.25, scale: 1.6 });
 console.log(`Exported wire_connector: ${result.cubes} cubes; ${result.textures.join(', ')}.`);
