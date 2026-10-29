@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.function.IntConsumer;
 
 /**
  * Immediate-mode panel in the mod's screen language (visual guide §12, after the Exotic Pets
@@ -28,6 +29,8 @@ public final class HudPanel {
     public static final int ROW = 11;
     /** Item slot: a 16 px icon with one pixel of frame on each side. */
     public static final int SLOT = 18;
+    /** Text field line: a 13 px box and one pixel of air below it. */
+    private static final int FIELD = 15;
     private static final int SECTION_GAP = 5;
     /** Gap between stacked slot grids, like the inventory and the hotbar. */
     private static final int GRID_GAP = 3;
@@ -35,15 +38,25 @@ public final class HudPanel {
 
     public static UiPalette palette() { return UiTheme.DARK.palette(); }
 
-    private sealed interface Line permits Header, Highlight, Section, Row, Choice, Stepper, Buttons, Note, Items {}
+    private sealed interface Line permits Header, Highlight, Section, Row, Choice, Stepper, Buttons, Note, Items, Field, Scrolled {}
     private record Header(String title, String meta) implements Line {}
     private record Highlight(String text, int color) implements Line {}
     private record Section(String title) implements Line {}
     private record Row(String label, String value, int color, Runnable action) implements Line {}
-    private record Choice(String label, String note, boolean selected, boolean enabled, Runnable action) implements Line {}
+    private record Choice(String label, String note, boolean selected, boolean enabled, Runnable action,
+                          Runnable secondary) implements Line {}
     private record Stepper(String label, String value, Runnable minus, Runnable plus) implements Line {}
     private record Buttons(List<String> labels, List<Runnable> actions) implements Line {}
     private record Note(String text) implements Line {}
+    /** Text input: the screen owns the text and the focus; {@code focus} answers a click on the box. */
+    private record Field(String label, String value, String placeholder, boolean focused, boolean invalid,
+                         Runnable focus) implements Line {}
+    /** One-row lines of {@code content} shown {@code visible} at a time from {@code offset}. */
+    private record Scrolled(HudPanel content, int visible, int offset, IntConsumer scrollTo) implements Line {
+        int rows() { return content.lines.size(); }
+        int shown() { return Math.min(visible, rows()); }
+        int first() { return Math.clamp(offset, 0, Math.max(0, rows() - visible)); }
+    }
     /** {@code columns} 0: one row when labelled, otherwise as many as fit. */
     private record Items(String label, List<Slot> slots, String note, int noteColor, int columns) implements Line {}
 
@@ -70,6 +83,19 @@ public final class HudPanel {
         boolean contains(double x, double y) { return x >= x0 && x < x1 && y >= y0 && y < y1; }
     }
 
+    /** Scrollbar track of a scrolled list in the last frame: pressing or dragging on it scrolls. */
+    public record ScrollBar(int x0, int y0, int x1, int y1, int rows, int visible, IntConsumer scrollTo) {
+        boolean contains(double x, double y) { return x >= x0 - 2 && x < x1 + 2 && y >= y0 && y < y1; }
+
+        /** Scrolls so the thumb centres on the mouse. */
+        void dragTo(double y) {
+            int thumb = thumbHeight(y1 - y0, rows, visible);
+            double travel = Math.max(1, y1 - y0 - thumb);
+            double fraction = Math.clamp((y - y0 - thumb / 2.0) / travel, 0, 1);
+            scrollTo.accept((int) Math.round(fraction * (rows - visible)));
+        }
+    }
+
     /** Click target of the last frame, in screen coordinates; {@code secondary} answers a right click. */
     public record Hit(int x0, int y0, int x1, int y1, Runnable action, Runnable secondary) {
         public Hit(int x0, int y0, int x1, int y1, Runnable action) { this(x0, y0, x1, y1, action, null); }
@@ -81,6 +107,7 @@ public final class HudPanel {
     private String hoveredTooltip;
     private final List<SlotArea> slotAreas = new ArrayList<>();
     private final List<Scroll> scrolls = new ArrayList<>();
+    private final List<ScrollBar> scrollBars = new ArrayList<>();
     private final int width;
     private int accent;
 
@@ -99,7 +126,18 @@ public final class HudPanel {
         return this;
     }
     public HudPanel choice(String label, String note, boolean selected, boolean enabled, Runnable action) {
-        lines.add(new Choice(label, note, selected, enabled, action));
+        return choice(label, note, selected, enabled, action, null);
+    }
+    /** A choice whose right click runs {@code secondary} (editing the option, for instance). */
+    public HudPanel choice(String label, String note, boolean selected, boolean enabled, Runnable action,
+                           Runnable secondary) {
+        lines.add(new Choice(label, note, selected, enabled, action, secondary));
+        return this;
+    }
+    /** Labelled text box; {@code invalid} draws the text in the error colour. */
+    public HudPanel field(String label, String value, String placeholder, boolean focused, boolean invalid,
+                          Runnable focus) {
+        lines.add(new Field(label, value, placeholder, focused, invalid, focus));
         return this;
     }
     public HudPanel stepper(String label, String value, Runnable minus, Runnable plus) {
@@ -111,6 +149,17 @@ public final class HudPanel {
         return this;
     }
     public HudPanel note(String text) { lines.add(new Note(text)); return this; }
+    /**
+     * A list that shows at most {@code visibleRows} of the one-row lines {@code content} adds (rows,
+     * choices, notes), starting at row {@code offset}; the mouse wheel and the scrollbar call
+     * {@code scrollTo} with the new first row, already clamped. Tooltips added inside stay per row.
+     */
+    public HudPanel scroll(int visibleRows, int offset, IntConsumer scrollTo, Consumer<HudPanel> content) {
+        HudPanel inner = new HudPanel(width);
+        content.accept(inner);
+        lines.add(new Scrolled(inner, Math.max(1, visibleRows), offset, scrollTo));
+        return this;
+    }
     /** A labelled strip of item slots; without a label the slots fill the width and wrap. */
     public HudPanel items(String label, List<Slot> slots, String note, int noteColor) {
         lines.add(new Items(label, List.copyOf(slots), note, noteColor, 0));
@@ -133,6 +182,7 @@ public final class HudPanel {
     public String hoveredTooltip() { return hoveredTooltip; }
     public List<SlotArea> slotAreas() { return List.copyOf(slotAreas); }
     public List<Scroll> scrolls() { return List.copyOf(scrolls); }
+    public List<ScrollBar> scrollBars() { return List.copyOf(scrollBars); }
 
     /**
      * Right edge of a line's tooltip area. Lines with a value or slots keep the tooltip on the
@@ -144,6 +194,7 @@ public final class HudPanel {
                     stepperBounds(left, right, 0), Component.literal(stepper.label()),
                     Component.literal(stepper.value())).labelRight();
             case Row row -> left + font.width(fit(font, row.label(), inner / 2)) + 2;
+            case Field field -> left + font.width(fit(font, field.label(), inner / 3)) + 2;
             case Items items -> items.label().isEmpty() ? right + 2
                     : left + font.width(fit(font, items.label(), inner / 3)) + 2;
             default -> right + 2;
@@ -154,6 +205,8 @@ public final class HudPanel {
         return switch (line) {
             case Buttons ignored -> 16;
             case Header ignored -> 12;
+            case Field ignored -> FIELD;
+            case Scrolled scrolled -> scrolled.shown() * ROW;
             case Items items -> itemRows(items) * (SLOT + 1);
             default -> ROW;
         };
@@ -198,6 +251,7 @@ public final class HudPanel {
         hoveredTooltip = null;
         slotAreas.clear();
         scrolls.clear();
+        scrollBars.clear();
         Map<String, Integer> seenLabels = new HashMap<>();
         Line previous = null;
         for (int lineIndex = 0; lineIndex < lines.size(); lineIndex++) {
@@ -205,137 +259,204 @@ public final class HudPanel {
             if (line instanceof Section && previous != null) y += SECTION_GAP;
             if (line instanceof Items && previous instanceof Items) y += GRID_GAP;
             String tooltip = tooltips.get(lineIndex);
-            if (tooltip != null && mouseX >= left - 4 && mouseX < tooltipRight(line, font, left, right, inner)
+            if (tooltip != null && !(line instanceof Scrolled) && mouseX >= left - 4 && mouseX < tooltipRight(line, font, left, right, inner)
                     && mouseY >= y - 1 && mouseY < y + lineHeight(line) - 1) {
                 hoveredTooltip = tooltip;
             }
-            switch (line) {
-                case Header header -> {
-                    int metaWidth = font.width(header.meta());
-                    g.drawString(font, fit(font, header.title(), inner - metaWidth - 6), left, y, palette.text(), false);
-                    g.drawString(font, header.meta(), right - metaWidth, y, palette.mutedText(), false);
-                    y += 12;
-                }
-                case Highlight highlight -> {
-                    g.drawString(font, fit(font, "» " + highlight.text(), inner), left, y, highlight.color(), false);
-                    y += ROW;
-                }
-                case Section section -> {
-                    g.fill(left, y - 3, right, y - 2, palette.divider());
-                    g.drawString(font, fit(font, section.title().toUpperCase(java.util.Locale.ROOT), inner), left, y,
-                            palette.mutedText(), false);
-                    y += ROW;
-                }
-                case Row row -> {
-                    boolean hover = row.action() != null && mouseX >= left - 4 && mouseX < right + 2
-                            && mouseY >= y - 1 && mouseY < y + ROW - 1;
-                    if (hover) g.fill(left - 4, y - 1, right + 2, y + ROW - 1, withAlpha(palette.buttonHover(), 0x80));
-                    // Rows may share a label (two auxiliary scanners): key by label and occurrence.
-                    int occurrence = seenLabels.merge(row.label(), 1, Integer::sum);
-                    float changed = changes == null ? 0
-                            : changes.intensity(row.label() + "#" + occurrence, row.value());
-                    if (changed > 0) g.fill(left - 5, y, left - 3, y + 8, withAlpha(palette.warning(), (int) (0xFF * changed)));
-                    String label = fit(font, row.label(), inner / 2);
-                    g.drawString(font, label, left, y, palette.mutedText(), false);
-                    int valueLeft = left + font.width(label) + 6;
-                    String value = fit(font, row.value(), right - valueLeft);
-                    g.drawString(font, value, right - font.width(value), y, lerp(row.color(), palette.warning(), changed), false);
-                    if (row.action() != null) hits.add(new Hit(left - 4, y - 1, right + 2, y + ROW - 1, row.action()));
-                    y += ROW;
-                }
-                case Choice choice -> {
-                    boolean hover = choice.enabled() && choice.action() != null && mouseX >= left - 4
-                            && mouseX < right + 2 && mouseY >= y - 1 && mouseY < y + ROW - 1;
-                    if (hover) g.fill(left - 4, y - 1, right + 2, y + ROW - 1, withAlpha(palette.buttonHover(), 0x80));
-                    int color = !choice.enabled() ? palette.disabled() : choice.selected() ? palette.text() : palette.mutedText();
-                    UiPaint.radio(new UiContext(g, font, UiTheme.DARK, mouseX, mouseY, g.guiWidth(), g.guiHeight()),
-                            new Bounds(left, y, Radio.INDICATOR, Radio.INDICATOR), choice.selected(), hover,
-                            choice.enabled(), false);
-                    int labelLeft = left + Radio.INDICATOR + 4;
-                    int noteWidth = font.width(choice.note());
-                    g.drawString(font, fit(font, choice.label(), right - labelLeft - noteWidth - 6), labelLeft, y, color, false);
-                    g.drawString(font, choice.note(), right - noteWidth, y,
-                            choice.enabled() ? palette.mutedText() : palette.disabled(), false);
-                    if (choice.enabled() && choice.action() != null) {
-                        hits.add(new Hit(left - 4, y - 1, right + 2, y + ROW - 1, choice.action()));
-                    }
-                    y += ROW;
-                }
-                case Stepper stepper -> {
-                    // Drawn by R-UI Lib's stepper so the HUD and component screens share one look.
-                    Bounds row = stepperBounds(left, right, y);
-                    var context = new UiContext(g, font, UiTheme.DARK, (int) mouseX, (int) mouseY, g.guiWidth(),
-                            g.guiHeight());
-                    var layout = com.radaeli.ruilib.ui.Stepper.layout(font, UiTheme.DARK, row,
-                            Component.literal(stepper.label()), Component.literal(stepper.value()));
-                    com.radaeli.ruilib.ui.Stepper.paint(context, row, Component.literal(stepper.label()),
-                            Component.literal(stepper.value()), true, 0);
-                    int slack = com.radaeli.ruilib.ui.Stepper.ARROW_SLACK;
-                    hits.add(new Hit(layout.minus().x() - slack, y - 1, layout.minus().right() + slack, y + ROW - 1,
-                            stepper.minus()));
-                    hits.add(new Hit(layout.plus().x() - slack, y - 1, layout.plus().right() + slack, y + ROW - 1,
-                            stepper.plus()));
-                    scrolls.add(new Scroll(left - 4, y - 1, right + 3, y + ROW - 1, stepper.minus(), stepper.plus()));
-                    y += ROW;
-                }
-                case Buttons buttons -> {
-                    y += 4;
-                    int gap = 4, count = buttons.labels().size();
-                    int buttonWidth = (inner - gap * (count - 1)) / Math.max(1, count);
-                    for (int index = 0; index < count; index++) {
-                        int bx = left + index * (buttonWidth + gap);
-                        boolean hover = mouseX >= bx && mouseX < bx + buttonWidth && mouseY >= y && mouseY < y + 14;
-                        g.fill(bx, y, bx + buttonWidth, y + 14, hover ? palette.buttonHover() : palette.button());
-                        g.renderOutline(bx, y, buttonWidth, 14, palette.border());
-                        String label = fit(font, buttons.labels().get(index), buttonWidth - 6);
-                        g.drawString(font, label, bx + (buttonWidth - font.width(label)) / 2, y + 3, palette.text(), false);
-                        hits.add(new Hit(bx, y, bx + buttonWidth, y + 14, buttons.actions().get(index)));
-                    }
-                    y += 16;
-                }
-                case Note note -> {
-                    g.drawString(font, fit(font, note.text(), inner), left, y, withAlpha(palette.mutedText(), 0xB0), false);
-                    y += ROW;
-                }
-                case Items items -> {
-                    int slotsLeft = left;
-                    int textY = y + (SLOT - 8) / 2;
-                    if (!items.label().isEmpty()) {
-                        String label = fit(font, items.label(), inner / 3);
-                        g.drawString(font, label, left, textY, palette.mutedText(), false);
-                        slotsLeft = left + font.width(label) + 6;
-                    }
-                    int columns = itemColumns(items);
-                    for (int slotIndex = 0; slotIndex < items.slots().size(); slotIndex++) {
-                        Slot slot = items.slots().get(slotIndex);
-                        int sx = slotsLeft + slotIndex % columns * (SLOT + 1);
-                        int sy = y + slotIndex / columns * (SLOT + 1);
-                        boolean hover = mouseX >= sx && mouseX < sx + SLOT && mouseY >= sy && mouseY < sy + SLOT;
-                        int background = slot.background() != 0 ? slot.background() : palette.button();
-                        g.fill(sx, sy, sx + SLOT, sy + SLOT, hover ? lerp(background, palette.buttonHover(), 0.5f) : background);
-                        g.renderOutline(sx, sy, SLOT, SLOT, slot.selected() ? palette.text() : palette.border());
-                        if (!slot.stack().isEmpty()) g.renderItem(slot.stack(), sx + 1, sy + 1);
-                        slotAreas.add(new SlotArea(sx, sy, sx + SLOT, sy + SLOT, slot));
-                        if (slot.action() != null || slot.clear() != null) {
-                            hits.add(new Hit(sx, sy, sx + SLOT, sy + SLOT, slot.action(), slot.clear()));
-                        }
-                        if (hover) {
-                            String name = slot.stack().isEmpty() ? slot.tooltip()
-                                    : slot.stack().getHoverName().getString();
-                            if (name != null && !name.isEmpty()) hoveredTooltip = name;
-                        }
-                    }
-                    if (!items.note().isEmpty()) {
-                        int notesLeft = slotsLeft + Math.min(columns, items.slots().size()) * (SLOT + 1) + 4;
-                        String note = fit(font, items.note(), right - notesLeft);
-                        g.drawString(font, note, right - font.width(note), textY, items.noteColor(), false);
-                    }
-                    y += lineHeight(items);
-                }
-            }
+            y = drawLine(line, g, font, left, right, y, mouseX, mouseY, changes, hits, seenLabels);
             previous = line;
         }
         return hits;
+    }
+
+    /** Draws one line with its text on {@code y} between {@code left} and {@code right}; returns the next y. */
+    private int drawLine(Line line, GuiGraphics g, Font font, int left, int right, int y, double mouseX, double mouseY,
+                         Changes changes, List<Hit> hits, Map<String, Integer> seenLabels) {
+        UiPalette palette = palette();
+        int inner = right - left;
+        switch (line) {
+            case Header header -> {
+                int metaWidth = font.width(header.meta());
+                g.drawString(font, fit(font, header.title(), inner - metaWidth - 6), left, y, palette.text(), false);
+                g.drawString(font, header.meta(), right - metaWidth, y, palette.mutedText(), false);
+                y += 12;
+            }
+            case Highlight highlight -> {
+                g.drawString(font, fit(font, "» " + highlight.text(), inner), left, y, highlight.color(), false);
+                y += ROW;
+            }
+            case Section section -> {
+                g.fill(left, y - 3, right, y - 2, palette.divider());
+                g.drawString(font, fit(font, section.title().toUpperCase(java.util.Locale.ROOT), inner), left, y,
+                        palette.mutedText(), false);
+                y += ROW;
+            }
+            case Row row -> {
+                boolean hover = row.action() != null && mouseX >= left - 4 && mouseX < right + 2
+                        && mouseY >= y - 1 && mouseY < y + ROW - 1;
+                if (hover) g.fill(left - 4, y - 1, right + 2, y + ROW - 1, withAlpha(palette.buttonHover(), 0x80));
+                // Rows may share a label (two auxiliary scanners): key by label and occurrence.
+                int occurrence = seenLabels.merge(row.label(), 1, Integer::sum);
+                float changed = changes == null ? 0
+                        : changes.intensity(row.label() + "#" + occurrence, row.value());
+                if (changed > 0) g.fill(left - 5, y, left - 3, y + 8, withAlpha(palette.warning(), (int) (0xFF * changed)));
+                String label = fit(font, row.label(), inner / 2);
+                g.drawString(font, label, left, y, palette.mutedText(), false);
+                int valueLeft = left + font.width(label) + 6;
+                String value = fit(font, row.value(), right - valueLeft);
+                g.drawString(font, value, right - font.width(value), y, lerp(row.color(), palette.warning(), changed), false);
+                if (row.action() != null) hits.add(new Hit(left - 4, y - 1, right + 2, y + ROW - 1, row.action()));
+                y += ROW;
+            }
+            case Choice choice -> {
+                boolean hover = choice.enabled() && choice.action() != null && mouseX >= left - 4
+                        && mouseX < right + 2 && mouseY >= y - 1 && mouseY < y + ROW - 1;
+                if (hover) g.fill(left - 4, y - 1, right + 2, y + ROW - 1, withAlpha(palette.buttonHover(), 0x80));
+                int color = !choice.enabled() ? palette.disabled() : choice.selected() ? palette.text() : palette.mutedText();
+                UiPaint.radio(new UiContext(g, font, UiTheme.DARK, mouseX, mouseY, g.guiWidth(), g.guiHeight()),
+                        new Bounds(left, y, Radio.INDICATOR, Radio.INDICATOR), choice.selected(), hover,
+                        choice.enabled(), false);
+                int labelLeft = left + Radio.INDICATOR + 4;
+                int noteWidth = font.width(choice.note());
+                g.drawString(font, fit(font, choice.label(), right - labelLeft - noteWidth - 6), labelLeft, y, color, false);
+                g.drawString(font, choice.note(), right - noteWidth, y,
+                        choice.enabled() ? palette.mutedText() : palette.disabled(), false);
+                if (choice.enabled() && (choice.action() != null || choice.secondary() != null)) {
+                    hits.add(new Hit(left - 4, y - 1, right + 2, y + ROW - 1, choice.action(),
+                            choice.secondary()));
+                }
+                y += ROW;
+            }
+            case Stepper stepper -> {
+                // Drawn by R-UI Lib's stepper so the HUD and component screens share one look.
+                Bounds row = stepperBounds(left, right, y);
+                var context = new UiContext(g, font, UiTheme.DARK, (int) mouseX, (int) mouseY, g.guiWidth(),
+                        g.guiHeight());
+                var layout = com.radaeli.ruilib.ui.Stepper.layout(font, UiTheme.DARK, row,
+                        Component.literal(stepper.label()), Component.literal(stepper.value()));
+                com.radaeli.ruilib.ui.Stepper.paint(context, row, Component.literal(stepper.label()),
+                        Component.literal(stepper.value()), true, 0);
+                int slack = com.radaeli.ruilib.ui.Stepper.ARROW_SLACK;
+                hits.add(new Hit(layout.minus().x() - slack, y - 1, layout.minus().right() + slack, y + ROW - 1,
+                        stepper.minus()));
+                hits.add(new Hit(layout.plus().x() - slack, y - 1, layout.plus().right() + slack, y + ROW - 1,
+                        stepper.plus()));
+                scrolls.add(new Scroll(left - 4, y - 1, right + 3, y + ROW - 1, stepper.minus(), stepper.plus()));
+                y += ROW;
+            }
+            case Buttons buttons -> {
+                y += 4;
+                int gap = 4, count = buttons.labels().size();
+                int buttonWidth = (inner - gap * (count - 1)) / Math.max(1, count);
+                for (int index = 0; index < count; index++) {
+                    int bx = left + index * (buttonWidth + gap);
+                    boolean hover = mouseX >= bx && mouseX < bx + buttonWidth && mouseY >= y && mouseY < y + 14;
+                    g.fill(bx, y, bx + buttonWidth, y + 14, hover ? palette.buttonHover() : palette.button());
+                    g.renderOutline(bx, y, buttonWidth, 14, palette.border());
+                    String label = fit(font, buttons.labels().get(index), buttonWidth - 6);
+                    g.drawString(font, label, bx + (buttonWidth - font.width(label)) / 2, y + 3, palette.text(), false);
+                    hits.add(new Hit(bx, y, bx + buttonWidth, y + 14, buttons.actions().get(index)));
+                }
+                y += 16;
+            }
+            case Field field -> {
+                String label = fit(font, field.label(), inner / 3);
+                g.drawString(font, label, left, y + 2, palette.mutedText(), false);
+                int boxLeft = left + inner / 3 + 4;
+                Bounds box = new Bounds(boxLeft, y - 1, right - boxLeft, FIELD - 2);
+                boolean hover = box.contains(mouseX, mouseY);
+                UiPaint.input(new UiContext(g, font, UiTheme.DARK, (int) mouseX, (int) mouseY, g.guiWidth(),
+                        g.guiHeight()), box, hover, field.focused(), true);
+                int textWidth = box.width() - 8;
+                boolean caret = field.focused() && System.currentTimeMillis() / 500 % 2 == 0;
+                if (field.value().isEmpty() && !field.focused()) {
+                    g.drawString(font, fit(font, field.placeholder(), textWidth), box.x() + 4, y + 2,
+                            palette.disabled(), false);
+                } else {
+                    // Typing happens at the end, so a long value shows its tail.
+                    String shown = font.plainSubstrByWidth(field.value(), textWidth - 6, true);
+                    int color = field.invalid() ? palette.error() : palette.text();
+                    g.drawString(font, shown, box.x() + 4, y + 2, color, false);
+                    if (caret) g.drawString(font, "_", box.x() + 4 + font.width(shown), y + 2, palette.text(), false);
+                }
+                if (field.focus() != null) hits.add(new Hit(box.x(), box.y(), box.right(), box.bottom(), field.focus()));
+                y += FIELD;
+            }
+            case Scrolled scrolled -> {
+                int first = scrolled.first(), rows = scrolled.rows(), top = y;
+                boolean scrollable = rows > scrolled.visible();
+                int contentRight = scrollable ? right - 5 : right;
+                for (int row = first; row < first + scrolled.shown(); row++) {
+                    String tooltip = scrolled.content().tooltips.get(row);
+                    if (tooltip != null && mouseX >= left - 4 && mouseX < contentRight + 2
+                            && mouseY >= y - 1 && mouseY < y + ROW - 1) {
+                        hoveredTooltip = tooltip;
+                    }
+                    y = drawLine(scrolled.content().lines.get(row), g, font, left, contentRight, y, mouseX, mouseY,
+                            changes, hits, seenLabels);
+                }
+                if (scrollable) {
+                    int trackTop = top - 1, trackHeight = y - top;
+                    int thumb = thumbHeight(trackHeight, rows, scrolled.visible());
+                    int thumbTop = trackTop + Math.round((trackHeight - thumb) * first / (float) (rows - scrolled.visible()));
+                    ScrollBar bar = new ScrollBar(right - 2, trackTop, right, trackTop + trackHeight, rows,
+                            scrolled.visible(), scrolled.scrollTo());
+                    g.fill(right - 2, trackTop, right, trackTop + trackHeight, palette.divider());
+                    g.fill(right - 2, thumbTop, right, thumbTop + thumb,
+                            bar.contains(mouseX, mouseY) ? palette.text() : palette.mutedText());
+                    scrollBars.add(bar);
+                    int last = rows - scrolled.visible();
+                    // HudScreen runs plus on wheel up, which moves the list towards its first row.
+                    scrolls.add(new Scroll(left - 4, trackTop, right + 2, trackTop + trackHeight,
+                            () -> scrolled.scrollTo().accept(Math.min(last, first + 1)),
+                            () -> scrolled.scrollTo().accept(Math.max(0, first - 1))));
+                }
+            }
+            case Note note -> {
+                g.drawString(font, fit(font, note.text(), inner), left, y, withAlpha(palette.mutedText(), 0xB0), false);
+                y += ROW;
+            }
+            case Items items -> {
+                int slotsLeft = left;
+                int textY = y + (SLOT - 8) / 2;
+                if (!items.label().isEmpty()) {
+                    String label = fit(font, items.label(), inner / 3);
+                    g.drawString(font, label, left, textY, palette.mutedText(), false);
+                    slotsLeft = left + font.width(label) + 6;
+                }
+                int columns = itemColumns(items);
+                for (int slotIndex = 0; slotIndex < items.slots().size(); slotIndex++) {
+                    Slot slot = items.slots().get(slotIndex);
+                    int sx = slotsLeft + slotIndex % columns * (SLOT + 1);
+                    int sy = y + slotIndex / columns * (SLOT + 1);
+                    boolean hover = mouseX >= sx && mouseX < sx + SLOT && mouseY >= sy && mouseY < sy + SLOT;
+                    int background = slot.background() != 0 ? slot.background() : palette.button();
+                    g.fill(sx, sy, sx + SLOT, sy + SLOT, hover ? lerp(background, palette.buttonHover(), 0.5f) : background);
+                    g.renderOutline(sx, sy, SLOT, SLOT, slot.selected() ? palette.text() : palette.border());
+                    if (!slot.stack().isEmpty()) g.renderItem(slot.stack(), sx + 1, sy + 1);
+                    slotAreas.add(new SlotArea(sx, sy, sx + SLOT, sy + SLOT, slot));
+                    if (slot.action() != null || slot.clear() != null) {
+                        hits.add(new Hit(sx, sy, sx + SLOT, sy + SLOT, slot.action(), slot.clear()));
+                    }
+                    if (hover) {
+                        String name = slot.stack().isEmpty() ? slot.tooltip()
+                                : slot.stack().getHoverName().getString();
+                        if (name != null && !name.isEmpty()) hoveredTooltip = name;
+                    }
+                }
+                if (!items.note().isEmpty()) {
+                    int notesLeft = slotsLeft + Math.min(columns, items.slots().size()) * (SLOT + 1) + 4;
+                    String note = fit(font, items.note(), right - notesLeft);
+                    g.drawString(font, note, right - font.width(note), textY, items.noteColor(), false);
+                }
+                y += lineHeight(items);
+            }
+        }
+        return y;
+    }
+
+    static int thumbHeight(int track, int rows, int visible) {
+        return Math.max(6, Math.round(track * visible / (float) Math.max(1, rows)));
     }
 
     /** A stepper row as R-UI Lib lays it out: text on line {@code y}, the full panel width. */

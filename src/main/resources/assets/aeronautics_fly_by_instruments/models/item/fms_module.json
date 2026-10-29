@@ -1,5 +1,6 @@
 {
   "parent": "aeronautics_fly_by_instruments:block/fms_module_2x3",
+  "gui_light": "front",
   "display": {
     "gui": { "rotation": [80, 0, 0], "translation": [0, 1.1, 0], "scale": [0.95, 0.95, 0.95] },
     "ground": { "translation": [0, 2, 0], "scale": [0.6, 0.6, 0.6] },

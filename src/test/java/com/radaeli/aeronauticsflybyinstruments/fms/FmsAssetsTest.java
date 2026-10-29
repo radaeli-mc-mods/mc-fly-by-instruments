@@ -14,6 +14,8 @@ class FmsAssetsTest {
     void moduleUsesCenteredModel() throws Exception {
         var module = readJson("/assets/aeronautics_fly_by_instruments/models/item/fms_module.json");
         assertEquals("aeronautics_fly_by_instruments:block/fms_module_2x3", module.get("parent").getAsString());
+        // Tilted face-on in the GUI: side lighting would shade the screen almost black.
+        assertEquals("front", module.get("gui_light").getAsString());
         var model = readJson("/assets/aeronautics_fly_by_instruments/models/block/fms_module_2x3.json");
         double[] low = {Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY};
         double[] high = {Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY};
@@ -119,6 +121,9 @@ class FmsAssetsTest {
         var linkedItem = readJson("/assets/aeronautics_fly_by_instruments/models/item/fms_navigator_linked.json");
         assertEquals("aeronautics_fly_by_instruments:block/fms_navigator_linked", linkedItem.get("parent").getAsString());
         assertEquals(item.get("display"), linkedItem.get("display"), "Linked state keeps the display transforms");
+        // Laid flat and seen from above in the GUI: side lighting would shade the face almost black.
+        assertEquals("front", item.get("gui_light").getAsString());
+        assertEquals("front", linkedItem.get("gui_light").getAsString());
 
         SensorModelChecks.assertGuideRules("fms_navigator_linked");
         var base = SensorModelChecks.model("fms_navigator");
@@ -161,13 +166,14 @@ class FmsAssetsTest {
 
     @Test
     void portugueseAndEnglishCoverEveryFmsVisibleString() throws Exception {
-        // Keys FmsScreen uses, including the ones it builds at runtime (coordinate_*, *_waypoint, message.*).
-        var required = new String[]{"title", "waypoints", "navigator", "name_hint", "new_waypoint",
-                "create_waypoint", "edit_waypoint", "close_form", "coordinate_x", "coordinate_y", "coordinate_z",
-                "current_position", "save_waypoint", "delete", "clear_target", "select_destination",
-                "target_none", "target_current", "target_coordinates", "target_distance", "target_other_dimension",
-                "close_picker", "open_linker", "linker_title", "linker_slot", "close_linker", "confirm_rebind",
-                "linker_missing", "linker_connected", "linker_unbound", "linker_other_link"};
+        // Keys FmsScreen and FmsWaypointScreen use, including the ones they build at runtime.
+        var required = new String[]{"title", "waypoint_count.one", "waypoint_count.other", "no_destination",
+                "direct_to", "destination", "distance", "bearing", "position", "other_dimension", "waypoints",
+                "empty", "elsewhere", "waypoint_tooltip", "compass", "compass_status", "compass.missing",
+                "compass.linked", "compass.unlinked", "compass.other", "compass_tooltip", "link_compass",
+                "relink_compass", "new_waypoint", "clear_target", "create_waypoint", "edit_waypoint", "name",
+                "name_hint", "coordinate_tooltip", "current_position", "add", "back", "done", "delete",
+                "confirm_delete", "invalid.name", "invalid.coordinates"};
         var messages = new String[]{"invalid_waypoint", "confirm_rebind"};
         var english = readJson("/assets/aeronautics_fly_by_instruments/lang/en_us.json");
         var portuguese = readJson("/assets/aeronautics_fly_by_instruments/lang/pt_br.json");

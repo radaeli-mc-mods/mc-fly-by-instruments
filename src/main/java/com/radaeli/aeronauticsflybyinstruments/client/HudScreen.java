@@ -9,7 +9,8 @@ import java.util.List;
 /**
  * Screen that rebuilds one centred {@link HudPanel} every frame; choices apply immediately. The
  * mouse wheel steps the stepper under it, and on panels with drop slots an item can be dragged
- * from one slot to another (a press and release on the same slot is still a click).
+ * from one slot to another (a press and release on the same slot is still a click). The wheel
+ * scrolls a scrolled list under it, and its scrollbar can be pressed or dragged.
  */
 abstract class HudScreen extends Screen {
     /** Pixels the mouse must travel before a press on a slot becomes a drag. */
@@ -19,6 +20,8 @@ abstract class HudScreen extends Screen {
     private List<HudPanel.Hit> hits = List.of();
     private List<HudPanel.SlotArea> slotAreas = List.of();
     private List<HudPanel.Scroll> scrolls = List.of();
+    private List<HudPanel.ScrollBar> scrollBars = List.of();
+    private HudPanel.ScrollBar draggedBar;
     private HudPanel.Slot pressed;
     private double pressX, pressY;
     private boolean dragging;
@@ -38,6 +41,7 @@ abstract class HudScreen extends Screen {
         hits = panel.draw(graphics, font, x, y, mouseX, mouseY, changes);
         slotAreas = panel.slotAreas();
         scrolls = panel.scrolls();
+        scrollBars = panel.scrollBars();
         if (dragging) {
             graphics.pose().pushPose();
             graphics.pose().translate(0, 0, 232);
@@ -54,6 +58,12 @@ abstract class HudScreen extends Screen {
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (button == 0) {
+            for (HudPanel.ScrollBar bar : scrollBars) {
+                if (!bar.contains(mouseX, mouseY)) continue;
+                draggedBar = bar;
+                bar.dragTo(mouseY);
+                return true;
+            }
             HudPanel.Slot source = draggableAt(mouseX, mouseY);
             if (source != null) {
                 // The click waits for the release: it may still turn into a drag.
@@ -73,6 +83,10 @@ abstract class HudScreen extends Screen {
 
     @Override
     public boolean mouseDragged(double mouseX, double mouseY, int button, double dragX, double dragY) {
+        if (draggedBar != null && button == 0) {
+            draggedBar.dragTo(mouseY);
+            return true;
+        }
         if (pressed != null && button == 0) {
             if (Math.hypot(mouseX - pressX, mouseY - pressY) >= DRAG_THRESHOLD) dragging = true;
             return true;
@@ -82,6 +96,10 @@ abstract class HudScreen extends Screen {
 
     @Override
     public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        if (draggedBar != null && button == 0) {
+            draggedBar = null;
+            return true;
+        }
         if (pressed != null && button == 0) {
             HudPanel.Slot source = pressed;
             boolean dragged = dragging;

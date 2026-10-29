@@ -1,177 +1,188 @@
 package com.radaeli.aeronauticsflybyinstruments.client;
 
-import com.google.gson.JsonParser;
 import com.radaeli.aeronauticsflybyinstruments.fms.FmsModuleData;
 import com.radaeli.aeronauticsflybyinstruments.fms.FmsWaypoint;
+import com.radaeli.aeronauticsflybyinstruments.network.FmsActionPayload;
 import com.radaeli.aeronauticsflybyinstruments.network.FmsScreenPayload;
-import com.radaeli.ruilib.ui.Bounds;
-import com.radaeli.ruilib.ui.Alignment;
-import com.radaeli.ruilib.ui.Button;
-import com.radaeli.ruilib.ui.Label;
-import com.radaeli.ruilib.ui.ScrollView;
-import com.radaeli.ruilib.ui.Tabs;
-import com.radaeli.ruilib.ui.TextField;
-import com.radaeli.ruilib.ui.UiComponent;
-import com.radaeli.ruilib.ui.UiTheme;
-import com.radaeli.ruilib.ui.UiText;
-import net.minecraft.client.gui.Font;
 import net.minecraft.core.BlockPos;
-import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.FormattedText;
 import org.junit.jupiter.api.Test;
 
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class FmsScreenTest {
-    private static final Map<String, String> TRANSLATIONS = translations();
-    private final Font font = new Font(ignored -> null, false) {
-        @Override public int width(String text) { return TRANSLATIONS.getOrDefault(text, text).length() * 5; }
-        @Override public int width(FormattedText text) { return width(text.getString()); }
-        @Override public String plainSubstrByWidth(String text, int width) {
-            return text.substring(0, Math.min(text.length(), Math.max(0, width / 5)));
-        }
-        @Override public String plainSubstrByWidth(String text, int width, boolean reverse) {
-            int count = Math.min(text.length(), Math.max(0, width / 5));
-            return reverse ? text.substring(text.length() - count) : text.substring(0, count);
-        }
-    };
+    private static final String OVERWORLD = "minecraft:overworld";
+    private final List<FmsActionPayload> sent = new ArrayList<>();
 
     @Test
-    void waypointFormConvertsTypedFractionalCoordinatesToContainingBlockPositions() {
+    void typedFractionalCoordinatesBecomeTheContainingBlock() {
         assertEquals(3.0, FmsScreen.parseBlockCoordinate("3.25"), 0.0);
         assertEquals(-2.0, FmsScreen.parseBlockCoordinate("-1.3278908072976996"), 0.0);
         assertEquals(-11.0, FmsScreen.parseBlockCoordinate("-10.671499778056285"), 0.0);
         assertNull(FmsScreen.parseBlockCoordinate("NaN"));
         assertNull(FmsScreen.parseBlockCoordinate("not a coordinate"));
+        assertNull(FmsScreen.parseBlockCoordinate("40000000"), "Beyond the world border the server refuses it");
     }
 
     @Test
-    void waypointCrudStartsWithoutAnOpenFormAndFitsInsideThePanel() {
+    void clickingAWaypointFliesDirectToItAndClickingTheActiveOneClearsIt() {
         var data = new FmsModuleData();
-        data.add(new FmsWaypoint(UUID.randomUUID(), "Landing", "minecraft:overworld", 3.25, 82, -9.5));
-        var screen = new FmsScreen(new FmsScreenPayload(BlockPos.ZERO, 0, 0, data,
-                "minecraft:overworld", 0, 64, 0, -1, "", UUID.randomUUID()));
-        var root = screen.root();
-        var measured = root.measure(font, UiTheme.DARK, 168, 240);
-        root.layout(font, UiTheme.DARK, new Bounds(30, 8, measured.width(), measured.height()));
+        var landing = waypoint("Landing", 10, 64, 0);
+        data.add(landing);
+        var screen = screen(data, -1, "");
+        screen.toggleDestination(landing);
+        assertEquals("select", sent.getLast().action());
+        assertEquals(landing.id().toString(), sent.getLast().waypointId());
 
-        assertEquals(168, measured.width());
-        assertTrue(measured.height() <= 240, "waypoint CRUD should fit a normal game viewport");
-        assertEquals(root.bounds(), screen.jeiGuiBounds());
-        var tabs = components(root, Tabs.class).getFirst();
-        assertTrue(components(root, TextField.class).isEmpty(), "CRUD form should be hidden initially");
-        assertEquals(1, components(root, ScrollView.class).size());
-        assertTrue(components(root, com.radaeli.ruilib.ui.Table.class).isEmpty());
-        assertEquals(3, components(root, Button.class).size(),
-                "New, Select destination and FMS Compass actions are available");
-        ScrollView list = components(root, ScrollView.class).getFirst();
-        assertEquals(152, list.bounds().width());
-        assertEquals(1, list.children().size());
-        assertInstanceOf(FmsScreen.WaypointListItem.class, list.children().getFirst());
-        assertEquals(list.bounds().x(), list.children().getFirst().bounds().x());
-        assertEquals(list.bounds().width(), list.children().getFirst().bounds().width());
-        assertTrue(list.bounds().y() >= tabs.bounds().y() + 22,
-                "waypoint content should be separated from the tab strip");
-        assertEquals("x: 3, z: -10", FmsScreen.waypointCoordinatesLabel(data.waypoints().getFirst()));
-        assertEquals("Landing - x: 3, z: -10, y: 82",
-                FmsScreen.waypointTooltipLabel(data.waypoints().getFirst()));
-
-        for (Button button : components(root, Button.class)) {
-            if (button.bounds().width() == 0 || button.bounds().height() == 0) continue;
-            assertTrue(button.bounds().x() >= root.bounds().x());
-            assertTrue(button.bounds().right() <= root.bounds().right());
-            assertTrue(button.bounds().y() >= root.bounds().y());
-            assertTrue(button.bounds().bottom() <= root.bounds().bottom());
-        }
+        data.select(landing.id());
+        screen.acceptServerState(payload(data, -1, ""));
+        screen.toggleDestination(landing);
+        assertEquals("clear_target", sent.getLast().action());
     }
 
     @Test
-    void noTargetDoesNotReserveBlankCoordinateAndDistanceRows() {
-        var screen = new FmsScreen(new FmsScreenPayload(BlockPos.ZERO, 0, 0, new FmsModuleData(),
-                "minecraft:overworld", 0, 64, 0, -1, "", UUID.randomUUID()));
-        var root = screen.root();
-        root.layout(font, UiTheme.DARK, new Bounds(30, 8, 168, 180));
-
-        var tabs = components(root, Tabs.class).getFirst();
-        tabs.select(1);
-        var visibleButtons = components(root, Button.class).stream()
-                .filter(button -> button.bounds().width() > 0 && button.bounds().height() > 0)
-                .toList();
-        assertEquals(2, visibleButtons.size(), "Navigator should show destination and FMS Compass actions");
-        assertTrue(visibleButtons.getFirst().bounds().y() >= tabs.bounds().y() + 22,
-                "Navigator content should have breathing room below the tabs");
-        assertTrue(visibleButtons.getLast().bounds().y() - visibleButtons.getFirst().bounds().bottom() < 60,
-                "empty target coordinates must not leave a large gap above FMS Compass");
+    void destinationShowsDistanceAndBearingFromThePlayer() {
+        var screen = screen(new FmsModuleData(), -1, "");
+        // The player stands at 12.6 70.2 -3.4; waypoints are stored as whole blocks.
+        var east = waypoint("East", 312, 70, -4);
+        var far = waypoint("Far", 12, 70, -2504);
+        assertEquals("299 m", screen.distanceLabel(east));
+        assertEquals("090°", screen.bearingLabel(east));
+        assertEquals("2.5 km", screen.distanceLabel(far));
+        assertEquals("000°", screen.bearingLabel(far), "North is -Z");
+        assertEquals("300 64 0", FmsScreen.positionLabel(waypoint("Block", 300, 64, 0)));
+        assertFalse(screen.sameDimension(new FmsWaypoint(UUID.randomUUID(), "Nether", "minecraft:the_nether", 0, 0, 0)));
     }
 
     @Test
-    void clearTargetActionAppearsAfterTargetDetails() {
+    void longListsScrollAndOpenWithTheDestinationInView() {
         var data = new FmsModuleData();
-        var target = new FmsWaypoint(UUID.randomUUID(), "Landing", "minecraft:overworld", -2, 60, -11);
-        data.add(target);
-        data.select(target.id());
-        var screen = new FmsScreen(new FmsScreenPayload(BlockPos.ZERO, 0, 0, data,
-                "minecraft:overworld", -2, 60, -9, -1, "", UUID.randomUUID()));
-        var root = screen.root();
-        root.layout(font, UiTheme.DARK, new Bounds(30, 8, 168, 240));
-        components(root, Tabs.class).getFirst().select(1);
-
-        var visibleButtons = components(root, Button.class).stream()
-                .filter(button -> button.bounds().width() > 0 && button.bounds().height() > 0)
-                .toList();
-        var targetLabels = components(root, UiComponent.class).stream()
-                .filter(component -> component.getClass().getSimpleName().equals("MutableLabel"))
-                .filter(component -> component.bounds().width() > 0)
-                .toList();
-        assertEquals(2, visibleButtons.size());
-        assertEquals(4, targetLabels.size());
-        assertTrue(targetLabels.get(2).bounds().bottom() <= visibleButtons.getFirst().bounds().y(),
-                "Clear target should follow the distance row");
-        assertTrue(visibleButtons.getFirst().bounds().bottom() <= targetLabels.get(3).bounds().y(),
-                "Clear target should remain before the FMS Compass status");
+        var waypoints = new ArrayList<FmsWaypoint>();
+        for (int i = 0; i < FmsScreen.VISIBLE_WAYPOINTS * 2; i++) {
+            waypoints.add(waypoint("WPT " + i, i, 64, 0));
+            data.add(waypoints.getLast());
+        }
+        assertEquals(0, FmsScreen.scrollToShow(waypoints, null));
+        assertEquals(0, FmsScreen.scrollToShow(waypoints, waypoints.get(FmsScreen.VISIBLE_WAYPOINTS - 1).id()),
+                "A destination already in the first rows keeps the list at the top");
+        data.select(waypoints.getLast().id());
+        var screen = screen(data, -1, "");
+        assertEquals(FmsScreen.VISIBLE_WAYPOINTS, screen.scroll(), "The last waypoint is the bottom row");
+        screen.scrollTo(2);
+        assertEquals(2, screen.scroll());
     }
 
     @Test
-    void centeredTabStripKeepsItsClickTargetsCentered() {
-        var tabs = new Tabs().setTabAlignment(Alignment.CENTER)
-                .addTab(Component.literal("Waypoints"), new Label(Component.literal("List")))
-                .addTab(Component.literal("Navigator"), new Label(Component.literal("Nav")));
-        tabs.layout(font, UiTheme.DARK, new Bounds(10, 10, 200, 60));
-
-        int firstWidth = UiText.width(font, "Waypoints", UiTheme.DARK) + 16;
-        int secondWidth = UiText.width(font, "Navigator", UiTheme.DARK) + 16;
-        int offset = (200 - firstWidth - secondWidth) / 2;
-        assertTrue(offset > 0);
-        tabs.mouseClicked(11, 11, 0);
-        assertEquals(0, tabs.selectedIndex(), "Empty space before the centered strip is not a tab");
-        tabs.mouseClicked(10 + offset + firstWidth + 1, 11, 0);
-        assertEquals(1, tabs.selectedIndex(), "The centered second tab remains clickable");
+    void scrollbarDragMapsTheTrackToTheRows() {
+        var rows = new java.util.concurrent.atomic.AtomicInteger(-1);
+        var bar = new HudPanel.ScrollBar(0, 0, 2, 70, 14, 7, rows::set);
+        bar.dragTo(-50);
+        assertEquals(0, rows.get());
+        bar.dragTo(500);
+        assertEquals(7, rows.get(), "The bottom of the track shows the last rows");
+        bar.dragTo(35);
+        assertEquals(4, rows.get(), "The middle of the track is about halfway");
+        assertEquals(35, HudPanel.thumbHeight(70, 14, 7));
+        assertEquals(6, HudPanel.thumbHeight(70, 1000, 7), "The thumb never gets too small to grab");
     }
 
-    private static Map<String, String> translations() {
-        Map<String, String> result = new HashMap<>();
-        try (var stream = FmsScreenTest.class.getResourceAsStream(
-                "/assets/aeronautics_fly_by_instruments/lang/en_us.json")) {
-            assertNotNull(stream);
-            JsonParser.parseReader(new InputStreamReader(stream, StandardCharsets.UTF_8)).getAsJsonObject()
-                    .entrySet().forEach(entry -> result.put(entry.getKey(), entry.getValue().getAsString()));
-        } catch (java.io.IOException exception) {
-            throw new IllegalStateException(exception);
-        }
-        return result;
+    @Test
+    void compassLinkIsOneClickAndARelinkCarriesTheConfirmation() {
+        var data = new FmsModuleData();
+        assertEquals("missing", screen(data, -1, "").compassState());
+        assertEquals("linked", screen(data, 4, data.id().toString()).compassState());
+
+        var unlinked = screen(data, 4, "");
+        assertEquals("unlinked", unlinked.compassState());
+        unlinked.linkCompass(false);
+        assertEquals("bind_navigator", sent.getLast().action());
+        assertEquals(4, sent.getLast().navigatorDisplaySlot());
+        assertFalse(sent.getLast().confirmRebind());
+
+        var elsewhere = screen(data, 7, UUID.randomUUID().toString());
+        assertEquals("other", elsewhere.compassState());
+        elsewhere.linkCompass(true);
+        assertTrue(sent.getLast().confirmRebind(), "The Relink button is the confirmation");
     }
 
-    private static <T extends UiComponent> List<T> components(UiComponent root, Class<T> type) {
-        List<T> result = new ArrayList<>();
-        root.visitComponents(component -> { if (type.isInstance(component)) result.add(type.cast(component)); });
-        return result;
+    @Test
+    void newWaypointStartsAtThePlayersBlockAndAddsOnlyWhenNamed() {
+        var parent = screen(new FmsModuleData(), -1, "");
+        var editor = new FmsWaypointScreen(parent, null);
+        assertEquals("12", editor.value(FmsWaypointScreen.X));
+        assertEquals("70", editor.value(FmsWaypointScreen.Y));
+        assertEquals("-4", editor.value(FmsWaypointScreen.Z), "Floor, also for negatives");
+        assertEquals(FmsWaypointScreen.NAME, editor.focused(), "The name is ready to type");
+        assertEquals("name", editor.problem());
+
+        editor.submit();
+        assertTrue(sent.isEmpty(), "Nothing is added without a name");
+        editor.paste("Base");
+        editor.submit();
+        assertEquals("create", sent.getLast().action());
+        assertEquals("Base", sent.getLast().name());
+        assertEquals(-4, sent.getLast().z());
+    }
+
+    @Test
+    void coordinateFieldsTakeOnlyNumbersAndFlagUnreadableValues() {
+        var editor = new FmsWaypointScreen(screen(new FmsModuleData(), -1, ""), null);
+        editor.paste("Hangar");
+        editor.focus(FmsWaypointScreen.X);
+        editor.paste("abc-");
+        assertEquals("12-", editor.value(FmsWaypointScreen.X), "Letters are ignored");
+        assertEquals("coordinates", editor.problem());
+        editor.useCurrentPosition();
+        assertNull(editor.problem());
+    }
+
+    @Test
+    void editingSendsOnlyRealChangesAndDeleteNeedsASecondClick() {
+        var data = new FmsModuleData();
+        var landing = waypoint("Landing", 3, 82, -10);
+        data.add(landing);
+        var parent = screen(data, -1, "");
+
+        new FmsWaypointScreen(parent, landing).submit();
+        assertTrue(sent.isEmpty(), "Done without changes sends nothing");
+
+        var rename = new FmsWaypointScreen(parent, landing);
+        rename.paste(" 2");
+        rename.submit();
+        assertEquals("update", sent.getLast().action());
+        assertEquals("Landing 2", sent.getLast().name());
+
+        var remove = new FmsWaypointScreen(parent, landing);
+        int before = sent.size();
+        remove.delete();
+        assertEquals(before, sent.size(), "The first click only arms the delete");
+        remove.delete();
+        assertEquals("delete", sent.getLast().action());
+        assertEquals(landing.id().toString(), sent.getLast().waypointId());
+    }
+
+    @Test
+    void namesStopAtTheWaypointLimit() {
+        var editor = new FmsWaypointScreen(screen(new FmsModuleData(), -1, ""), null);
+        editor.paste("x".repeat(FmsWaypoint.MAX_NAME_LENGTH + 10));
+        assertEquals(FmsWaypoint.MAX_NAME_LENGTH, editor.value(FmsWaypointScreen.NAME).length());
+    }
+
+    private FmsScreen screen(FmsModuleData data, int compassSlot, String compassBound) {
+        return new FmsScreen(payload(data, compassSlot, compassBound), sent::add);
+    }
+
+    private static final UUID TOKEN = UUID.randomUUID();
+
+    private static FmsScreenPayload payload(FmsModuleData data, int compassSlot, String compassBound) {
+        return new FmsScreenPayload(BlockPos.ZERO, 0, 0, data, OVERWORLD, 12.6, 70.2, -3.4,
+                compassSlot, compassBound, TOKEN);
+    }
+
+    private static FmsWaypoint waypoint(String name, double x, double y, double z) {
+        return new FmsWaypoint(UUID.randomUUID(), name, OVERWORLD, x, y, z);
     }
 }

@@ -29,6 +29,8 @@ public final class FmsClient {
         Minecraft minecraft = Minecraft.getInstance();
         if (minecraft.screen instanceof FmsScreen screen && screen.matches(payload)) {
             screen.acceptServerState(payload);
+        } else if (minecraft.screen instanceof FmsWaypointScreen editor && editor.parent().matches(payload)) {
+            editor.parent().acceptServerState(payload);
         } else {
             minecraft.setScreen(new FmsScreen(payload));
         }

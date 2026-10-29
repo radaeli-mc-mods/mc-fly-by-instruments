@@ -34,7 +34,12 @@ Quando o compasso está ligado a um módulo FMS, o item troca para o modelo
   no lugar de `6 → 6 → 5`): o ponteiro está "vivo";
 - o reflexo azul da lente cresce de 1 para 2 pixels, como lente acesa.
 
-Aro, bezel, índice, cauda de ferro do ponteiro e alça não mudam. No código, a propriedade de
+Aro, bezel, índice, cauda de ferro do ponteiro e alça não mudam. Para que o estado ligado se
+leia de longe, o item ligado também ganha o brilho de encantamento (`FmsNavigatorItem.isFoil`),
+como a bússola de magnetita vanilla.
+
+Os dois modelos de item usam `"gui_light": "front"`: o compasso é visto de cima no inventário,
+e com a luz lateral padrão de bloco a face de cima ficava quase preta. No código, a propriedade de
 item `aeronautics_fly_by_instruments:linked` (`client/FmsClient.java`) vale 1 com o item ligado,
 e o override em `models/item/fms_navigator.json` aponta para `item/fms_navigator_linked`. O
 override também vale na Navigation Table, que desenha o item pelo modelo.

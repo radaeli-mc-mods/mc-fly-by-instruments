@@ -56,6 +56,12 @@ public final class FmsNavigatorItem extends Item implements RenderableNavigation
         FmsNavigatorTableRenderer.render(self, navigationTable, partialTicks, pose, buffer, light, overlay);
     }
 
+    /** Linked compasses shimmer like the vanilla lodestone compass. */
+    @Override
+    public boolean isFoil(ItemStack stack) {
+        return boundFmsId(stack) != null || super.isFoil(stack);
+    }
+
     @Override
     public void appendHoverText(ItemStack stack, TooltipContext context, List<Component> tooltip, TooltipFlag flag) {
         UUID id = boundFmsId(stack);
