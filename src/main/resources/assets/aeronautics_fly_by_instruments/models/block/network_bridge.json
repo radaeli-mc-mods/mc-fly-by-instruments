@@ -1,17 +1,140 @@
 {
+  "credit": "Made with Blockbench for Aeronautics: Fly by Instruments",
   "parent": "minecraft:block/block",
+  "ambientocclusion": true,
   "textures": {
-    "side": "minecraft:block/iron_block",
-    "top": "minecraft:block/observer_top",
-    "bottom": "minecraft:block/observer_back",
-    "particle": "minecraft:block/iron_block"
+    "0": "aeronautics_fly_by_instruments:block/network_bridge",
+    "particle": "aeronautics_fly_by_instruments:block/network_bridge"
   },
-  "elements": [{
-    "from": [0, 0, 0], "to": [16, 16, 16],
-    "faces": {
-      "down": {"texture": "#bottom"}, "up": {"texture": "#top"},
-      "north": {"texture": "#side"}, "south": {"texture": "#side"},
-      "west": {"texture": "#side"}, "east": {"texture": "#side"}
+  "elements": [
+    {
+      "name": "box",
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        15,
+        16
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            8,
+            8,
+            15.5
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            8,
+            7.5
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            0,
+            8,
+            8,
+            15.5
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            8,
+            7.5
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            8,
+            0,
+            16,
+            8
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            8,
+            0,
+            16,
+            8
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "plate",
+      "from": [
+        2,
+        15,
+        2
+      ],
+      "to": [
+        14,
+        16,
+        14
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8,
+            14,
+            14,
+            14.5
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            8,
+            14.5,
+            14,
+            15
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            8,
+            14.5,
+            14,
+            15
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            8,
+            14,
+            14,
+            14.5
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            8,
+            8,
+            14,
+            14
+          ],
+          "texture": "#0"
+        }
+      }
     }
-  }]
+  ]
 }

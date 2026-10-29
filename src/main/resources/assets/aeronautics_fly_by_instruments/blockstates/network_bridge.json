@@ -1,1 +1,1 @@
-{"variants":{"":{"model":"aeronautics_fly_by_instruments:block/network_bridge"}}}
+{"variants":{"axis=z":{"model":"aeronautics_fly_by_instruments:block/network_bridge"},"axis=x":{"model":"aeronautics_fly_by_instruments:block/network_bridge","y":90}}}

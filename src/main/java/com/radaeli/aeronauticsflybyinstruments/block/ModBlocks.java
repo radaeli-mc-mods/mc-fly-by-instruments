@@ -59,7 +59,7 @@ public final class ModBlocks {
             ITEMS.registerSimpleBlockItem(AVIONICS_CABLE);
     public static final DeferredBlock<NetworkBridgeBlock> NETWORK_BRIDGE =
             BLOCKS.register("network_bridge", () -> new NetworkBridgeBlock(
-                    BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK).strength(2.0f)));
+                    BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK).strength(2.0f).noOcclusion()));
     public static final DeferredItem<BlockItem> NETWORK_BRIDGE_ITEM =
             ITEMS.registerSimpleBlockItem(NETWORK_BRIDGE);
     public static final DeferredBlock<AvionicsComputerBlock> AVIONICS_COMPUTER =
