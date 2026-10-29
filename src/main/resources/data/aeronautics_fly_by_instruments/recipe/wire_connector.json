@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    " N ",
+    "BBB",
+    "ITI"
+  ],
+  "key": {
+    "N": { "item": "minecraft:iron_nugget" },
+    "B": { "item": "create:brass_sheet" },
+    "I": { "item": "create:brass_ingot" },
+    "T": { "item": "create:electron_tube" }
+  },
+  "result": {
+    "id": "aeronautics_fly_by_instruments:wire_connector",
+    "count": 4
+  }
+}

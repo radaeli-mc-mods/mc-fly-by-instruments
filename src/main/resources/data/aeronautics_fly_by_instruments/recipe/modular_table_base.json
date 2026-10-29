@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    " B ",
+    "BCB",
+    " B "
+  ],
+  "key": {
+    "B": { "item": "create:brass_sheet" },
+    "C": { "item": "create:brass_casing" }
+  },
+  "result": {
+    "id": "aeronautics_fly_by_instruments:modular_table_base",
+    "count": 1
+  }
+}

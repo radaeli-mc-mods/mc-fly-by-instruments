@@ -56,6 +56,7 @@ public final class AeronauticsFlyByInstruments {
         if (FMLEnvironment.dist == Dist.CLIENT) {
             PanelClient.register(modEventBus);
             FmsClient.register(modEventBus);
+            com.radaeli.aeronauticsflybyinstruments.client.ItemTooltips.register(modEventBus);
             com.radaeli.aeronauticsflybyinstruments.client.WireClient.register(modEventBus);
             ModularTableModels.register(modEventBus);
             NeoForge.EVENT_BUS.addListener(PanelInputHandler::onMouseScroll);

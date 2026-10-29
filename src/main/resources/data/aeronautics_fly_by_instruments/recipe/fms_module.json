@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "BPB",
+    "SCS",
+    "TwT"
+  ],
+  "key": {
+    "B": { "item": "create:brass_sheet" },
+    "P": { "item": "create:precision_mechanism" },
+    "S": { "item": "create:iron_sheet" },
+    "C": { "item": "minecraft:compass" },
+    "T": { "item": "create:electron_tube" },
+    "w": { "tag": "minecraft:buttons" }
+  },
+  "result": {
+    "id": "aeronautics_fly_by_instruments:fms_module",
+    "count": 1
+  }
+}

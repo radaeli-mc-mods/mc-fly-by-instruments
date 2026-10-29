@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    " P ",
+    "SNS",
+    "TIT"
+  ],
+  "key": {
+    "P": { "item": "create:precision_mechanism" },
+    "S": { "item": "create:iron_sheet" },
+    "N": { "item": "minecraft:note_block" },
+    "T": { "item": "create:electron_tube" },
+    "I": { "item": "create:industrial_iron_block" }
+  },
+  "result": {
+    "id": "aeronautics_fly_by_instruments:buzzer_module",
+    "count": 1
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "BPB",
+    "TIT",
+    "BcB"
+  ],
+  "key": {
+    "B": { "item": "create:brass_sheet" },
+    "P": { "item": "create:precision_mechanism" },
+    "T": { "item": "create:electron_tube" },
+    "I": { "item": "create:industrial_iron_block" },
+    "c": { "item": "minecraft:comparator" }
+  },
+  "result": {
+    "id": "aeronautics_fly_by_instruments:avionics_computer",
+    "count": 1
+  }
+}

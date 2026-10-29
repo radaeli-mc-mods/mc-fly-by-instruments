@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    " T ",
+    "BLB",
+    " P "
+  ],
+  "key": {
+    "T": { "item": "create:electron_tube" },
+    "B": { "item": "create:brass_sheet" },
+    "L": { "item": "minecraft:redstone_lamp" },
+    "P": { "item": "create:precision_mechanism" }
+  },
+  "result": {
+    "id": "aeronautics_fly_by_instruments:lamp_module",
+    "count": 1
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "NTN",
+    "BCB",
+    "PBP"
+  ],
+  "key": {
+    "N": { "item": "minecraft:iron_nugget" },
+    "T": { "item": "create:electron_tube" },
+    "B": { "item": "create:brass_sheet" },
+    "C": { "item": "minecraft:compass" },
+    "P": { "item": "create:precision_mechanism" }
+  },
+  "result": {
+    "id": "aeronautics_fly_by_instruments:fms_navigator",
+    "count": 1
+  }
+}

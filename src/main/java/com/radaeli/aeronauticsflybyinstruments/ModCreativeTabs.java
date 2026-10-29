@@ -15,13 +15,13 @@ public final class ModCreativeTabs {
     public static final DeferredHolder<CreativeModeTab, CreativeModeTab> AERONAUTICS_FLY_BY_INSTRUMENTS =
             TABS.register("aeronautics_fly_by_instruments", () -> CreativeModeTab.builder()
                     .title(Component.translatable("itemGroup.aeronautics_fly_by_instruments"))
-                    .icon(() -> new ItemStack(ModBlocks.RADAR_ALTIMETER_ITEM.get()))
+                    .icon(() -> new ItemStack(ModBlocks.AVIONICS_COMPUTER_ITEM.get()))
                     .displayItems((parameters, output) -> {
                         // Delivered sensors (redstone + CC:Tweaked) come first.
                         output.accept(ModBlocks.RADAR_ALTIMETER_ITEM);
                         output.accept(ModBlocks.TERRAIN_SCANNER_ITEM);
                         output.accept(ModBlocks.TERRAIN_SCANNER_ADVANCED_ITEM);
-                        // Experimental: implemented, but without recipes until the next release.
+                        // Experimental: craftable (except Network Bridge), may still change.
                         output.accept(ModBlocks.MODULAR_TABLE_BASE_ITEM);
                         output.accept(ModBlocks.AVIONICS_WIRE);
                         output.accept(ModBlocks.WIRE_CONNECTOR_ITEM);

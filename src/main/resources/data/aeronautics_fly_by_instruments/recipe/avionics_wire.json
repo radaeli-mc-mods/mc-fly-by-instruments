@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    " B ",
+    "BKB",
+    " B "
+  ],
+  "key": {
+    "B": { "item": "create:brass_sheet" },
+    "K": { "item": "minecraft:dried_kelp" }
+  },
+  "result": {
+    "id": "aeronautics_fly_by_instruments:avionics_wire",
+    "count": 8
+  }
+}

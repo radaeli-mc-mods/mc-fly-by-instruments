@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    " S ",
+    "S S",
+    " I "
+  ],
+  "key": {
+    "S": { "item": "create:iron_sheet" },
+    "I": { "item": "create:industrial_iron_block" }
+  },
+  "result": {
+    "id": "aeronautics_fly_by_instruments:wire_support",
+    "count": 8
+  }
+}

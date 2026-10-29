@@ -1,0 +1,12 @@
+{
+  "type": "minecraft:crafting_shapeless",
+  "category": "redstone",
+  "ingredients": [
+    { "item": "aeronautics_fly_by_instruments:lamp_module" },
+    { "item": "aeronautics_fly_by_instruments:lamp_module" }
+  ],
+  "result": {
+    "id": "aeronautics_fly_by_instruments:lamp_module_2x1",
+    "count": 1
+  }
+}
