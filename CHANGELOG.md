@@ -5,6 +5,12 @@ All notable changes to Aeronautics: Fly by Instruments are documented in this fi
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- Fixed the buzzer tooltip to say that clicking a sounding buzzer silences the alarm and that sneak-click opens its settings.
+
 ## [0.2.0] - 2026-10-28
 
 An experimental avionics suite: a ground proximity warning computer, a cockpit panel and physical wires.
