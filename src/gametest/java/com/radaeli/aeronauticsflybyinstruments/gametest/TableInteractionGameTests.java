@@ -174,6 +174,14 @@ public final class TableInteractionGameTests {
         int before = messages.size();
         f.click(InteractionHand.MAIN_HAND, 2, 2);
         h.assertTrue(messages.size() == before, "lit lamp click acknowledges without a screen");
+        f.table.setMuted(false);
+        f.click(InteractionHand.MAIN_HAND, 0, 0);
+        h.assertTrue(messages.size() == before && f.table.muted(), "sounding buzzer click acknowledges without a screen");
+        f.player.setShiftKeyDown(true);
+        f.click(InteractionHand.MAIN_HAND, 0, 0);
+        h.assertTrue(messages.getLast() instanceof PanelScreenPayload p && p.moduleType().equals("buzzer"),
+                "shift opens sounding buzzer");
+        f.player.setShiftKeyDown(false);
         panelAction(f, action(f, "open_module", 0, 0, 100, f.table.interactionToken()));
         h.assertTrue(messages.getLast() instanceof PanelScreenPayload p && p.moduleType().equals("buzzer"), "panel list opens module");
         h.succeed();

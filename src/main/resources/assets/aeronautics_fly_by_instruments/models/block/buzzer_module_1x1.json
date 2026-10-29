@@ -1,1092 +1,138 @@
 {
-  "credit": "Created and refined in Blockbench for Aeronautics: Fly by Instruments",
-  "render_type": "minecraft:cutout",
+  "credit": "Made with Blockbench for Aeronautics: Fly by Instruments",
+  "parent": "minecraft:block/block",
   "ambientocclusion": true,
   "textures": {
-    "0": "aeronautics_fly_by_instruments:block/buzzer_housing",
-    "1": "aeronautics_fly_by_instruments:block/buzzer_top",
-    "2": "aeronautics_fly_by_instruments:block/buzzer_base",
-    "3": "aeronautics_fly_by_instruments:block/buzzer_hole",
-    "particle": "aeronautics_fly_by_instruments:block/buzzer_housing"
+    "0": "aeronautics_fly_by_instruments:block/buzzer_module",
+    "particle": "aeronautics_fly_by_instruments:block/buzzer_module"
   },
   "elements": [
     {
-      "name": "piano_side_01",
+      "name": "housing",
       "from": [
-        7.722,
+        6,
         0,
-        6.60238
+        6
       ],
       "to": [
-        8.278,
-        1.9,
-        6.60238
+        10,
+        2,
+        10
       ],
       "faces": {
         "north": {
           "uv": [
             0,
             0,
-            16,
-            16
+            4,
+            2
           ],
           "texture": "#0"
-        }
-      }
-    },
-    {
-      "name": "piano_side_02",
-      "from": [
-        8.25684,
-        0,
-        6.70877
-      ],
-      "to": [
-        8.81285,
-        1.9,
-        6.70877
-      ],
-      "faces": {
-        "north": {
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ],
-          "texture": "#0"
-        }
-      },
-      "rotation": {
-        "origin": [
-          8.53485,
-          0,
-          6.70877
-        ],
-        "axis": "y",
-        "angle": -22.5,
-        "rescale": false
-      }
-    },
-    {
-      "name": "piano_side_03",
-      "from": [
-        8.98827,
-        0,
-        6.73373
-      ],
-      "to": [
-        8.98827,
-        1.9,
-        7.28974
-      ],
-      "faces": {
+        },
         "east": {
           "uv": [
             0,
             0,
-            16,
-            16
+            4,
+            2
           ],
           "texture": "#0"
-        }
-      },
-      "rotation": {
-        "origin": [
-          8.98827,
-          0,
-          7.01173
-        ],
-        "axis": "y",
-        "angle": 45,
-        "rescale": false
-      }
-    },
-    {
-      "name": "piano_side_04",
-      "from": [
-        9.29123,
-        0,
-        7.18715
-      ],
-      "to": [
-        9.29123,
-        1.9,
-        7.74316
-      ],
-      "faces": {
-        "east": {
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ],
-          "texture": "#0"
-        }
-      },
-      "rotation": {
-        "origin": [
-          9.29123,
-          0,
-          7.46515
-        ],
-        "axis": "y",
-        "angle": 22.5,
-        "rescale": false
-      }
-    },
-    {
-      "name": "piano_side_05",
-      "from": [
-        9.39762,
-        0,
-        7.722
-      ],
-      "to": [
-        9.39762,
-        1.9,
-        8.278
-      ],
-      "faces": {
-        "east": {
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ],
-          "texture": "#0"
-        }
-      }
-    },
-    {
-      "name": "piano_side_06",
-      "from": [
-        9.29123,
-        0,
-        8.25684
-      ],
-      "to": [
-        9.29123,
-        1.9,
-        8.81285
-      ],
-      "faces": {
-        "east": {
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ],
-          "texture": "#0"
-        }
-      },
-      "rotation": {
-        "origin": [
-          9.29123,
-          0,
-          8.53485
-        ],
-        "axis": "y",
-        "angle": -22.5,
-        "rescale": false
-      }
-    },
-    {
-      "name": "piano_side_07",
-      "from": [
-        8.71026,
-        0,
-        8.98827
-      ],
-      "to": [
-        9.26627,
-        1.9,
-        8.98827
-      ],
-      "faces": {
+        },
         "south": {
           "uv": [
             0,
             0,
-            16,
-            16
+            4,
+            2
           ],
           "texture": "#0"
-        }
-      },
-      "rotation": {
-        "origin": [
-          8.98827,
-          0,
-          8.98827
-        ],
-        "axis": "y",
-        "angle": 45,
-        "rescale": false
-      }
-    },
-    {
-      "name": "piano_side_08",
-      "from": [
-        8.25684,
-        0,
-        9.29123
-      ],
-      "to": [
-        8.81285,
-        1.9,
-        9.29123
-      ],
-      "faces": {
-        "south": {
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ],
-          "texture": "#0"
-        }
-      },
-      "rotation": {
-        "origin": [
-          8.53485,
-          0,
-          9.29123
-        ],
-        "axis": "y",
-        "angle": 22.5,
-        "rescale": false
-      }
-    },
-    {
-      "name": "piano_side_09",
-      "from": [
-        7.722,
-        0,
-        9.39762
-      ],
-      "to": [
-        8.278,
-        1.9,
-        9.39762
-      ],
-      "faces": {
-        "south": {
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ],
-          "texture": "#0"
-        }
-      }
-    },
-    {
-      "name": "piano_side_10",
-      "from": [
-        7.18715,
-        0,
-        9.29123
-      ],
-      "to": [
-        7.74316,
-        1.9,
-        9.29123
-      ],
-      "faces": {
-        "south": {
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ],
-          "texture": "#0"
-        }
-      },
-      "rotation": {
-        "origin": [
-          7.46515,
-          0,
-          9.29123
-        ],
-        "axis": "y",
-        "angle": -22.5,
-        "rescale": false
-      }
-    },
-    {
-      "name": "piano_side_11",
-      "from": [
-        7.01173,
-        0,
-        8.71026
-      ],
-      "to": [
-        7.01173,
-        1.9,
-        9.26627
-      ],
-      "faces": {
+        },
         "west": {
           "uv": [
             0,
             0,
-            16,
-            16
+            4,
+            2
           ],
           "texture": "#0"
-        }
-      },
-      "rotation": {
-        "origin": [
-          7.01173,
-          0,
-          8.98827
-        ],
-        "axis": "y",
-        "angle": 45,
-        "rescale": false
-      }
-    },
-    {
-      "name": "piano_side_12",
-      "from": [
-        6.70877,
-        0,
-        8.25684
-      ],
-      "to": [
-        6.70877,
-        1.9,
-        8.81285
-      ],
-      "faces": {
-        "west": {
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ],
-          "texture": "#0"
-        }
-      },
-      "rotation": {
-        "origin": [
-          6.70877,
-          0,
-          8.53485
-        ],
-        "axis": "y",
-        "angle": 22.5,
-        "rescale": false
-      }
-    },
-    {
-      "name": "piano_side_13",
-      "from": [
-        6.60238,
-        0,
-        7.722
-      ],
-      "to": [
-        6.60238,
-        1.9,
-        8.278
-      ],
-      "faces": {
-        "west": {
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ],
-          "texture": "#0"
-        }
-      }
-    },
-    {
-      "name": "piano_side_14",
-      "from": [
-        6.70877,
-        0,
-        7.18715
-      ],
-      "to": [
-        6.70877,
-        1.9,
-        7.74316
-      ],
-      "faces": {
-        "west": {
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ],
-          "texture": "#0"
-        }
-      },
-      "rotation": {
-        "origin": [
-          6.70877,
-          0,
-          7.46515
-        ],
-        "axis": "y",
-        "angle": -22.5,
-        "rescale": false
-      }
-    },
-    {
-      "name": "piano_side_15",
-      "from": [
-        6.73373,
-        0,
-        7.01173
-      ],
-      "to": [
-        7.28974,
-        1.9,
-        7.01173
-      ],
-      "faces": {
-        "north": {
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ],
-          "texture": "#0"
-        }
-      },
-      "rotation": {
-        "origin": [
-          7.01173,
-          0,
-          7.01173
-        ],
-        "axis": "y",
-        "angle": 45,
-        "rescale": false
-      }
-    },
-    {
-      "name": "piano_side_16",
-      "from": [
-        7.18715,
-        0,
-        6.70877
-      ],
-      "to": [
-        7.74316,
-        1.9,
-        6.70877
-      ],
-      "faces": {
-        "north": {
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ],
-          "texture": "#0"
-        }
-      },
-      "rotation": {
-        "origin": [
-          7.46515,
-          0,
-          6.70877
-        ],
-        "axis": "y",
-        "angle": 22.5,
-        "rescale": false
-      }
-    },
-    {
-      "name": "porous_cap_with_hole",
-      "from": [
-        6.575,
-        1.9,
-        6.575
-      ],
-      "to": [
-        9.425,
-        1.9,
-        9.425
-      ],
-      "faces": {
+        },
         "up": {
           "uv": [
+            4,
             0,
-            0,
-            16,
-            16
+            8,
+            4
           ],
-          "texture": "#1"
-        }
-      }
-    },
-    {
-      "name": "solid_mounting_base",
-      "from": [
-        6.575,
-        0,
-        6.575
-      ],
-      "to": [
-        9.425,
-        0,
-        9.425
-      ],
-      "faces": {
+          "texture": "#0"
+        },
         "down": {
           "uv": [
+            8,
             0,
-            0,
-            16,
-            16
+            12,
+            4
           ],
-          "texture": "#2"
+          "texture": "#0"
         }
       }
     },
     {
-      "name": "recess_wall_01",
+      "name": "grille_cap",
       "from": [
-        7.94996,
-        1.425,
-        7.74843
+        7,
+        2,
+        7
       ],
       "to": [
-        8.05004,
-        1.9,
-        7.74843
-      ],
-      "faces": {
-        "south": {
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ],
-          "texture": "#3"
-        }
-      }
-    },
-    {
-      "name": "recess_wall_02",
-      "from": [
-        8.04623,
-        1.425,
-        7.76758
-      ],
-      "to": [
-        8.14631,
-        1.9,
-        7.76758
-      ],
-      "faces": {
-        "south": {
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ],
-          "texture": "#3"
-        }
-      },
-      "rotation": {
-        "origin": [
-          8.09627,
-          0,
-          7.76758
-        ],
-        "axis": "y",
-        "angle": -22.5,
-        "rescale": false
-      }
-    },
-    {
-      "name": "recess_wall_03",
-      "from": [
-        8.17789,
-        1.425,
-        7.77207
-      ],
-      "to": [
-        8.17789,
-        1.9,
-        7.87215
-      ],
-      "faces": {
-        "west": {
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ],
-          "texture": "#3"
-        }
-      },
-      "rotation": {
-        "origin": [
-          8.17789,
-          0,
-          7.82211
-        ],
-        "axis": "y",
-        "angle": 45,
-        "rescale": false
-      }
-    },
-    {
-      "name": "recess_wall_04",
-      "from": [
-        8.23242,
-        1.425,
-        7.85369
-      ],
-      "to": [
-        8.23242,
-        1.9,
-        7.95377
-      ],
-      "faces": {
-        "west": {
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ],
-          "texture": "#3"
-        }
-      },
-      "rotation": {
-        "origin": [
-          8.23242,
-          0,
-          7.90373
-        ],
-        "axis": "y",
-        "angle": 22.5,
-        "rescale": false
-      }
-    },
-    {
-      "name": "recess_wall_05",
-      "from": [
-        8.25157,
-        1.425,
-        7.94996
-      ],
-      "to": [
-        8.25157,
-        1.9,
-        8.05004
-      ],
-      "faces": {
-        "west": {
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ],
-          "texture": "#3"
-        }
-      }
-    },
-    {
-      "name": "recess_wall_06",
-      "from": [
-        8.23242,
-        1.425,
-        8.04623
-      ],
-      "to": [
-        8.23242,
-        1.9,
-        8.14631
-      ],
-      "faces": {
-        "west": {
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ],
-          "texture": "#3"
-        }
-      },
-      "rotation": {
-        "origin": [
-          8.23242,
-          0,
-          8.09627
-        ],
-        "axis": "y",
-        "angle": -22.5,
-        "rescale": false
-      }
-    },
-    {
-      "name": "recess_wall_07",
-      "from": [
-        8.12785,
-        1.425,
-        8.17789
-      ],
-      "to": [
-        8.22793,
-        1.9,
-        8.17789
+        9,
+        3,
+        9
       ],
       "faces": {
         "north": {
           "uv": [
             0,
-            0,
-            16,
-            16
+            4,
+            2,
+            5
           ],
-          "texture": "#3"
-        }
-      },
-      "rotation": {
-        "origin": [
-          8.17789,
-          0,
-          8.17789
-        ],
-        "axis": "y",
-        "angle": 45,
-        "rescale": false
-      }
-    },
-    {
-      "name": "recess_wall_08",
-      "from": [
-        8.04623,
-        1.425,
-        8.23242
-      ],
-      "to": [
-        8.14631,
-        1.9,
-        8.23242
-      ],
-      "faces": {
-        "north": {
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ],
-          "texture": "#3"
-        }
-      },
-      "rotation": {
-        "origin": [
-          8.09627,
-          0,
-          8.23242
-        ],
-        "axis": "y",
-        "angle": 22.5,
-        "rescale": false
-      }
-    },
-    {
-      "name": "recess_wall_09",
-      "from": [
-        7.94996,
-        1.425,
-        8.25157
-      ],
-      "to": [
-        8.05004,
-        1.9,
-        8.25157
-      ],
-      "faces": {
-        "north": {
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ],
-          "texture": "#3"
-        }
-      }
-    },
-    {
-      "name": "recess_wall_10",
-      "from": [
-        7.85369,
-        1.425,
-        8.23242
-      ],
-      "to": [
-        7.95377,
-        1.9,
-        8.23242
-      ],
-      "faces": {
-        "north": {
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ],
-          "texture": "#3"
-        }
-      },
-      "rotation": {
-        "origin": [
-          7.90373,
-          0,
-          8.23242
-        ],
-        "axis": "y",
-        "angle": -22.5,
-        "rescale": false
-      }
-    },
-    {
-      "name": "recess_wall_11",
-      "from": [
-        7.82211,
-        1.425,
-        8.12785
-      ],
-      "to": [
-        7.82211,
-        1.9,
-        8.22793
-      ],
-      "faces": {
+          "texture": "#0"
+        },
         "east": {
           "uv": [
             0,
-            0,
-            16,
-            16
+            4,
+            2,
+            5
           ],
-          "texture": "#3"
-        }
-      },
-      "rotation": {
-        "origin": [
-          7.82211,
-          0,
-          8.17789
-        ],
-        "axis": "y",
-        "angle": 45,
-        "rescale": false
-      }
-    },
-    {
-      "name": "recess_wall_12",
-      "from": [
-        7.76758,
-        1.425,
-        8.04623
-      ],
-      "to": [
-        7.76758,
-        1.9,
-        8.14631
-      ],
-      "faces": {
-        "east": {
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ],
-          "texture": "#3"
-        }
-      },
-      "rotation": {
-        "origin": [
-          7.76758,
-          0,
-          8.09627
-        ],
-        "axis": "y",
-        "angle": 22.5,
-        "rescale": false
-      }
-    },
-    {
-      "name": "recess_wall_13",
-      "from": [
-        7.74843,
-        1.425,
-        7.94996
-      ],
-      "to": [
-        7.74843,
-        1.9,
-        8.05004
-      ],
-      "faces": {
-        "east": {
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ],
-          "texture": "#3"
-        }
-      }
-    },
-    {
-      "name": "recess_wall_14",
-      "from": [
-        7.76758,
-        1.425,
-        7.85369
-      ],
-      "to": [
-        7.76758,
-        1.9,
-        7.95377
-      ],
-      "faces": {
-        "east": {
-          "uv": [
-            0,
-            0,
-            16,
-            16
-          ],
-          "texture": "#3"
-        }
-      },
-      "rotation": {
-        "origin": [
-          7.76758,
-          0,
-          7.90373
-        ],
-        "axis": "y",
-        "angle": -22.5,
-        "rescale": false
-      }
-    },
-    {
-      "name": "recess_wall_15",
-      "from": [
-        7.77207,
-        1.425,
-        7.82211
-      ],
-      "to": [
-        7.87215,
-        1.9,
-        7.82211
-      ],
-      "faces": {
+          "texture": "#0"
+        },
         "south": {
           "uv": [
             0,
-            0,
-            16,
-            16
+            4,
+            2,
+            5
           ],
-          "texture": "#3"
-        }
-      },
-      "rotation": {
-        "origin": [
-          7.82211,
-          0,
-          7.82211
-        ],
-        "axis": "y",
-        "angle": 45,
-        "rescale": false
-      }
-    },
-    {
-      "name": "recess_wall_16",
-      "from": [
-        7.85369,
-        1.425,
-        7.76758
-      ],
-      "to": [
-        7.95377,
-        1.9,
-        7.76758
-      ],
-      "faces": {
-        "south": {
+          "texture": "#0"
+        },
+        "west": {
           "uv": [
             0,
-            0,
-            16,
-            16
+            4,
+            2,
+            5
           ],
-          "texture": "#3"
-        }
-      },
-      "rotation": {
-        "origin": [
-          7.90373,
-          0,
-          7.76758
-        ],
-        "axis": "y",
-        "angle": 22.5,
-        "rescale": false
-      }
-    },
-    {
-      "name": "dark_recess_floor",
-      "from": [
-        7.6675,
-        1.425,
-        7.6675
-      ],
-      "to": [
-        8.3325,
-        1.425,
-        8.3325
-      ],
-      "faces": {
+          "texture": "#0"
+        },
         "up": {
           "uv": [
-            0,
-            0,
-            16,
-            16
+            2,
+            4,
+            4,
+            6
           ],
-          "texture": "#3"
+          "texture": "#0"
         }
       }
     }

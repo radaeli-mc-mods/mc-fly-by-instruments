@@ -14,7 +14,7 @@ public final class PanelSpatial {
     private PanelSpatial() { }
 
     public static Vec3 moduleWorldPosition(ModularTableBlockEntity table, PanelGrid.Module module) {
-        double emitterHeight = module.type().equals("buzzer") ? 1.9 / 16.0 : 0;
+        double emitterHeight = module.type().equals("buzzer") ? 3.0 / 16.0 : 0;
         Vec3 panel = PanelCoordinates.fromPanel(table.getBlockState().getValue(ModularTableBaseBlock.FACING),
                 new Vec3((module.column() + module.width() / 2.0) / PanelGrid.SIZE,
                         PanelCoordinates.SURFACE + emitterHeight, (module.row() + module.height() / 2.0) / PanelGrid.SIZE));

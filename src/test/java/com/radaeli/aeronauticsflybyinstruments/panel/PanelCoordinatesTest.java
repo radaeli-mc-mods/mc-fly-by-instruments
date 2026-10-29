@@ -16,8 +16,8 @@ class PanelCoordinatesTest {
                     var expected = new Vec3((column + 0.5) / 3, PanelCoordinates.SURFACE, (row + 0.5) / 3);
                     assertEquals(0, PanelCoordinates.fromPanel(facing, expected)
                             .distanceTo(PanelCoordinates.fromPanel(facing, base)), 1e-6);
-                    var top = base.add(0, 1.9 / 16, 0);
-                    assertEquals(1.9 / 16,
+                    var top = base.add(0, 3.0 / 16, 0);
+                    assertEquals(3.0 / 16,
                             PanelCoordinates.fromPanel(facing, top).distanceTo(PanelCoordinates.fromPanel(facing, base)), 1e-6);
                 }
             }
