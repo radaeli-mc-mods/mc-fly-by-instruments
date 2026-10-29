@@ -202,8 +202,7 @@ cobre é fluidos e vapor, ferro industrial é a parte pesada do Aeronautics.
 | Mesa modular e módulos | Ver seção 9.3 (base v2.1 em 2026-10-27) | navigation table, nixie tube, display link, gauges |
 | Avionics Computer (experimental, ex-GPWS Computer) | **Ferro industrial + latão, sem madeira** (v2.1 em 2026-10-28): ferro dominante, latão no acabamento, tela frontal com um estado por textura | navigation table, stockpile switch, industrial iron (Aeronautics) |
 | Network Bridge (experimental) | **Liga de andesito + metal escuro e latão** (v2.1 em 2026-10-28): caixa de metal lisa, placa de metal escuro no topo (56% da face) com grade fina de ranhuras de latão (só no topo); laterais lisas com rebites e, em duas opostas, um socket de dados 4×4 discreto (eixo X/Z ao colocar). Diferenciada do Avionics Computer por material, silhueta lisa e grade de latão no topo ([README](../blockbench/network-bridge/README.md)) | andesite alloy, andesite casing |
-| Avionics Cable (experimental) | **Ferro industrial**, latão só na luva do conector (base v2.1 em 2026-10-27) | rope, belts, fluid pipe |
-| Avionics Wire (experimental) | Fio **preto** (rampa Fio isolado), **Wire Connector em latão** (ponto de dados), **Wire Support em ferro industrial** (braçadeira: o fio passa por dentro). Nós podem ter uma haste de até 2 px abaixo de Y = 0, dentro do bloco hospedeiro, para encostar em blocos com recuo. Base de 2026-10-28 | rope connector do Simulated, luva do Avionics Cable, bearings do Aeronautics |
+| Avionics Wire (experimental) | Fio **preto** (rampa Fio isolado), **Wire Connector em latão** (ponto de dados), **Wire Support em ferro industrial** (braçadeira: o fio passa por dentro). Nós podem ter uma haste de até 2 px abaixo de Y = 0, dentro do bloco hospedeiro, para encostar em blocos com recuo. Base de 2026-10-28 | rope connector do Simulated, bearings do Aeronautics |
 
 ### Diferenciação entre os sensores
 
@@ -315,8 +314,8 @@ Cada `blockbench/<bloco>/README.md` segue o mesmo esqueleto:
 
 ## 9. Mesa modular e módulos (v2.1)
 
-Os módulos da mesa ainda são v1 (lâmpadas, buzzer, FMS). Esta seção define como
-redesenhá-los na linguagem v2. As propostas abaixo foram aprovadas em 2026-10-27.
+Os módulos da mesa foram redesenhados na linguagem v2 (estado na seção 9.5). Esta seção
+define as regras. As propostas abaixo foram aprovadas em 2026-10-27.
 
 ### 9.1 Escala e grade
 
@@ -429,7 +428,7 @@ tem arremate nas pontas, para emendar sem costura. Referência de implementaçã
 | --- | --- |
 | Lâmpada 1×1 | **v2.1 em 2026-10-27** (tubo nixie, 3 cubos, 4×4×4); faltam refino no Blockbench e validação no jogo: [README](../blockbench/lamp-module-1x1/README.md) |
 | Lâmpada 2×1 | **v2.1 em 2026-10-27** (tubo nixie horizontal, 3 cubos, 10×4×4, texturas da 1×1); faltam refino no Blockbench e validação no jogo: [README](../blockbench/lamp-module-2x1/README.md) |
-| Buzzer 1×1 | ~2,85 de diâmetro, 16 facetas rotacionadas, atlas 64×64, preto piano fora da paleta |
+| Buzzer 1×1 | **v2.1 em 2026-10-29** (carcaça de metal escuro com aro de latão, tampa em degrau com grade pintada; 2 cubos, 4×4×3, atlas 16×16); faltam refino no Blockbench e validação no jogo: [README](../blockbench/buzzer-module-1x1/README.md) |
 | FMS 2×3 | **v2.1 em 2026-10-28** (carcaça de ferro industrial, tela em moldura de latão, 2 knobs de latão e 2 teclas, relevo de 1 unidade; 6 cubos, 10×3×14); faltam refino no Blockbench e validação no jogo: [README](../blockbench/fms-module-2x3/README.md) |
 | FMS Compass (item) | **v2.1 em 2026-10-28** (bússola de bolso redonda em degraus: aro de ferro, bezel de latão, lente com índice e ponteiro, alça de latão; 6 cubos; variante `_linked` acende a ponta do ponteiro e o reflexo da lente); faltam refino no Blockbench e validação no jogo: [README](../blockbench/fms-navigator/README.md) |
 | Base da mesa | **v2.1 em 2026-10-27** (latão + madeira escura, tampo rente, texturas conectadas); faltam refino no Blockbench e validação no jogo: [README](../blockbench/modular-table-base/README.md) |
@@ -514,6 +513,14 @@ Exotic Pets (`../pets/.../client/inspector/PetInspectorHud.java`): **limpas, sem
   nunca slider, e respondem à roda do mouse; radio fica para listas que mostram
   as opções lado a lado. A tooltip de uma linha com valor só aparece sobre o rótulo, nunca
   sobre o valor ou as setas.
+- Texto livre (nome, coordenadas) usa o campo do painel (`HudPanel.field`, caixa
+  `UiPaint.input`): rótulo apagado à esquerda, valor na caixa, cursor no fim, erro em
+  vermelho. Formulários de criação são a exceção ao "sem Salvar": abrem numa tela própria
+  sobre a principal, com Adicionar/Voltar; uma edição vale ao sair (Concluir ou ESC).
+  Ação destrutiva pede um segundo clique no mesmo botão ("Confirmar exclusão").
+- Uma escolha de lista pode ter ação secundária no clique direito (editar o item), sempre
+  explicada na tooltip da linha. Listas longas têm altura limitada e rolam (`HudPanel.scroll`): linha a linha pela roda do
+  mouse, barra de 2 px à direita que se arrasta ou clica.
 
 ## 13. Fontes
 

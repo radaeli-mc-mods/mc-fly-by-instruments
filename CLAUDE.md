@@ -30,9 +30,10 @@ modelo** de qualquer bloco, item ou módulo do mod:
 
 ## Escopo atual
 
-Build simplificado: apenas Radar Altimeter, Terrain Scanner e Advanced Terrain
-Scanner são entregues (saída de redstone + CC:Tweaked) e têm receitas. O resto
-continua registrado com "(Experimental)" no nome e sem receita.
+Radar Altimeter, Terrain Scanner e Advanced Terrain Scanner são entregues
+(saída de redstone + CC:Tweaked). A suíte aviônica (Computer, Mesa, Lamp 1x1/2x1,
+Buzzer, FMS, FMS Compass, Wire, Wire Connector, Wire Support) tem receita mas
+mantém "(Experimental)" no nome. Network Bridge segue sem receita.
 
 ## Build
 

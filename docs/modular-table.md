@@ -21,7 +21,7 @@ mantém a cor mesmo apagada.
 | --- | --- | --- |
 | Alerta GPWS | Qualquer função do [Avionics Computer](avionics-computer.md) em `WARNING` | Vermelho |
 | Atenção GPWS (padrão) | Qualquer função em `CAUTION` ou acima | Âmbar |
-| GPWS INOP | O computador reporta INOP, ou nenhum computador responde num cabo completo | Âmbar |
+| GPWS INOP | O computador reporta INOP, ou nenhum computador responde numa rede completa | Âmbar |
 | Função específica | Uma função (Terrain ahead, Pull up, Sink rate, Don't sink, Too low, Bank angle) | Âmbar apagada e em atenção; vermelho em alerta |
 | Redstone Link (em breve) | Reservada: aparece na tela, ainda não acende | Escolhida pelo jogador |
 
@@ -29,10 +29,11 @@ O buzzer escolhe entre **Atenção GPWS** (padrão, toca em todo alerta) e **Ale
 GPWS** (só alertas vermelhos), mais o volume. O bip é rápido em alerta e lento em
 atenção.
 
-- **Mão vazia numa lâmpada apagada** ou num buzzer: abre a configuração do módulo.
-  As escolhas aplicam na hora, sem Salvar.
-- **Mão vazia numa lâmpada acesa:** reconhece o alerta, como uma Master Warning:
-  silencia os buzzers do painel. Alerta novo ou escalada reativa o som.
+- **Mão vazia numa lâmpada apagada** ou num buzzer em silêncio: abre a
+  configuração do módulo. As escolhas aplicam na hora, sem Salvar.
+- **Mão vazia numa lâmpada acesa ou num buzzer tocando:** reconhece o alerta,
+  como uma Master Warning: silencia os buzzers do painel. Alerta novo ou
+  escalada reativa o som.
 - **Wrench + scroll sobre o módulo:** troca a indicação no mundo (Alerta GPWS ↔
   Atenção GPWS) ou, no buzzer, o volume em passos de 10%. Um rótulo ao lado da
   mira mostra a indicação atual e a próxima. Função específica e GPWS INOP ficam
@@ -40,9 +41,9 @@ atenção.
 - **Célula vazia:** painel geral com o estado do computador, módulos acesos, a
   lista das lâmpadas acesas e os botões Testar painel e Silenciar.
 
-O módulo de buzzer `buzzer` ocupa uma célula 1×1 e tem modelo cilíndrico preto,
-ligeiramente menor que a lâmpada: lateral com acabamento preto piano e topo
-poroso com pequeno furo central. O som acompanha a posição do módulo no mundo,
+O módulo de buzzer `buzzer` ocupa uma célula 1×1 e tem carcaça quadrada de
+metal escuro de 4×4×3 unidades, com aro de latão e tampa em degrau com grade de
+furos pintada (guia visual v2.1). O som acompanha a posição do módulo no mundo,
 inclusive quando montado em avião/sublevel. Volume individual de 0 a 100%
 controla também o alcance: até 16 blocos a 100%, reduzindo proporcionalmente.
 Sua fonte
@@ -60,11 +61,11 @@ A secundária não instala nem remove módulos, mesmo quando a principal está v
 | Mão principal / ação | Alvo | Resultado |
 | --- | --- | --- |
 | Vazia, clique direito | Célula vazia na face exposta | Painel geral |
-| Vazia, clique direito | Lâmpada apagada ou buzzer | Configuração individual |
-| Vazia, clique direito | Lâmpada acesa | Reconhecer o alerta (silenciar buzzers) |
+| Vazia, clique direito | Lâmpada apagada ou buzzer em silêncio | Configuração individual |
+| Vazia, clique direito | Lâmpada acesa ou buzzer tocando | Reconhecer o alerta (silenciar buzzers) |
 | Wrench, scroll | Lâmpada ou buzzer | Trocar a indicação / o volume |
 | Vazia, clique direito | Qualquer célula coberta pelo FMS | Interface do mesmo FMS |
-| Vazia, Shift + clique direito | Lâmpada acesa | Configuração individual |
+| Vazia, Shift + clique direito | Lâmpada acesa ou buzzer tocando | Configuração individual |
 | Vazia, Shift + clique direito | Outra face exposta ou módulo | Painel geral, inclusive com grid cheio |
 | Módulo, clique direito, com ou sem Shift | Footprint livre na face exposta | Instalar uma unidade |
 | Módulo, clique direito | Sobreposição ou fora do grid | Rejeitar sem consumir nem abrir tela |
@@ -89,7 +90,7 @@ oito blocos (posição transformada no Sable). Tokens temporários distinguem a 
 e cada instalação: uma tela antiga não modifica um módulo removido/reinstalado
 nem uma mesa substituída. Não há alteração do formato persistido ou da API Lua.
 
-1. Pegue a Base da Mesa Modular e os módulos de lâmpada ou buzzer na aba Aeronautics: Fly by Instruments.
+1. Fabrique a Base da Mesa Modular e os módulos de lâmpada ou buzzer na bancada de trabalho ou pegue-os na aba Aeronautics: Fly by Instruments.
 2. Coloque a base sobre uma face sólida, incluindo a parte inferior de um bloco.
 3. Segure um módulo na mão principal e mire na face exposta: o grid mostra seu footprint.
    Verde indica que ele cabe; vermelho indica colisão ou borda.
@@ -150,7 +151,7 @@ mesas por painel (`TablePanel.MAX_TABLES`).
 - **Interface:** clicar em qualquer mesa abre o mesmo painel geral, listando os
   módulos de todas as mesas com coordenadas do painel (contadas a partir da mesa de
   cima à esquerda). Teste, mudo e setup básico valem para o painel inteiro.
-- **GPWS:** um cabo da rede aviônica em qualquer mesa alimenta os módulos de todas.
+- **GPWS:** um fio da rede aviônica em qualquer mesa alimenta os módulos de todas.
   A mesa líder do painel faz a leitura e distribui; o mudo cai junto em todas quando
   surge um alerta novo.
 - **Armazenamento:** cada módulo continua salvo na mesa que tem a sua célula de
@@ -168,7 +169,7 @@ mesas por painel (`TablePanel.MAX_TABLES`).
 
 Conecte um computador ou modem cabeado diretamente à mesa. O tipo de peripheral
 é `modular_table`, exposto nas seis faces. A mesa também pode ser ligada à
-Avionics Cable Network; `getNetworkSignals()` consulta canais publicados por
+rede de aviônicos; `getNetworkSignals()` consulta canais publicados por
 endpoints na rede física completa, sem carregar chunks. Os sinais de módulos
 virtuais incluem `module_column` e `module_row` para distinguir módulos no mesmo
 endpoint.
@@ -192,7 +193,7 @@ consistente com o grid e a orientação da base.
 | `applyBasicSetup()` | Volta todas as lâmpadas e buzzers para a indicação padrão (Atenção GPWS); retorna quantos módulos configurou |
 | `testPanel()` | Acende lâmpadas e exercita buzzers por 3 segundos |
 | `setMuted(muted)` | Silencia/reativa os buzzers da mesa sem desligar lâmpadas |
-| `getPanelStatus()` | Retorna `status` do computador (`ok`, `inop`, `no_gpws` ou o estado do cabo), rede, mute e contagem de módulos ativos |
+| `getPanelStatus()` | Retorna `status` do computador (`ok`, `inop`, `no_gpws` ou o estado da rede), rede, mute e contagem de módulos ativos |
 | `setTestSignal(channel, value)` | Define o valor simulado do canal |
 | `getOutputs()` | Lista módulos, sinal recebido e estado ativo |
 | `setLampTestIntensity(column, row, level)` | Sobreposição visual temporária 0–15 para uma lâmpada 1×1 ou 2×1 |
@@ -203,7 +204,7 @@ consistente com o grid e a orientação da base.
 | `deleteWaypoint(column, row, id)` | Exclui waypoint e limpa o destino se necessário |
 | `selectWaypoint(column, row, id)` / `clearWaypointSelection(column, row)` | Seleciona ou limpa o destino ativo |
 | `getFmsSignals(column, row)` | Lê os canais do módulo indicado |
-| `getNetworkSignals()` | Lê canais tipados de endpoints na rede de cabo conectada |
+| `getNetworkSignals()` | Lê canais tipados de endpoints na rede de aviônicos conectada |
 
 Módulos também incluem `source`, `alertChannel`, `minimumSeverity` e `buzzerVolume` na descrição e em `getOutputs()`; `getOutputs()` traz ainda `indication` e, nas lâmpadas, `color` (`red` ou `amber`). `signal` continua representando o sinal numérico local anterior; `severity` informa a severidade GPWS ativa. Módulo: `{occupied = true, type = "lamp", column = 1, row = 1, width = 1, height = 1, channel = "test", threshold = 0.5, source = "gpws", alertChannel = "gpws.any", minimumSeverity = 2, buzzerVolume = 100}`.
 Uma célula livre retorna `{occupied = false, column = ..., row = ...}`.
@@ -225,11 +226,12 @@ horizontal X/Z em blocos; sem alvo ou em outra dimensão, seu estado é
 `modular_table_fms_waypoint_changed` e `modular_table_fms_signal_changed`
 notificam alterações confirmadas no servidor e atualizações do canal.
 
-O `fms_navigator` é vinculado ao módulo exato ao selecioná-lo no inventário
-pela aba Navigator da interface FMS; o item não é consumido. Vincular um item
-que aponta para outro FMS exige marcar a confirmação de substituição. Na
-Navigation Table do Aeronautics, ele segue o waypoint ativo somente no mesmo
-mundo e sublevel do módulo associado. Sem FMS/target compatível, não fornece um
+O `fms_navigator` (FMS Compass) é vinculado ao módulo exato pelo botão
+**Link compass** da tela do FMS, que usa a primeira bússola do inventário; o item
+não é consumido. Se ela já aponta para outro FMS, o botão vira **Relink to this
+FMS** e o clique vale como confirmação. Na Navigation Table do Aeronautics, ele
+segue o waypoint ativo no mesmo mundo: sem limite na mesma contraption e até 256
+blocos fora dela. Sem FMS/target compatível, não fornece um
 alvo; não carrega chunks. A API do FMS não injeta alertas no GPWS.
 
 As coordenadas de waypoint são salvas em blocos inteiros. Valores fracionários,
@@ -293,7 +295,7 @@ end
 
 O sinal de teste é numérico e local à mesa: o módulo fica ativo quando
 `signal >= threshold`. Valores e configuração persistem após salvar e reabrir o
-mundo. Esses sinais não representam leituras da Avionics Cable Network nem
+mundo. Esses sinais não representam leituras da rede de aviônicos nem
 alertas GPWS. Os canais do FMS continuam publicados separadamente pelos
 endpoints da mesa.
 

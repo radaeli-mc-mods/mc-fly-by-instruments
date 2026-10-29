@@ -1,7 +1,7 @@
 # Avionics Computer
 
 O Avionics Computer (antigo GPWS Computer, renomeado em 2026-10-28) é o ponto
-central de uma aeronave: lê todos os sensores do Avionics Cable Network, atribui
+central de uma aeronave: lê todos os sensores da rede de aviônicos, atribui
 um papel a cada um, roda a função GPWS sobre as leituras que eles já produziram
 e é o gateway CC:Tweaked da rede inteira. Não dispara raycasts próprios, não
 carrega chunks e avalia na mesma cadência configurável dos sensores. Leituras
@@ -119,7 +119,7 @@ continua sendo a ferramenta de topologia do cabo.
 
 | Método | Resultado/efeito |
 |---|---|
-| `getStatus()` | `state` (`normal`, `caution`, `warning`, `inop`, `test`), `alert` (canal), `testing`, `sensitivity`, `flightPhase`, rede (`networkStatus`, `networkComplete`, `cableCount`, `endpointCount`), `sensorCount`, e `clearance`, `verticalSpeed` e `bankAngle` com status/unidade/tempo. |
+| `getStatus()` | `state` (`normal`, `caution`, `warning`, `inop`, `test`), `alert` (canal), `testing`, `sensitivity`, `flightPhase`, rede (`networkStatus`, `networkComplete`, `endpointCount`), `sensorCount`, e `clearance`, `verticalSpeed` e `bankAngle` com status/unidade/tempo. |
 | `getSensors()` | Lista de `{type, role, x, y, z, status, unit, value?, issue?}`; coordenadas relativas ao computador. |
 | `getAlerts()` | Tabela por canal com `state` (`inactive`, `active`, `unavailable`, `inhibited`), `severity`, `gameTime` e `reason` quando INOP. |
 | `getConfiguration()` | `{sensitivity, inhibited}`. |

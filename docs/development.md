@@ -31,11 +31,12 @@ VS Code tasks for both commands are in `.vscode/tasks.json`.
 
 ## Release scope
 
-The current release ships three sensors with recipes: `radar_altimeter`,
-`terrain_scanner` and `terrain_scanner_advanced`. Every other block and item
-(Modular Table and its modules, FMS, Avionics Cable, Network Bridge and GPWS
-Computer) stays registered and functional, but is marked **(Experimental)** in
-its name, has no recipe and is only available from the creative tab or `/give`.
+The three sensors (`radar_altimeter`, `terrain_scanner` and
+`terrain_scanner_advanced`) are the delivered content. The avionics suite
+(Avionics Computer, Modular Table Base, Lamp 1x1/2x1, Buzzer, FMS, FMS Compass,
+Avionics Wire, Wire Connector and Wire Support) now has recipes too, but keeps
+the **(Experimental)** mark in its name. The Network Bridge has no
+recipe and is only available from the creative tab or `/give`.
 
 ## Documentation
 

@@ -11,7 +11,14 @@ O FMS fornece canais de dados; não cria alertas nem altera o GPWS.
 ## Módulo e persistência
 
 - `fms_module` ocupa um footprint virtual de 2 células de largura × 3 de altura (2×3) na mesa.
-- A UI em R-UI oferece dois fluxos: gestão de waypoints e vínculo do Navigator.
+- O item se chama apenas **FMS** no jogo (id de registro `fms_module` mantido).
+- A tela segue a linguagem do guia visual §12 (`FmsScreen`, um painel só): destino ativo
+  no topo (distância, rumo, posição), waypoints como opções de radio (clique voa direto,
+  clique no ativo limpa, clique direito edita; até 7 visíveis, o resto rola com a roda ou a barra; ao abrir, o destino fica à vista), estado da
+  Bússola FMS com botão de vincular e, no rodapé, Novo waypoint / Limpar destino.
+- `FmsWaypointScreen` cria e edita: um waypoint novo já vem com o bloco do jogador e o
+  nome em foco (nome + Enter marca o ponto); Tab troca de campo; a edição vale ao sair
+  com Concluir ou ESC; Excluir pede um segundo clique.
 - Waypoints podem usar a posição atual ou coordenadas inseridas manualmente.
 - Cada waypoint tem UUID, nome de 1–32 caracteres, dimensão e coordenadas XYZ.
   As coordenadas são salvas como posições inteiras de bloco; valores fracionários
@@ -29,10 +36,10 @@ O FMS fornece canais de dados; não cria alertas nem altera o GPWS.
   ([fonte visual](../blockbench/fms-navigator/README.md)) e é stack size 1. Ligado a um
   módulo, troca para o modelo `fms_navigator_linked` (propriedade de item `linked`): ponta do
   ponteiro e reflexo da lente acesos.
-- Selecionar o item no inventário dentro da aba Navigator o associa ao UUID exato
-  do módulo aberto; o item permanece no inventário.
-- Reassociar um Navigator já ligado a outro FMS requer ativar explicitamente a
-  confirmação no painel antes de selecioná-lo.
+- O botão "Vincular bússola" da tela associa a primeira Bússola FMS do inventário ao
+  UUID exato do módulo aberto; o item permanece no inventário.
+- Se ela já estiver ligada a outro FMS, o botão vira "Vincular a este FMS": o rótulo
+  explícito é a confirmação de revínculo que o servidor exige.
 - O item é registrado como `NavigationTarget` do Aeronautics e pode ser inserido
   na Navigation Table nativa. A mesa aponta para o waypoint ativo do FMS ligado e
   reavalia o alvo a cada tick do servidor: trocar ou limpar o waypoint chega à mesa
@@ -51,7 +58,7 @@ O FMS fornece canais de dados; não cria alertas nem altera o GPWS.
 
 ## Canais de dados
 
-O módulo publica dois `AvionicsDataChannel` na Avionics Cable Network:
+O módulo publica dois `AvionicsDataChannel` na rede de aviônicos:
 
 | Canal | Contrato |
 | --- | --- |

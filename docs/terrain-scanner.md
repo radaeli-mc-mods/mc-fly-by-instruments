@@ -83,7 +83,7 @@ O alcance máximo é controlado por `terrainScannerMaxRange` (padrão 128 blocos
 
 ## Peripheral CC:Tweaked
 
-Os blocos são endpoints da Avionics Cable Network e também disponibilizam peripherals próprios:
+Os blocos são endpoints da rede de aviônicos e também disponibilizam peripherals próprios:
 
 - `terrain_scanner`: `getScan()` e evento `terrain_scanner_scan_changed`.
 - `terrain_scanner_advanced`: os mesmos métodos/evento, mais `getConfiguration()`, `setOpeningAngle(degrees)` e evento `terrain_scanner_configuration_changed`.

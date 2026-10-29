@@ -2,9 +2,8 @@
 
 Physical data wires. They are not blocks: a black wire hangs between brass
 **Wire Connectors** and passes through industrial iron **Wire Supports**, and carries
-the same avionics network as the [Avionics Cable](avionics-network.md). The
-cable stays available; both systems join where a connector is mounted on a
-cable block. Plan and decisions: [avionics-wire-plan.md](avionics-wire-plan.md).
+the [avionics network](avionics-network.md). It replaced the old Avionics Cable
+block, removed after 0.2.0. Plan and decisions: [avionics-wire-plan.md](avionics-wire-plan.md).
 
 ## Placing
 

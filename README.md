@@ -65,7 +65,7 @@ on everything in front of the ship.
 
 ### The avionics suite (Experimental)
 
-These blocks are in the creative tab **without recipes**, and they may still change between
+These blocks are craftable (the Network Bridge is creative-only), but they may still change between
 versions. Try them, but don't rely on them in a world you care about yet.
 
 <p align="center" style="text-align: center;"><img src="https://raw.githubusercontent.com/radaelilucca/mc-fly-by-instruments/main/docs/gallery/renders/avionics-computer.png" alt="Avionics Computer" width="300"></p>
@@ -89,7 +89,7 @@ watches them all, then warns you before you fly into trouble.
 **Your cockpit panel.** A brass-and-wood slab with a 3 × 3 grid where you install modules.
 
 - **Warning lamps** (1×1 and 2×1, red or amber) and a **buzzer** show the computer's
-  alerts. Click a lit lamp to silence the alarm, like a Master Warning.
+  alerts. Click a lit lamp or a sounding buzzer to silence the alarm, like a Master Warning.
 - The **FMS** module stores waypoints and shows a compass to the selected one. Link an
   **FMS Compass** to it and an Aeronautics Navigation Table follows your route.
 - Tables placed side by side join into one big panel. A table mounted straight on the
@@ -215,7 +215,7 @@ For the experimental avionics suite:
 
 ---
 
-The **Avionics Computer**, **Modular Table** and its modules, **FMS** and **Avionics Wire** are **Experimental** content without recipes. Their behavior may change between versions. See the [online guide](https://mods.radaeli.dev/en/mods/flight-safety-instruments/) before using these blocks in a world you rely on.
+The **Avionics Computer**, **Modular Table** and its modules, **FMS** and **Avionics Wire** are **Experimental** content. Their behavior may change between versions. See the [online guide](https://mods.radaeli.dev/en/mods/flight-safety-instruments/) before using these blocks in a world you rely on.
 
 ---
 

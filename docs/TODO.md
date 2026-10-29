@@ -6,23 +6,10 @@ continuar funcionando no estado atual enquanto não forem tratados.
 
 ## Renderização e conexão física
 
-- [ ] **CABO-01 — Investigar os glitches angulares na textura do Avionics Cable.**
-  O artefato parece z-fighting e muda conforme o ângulo de visão. Reproduzir e
-  localizar a origem antes de escolher a correção; validar a aparência com e sem
-  shaders e em diferentes ângulos.
 - [x] **CABO-02 — Levar o socket do Radar Altimeter para o centro.** Feito no
   redesign v2 (2026-10-21): sockets centrados em todas as faces.
   Reposicionar o socket/ponto físico de conexão na face e manter o modelo, o
   encaixe visual do cabo e sua forma de seleção coerentes com essa posição.
-- [ ] **CABO-03 — Retirar o desvio flexível do Avionics Cable.**
-  Remover o caminho curvo e adotar conexão reta. O cabo deve terminar alinhado ao
-  socket centralizado do altímetro. O encaminhamento flexível poderá ser
-  reconsiderado depois, quando houver um desenho e uma implementação que se
-  encaixem melhor.
-- [ ] **CABO-04 — Revalidar visualmente o cabo nos sensores e orientações.**
-  Conferir encaixe, junções e aparência após as mudanças do socket e do cabo,
-  inclusive nas faces laterais, na traseira do Terrain Scanner, em sublevels e
-  perto de fronteiras de chunks.
 - [ ] **LÂMPADA-01 — Investigar os glitches das lâmpadas com shaders.**
   Há cintilação visual aleatória relatada com Complementary Reimagined Ultra;
   mudar para o perfil Basic não resolveu. Identificar a causa e conferir que
@@ -72,7 +59,6 @@ continuar funcionando no estado atual enquanto não forem tratados.
 ## Referências
 
 - [Identidade visual e validação de shaders](visual-design-guide.md)
-- [Encaixe visual do Avionics Cable](avionics-cable-visuals.md)
 - [Mesa modular e módulos](modular-table.md)
 - [Terrain Scanner e seus estados](terrain-scanner.md)
 - [Critérios macro e roadmap](../PRD.md)

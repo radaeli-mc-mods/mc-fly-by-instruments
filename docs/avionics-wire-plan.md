@@ -135,7 +135,7 @@ Seguir `docs/visual-design-guide.md` (v2.1) e o checklist da seção 10. Fontes 
 | Item Avionics Wire | Fio preto enrolado num carretel de ferro industrial com abas de latão | Modelo de item próprio |
 
 - O conector preso num sensor **encaixa no ponto de socket** de `CableSocketProvider`
-  (mesmos pontos do cabo antigo, ver docs/avionics-cable-visuals.md). No resto dos blocos,
+  (mesmos pontos do cabo antigo, `CableSocketProvider`). No resto dos blocos,
   fica centrado na face.
 > **Refino de 2026-10-28 (após o primeiro teste no jogo):** o suporte virou uma
 > braçadeira (base, quatro colunas nos cantos e tampa) por onde o fio passa,
