@@ -11,8 +11,7 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Bounded graph traversal over cable blocks (six-neighbour adjacency) and wire connectors (their host block
- * plus the far end of each wire). Docked devices (a table on an Avionics Computer) count as one device: reaching
+ * Bounded graph traversal over wire connectors (their host block plus the far end of each wire). Docked devices (a table on an Avionics Computer) count as one device: reaching
  * one reaches all, and the origin's group links through every member's faces. It never queries blocks in
  * unloaded chunks.
  */
@@ -35,7 +34,6 @@ public final class NetworkDiscovery {
         private final BlockPos origin;
         private final NetworkAccess world;
         private final int limit;
-        private final Set<BlockPos> cables = new HashSet<>();
         private final Set<BlockPos> connectors = new HashSet<>();
         private final Set<BlockPos> endpoints = new HashSet<>();
         private final ArrayDeque<BlockPos> pending = new ArrayDeque<>();
@@ -60,17 +58,15 @@ public final class NetworkDiscovery {
             }
             if (pending.isEmpty() && endpoints.isEmpty() && !exceeded) {
                 return incomplete
-                        ? new NetworkSnapshot(NetworkStatus.INCOMPLETE, 0, 0, List.of())
+                        ? new NetworkSnapshot(NetworkStatus.INCOMPLETE, 0, List.of())
                         : NetworkSnapshot.disconnected();
             }
 
             while (!pending.isEmpty() && !exceeded) {
-                BlockPos node = pending.removeFirst();
-                if (cables.contains(node)) expandCable(node);
-                else expandConnector(node);
+                expandConnector(pending.removeFirst());
             }
             if (exceeded) {
-                return new NetworkSnapshot(NetworkStatus.LIMIT_EXCEEDED, cables.size(), endpoints.size(), List.of(), wires());
+                return new NetworkSnapshot(NetworkStatus.LIMIT_EXCEEDED, endpoints.size(), List.of(), wires());
             }
 
             var status = incomplete ? NetworkStatus.INCOMPLETE : NetworkStatus.CONNECTED;
@@ -82,7 +78,7 @@ public final class NetworkDiscovery {
                             pos.getX() - origin.getX(), pos.getY() - origin.getY(), pos.getZ() - origin.getZ()));
                 }
             }
-            return new NetworkSnapshot(status, cables.size(), endpoints.size(), devices, wires());
+            return new NetworkSnapshot(status, endpoints.size(), devices, wires());
         }
 
         private void seedFromEndpoint() {
@@ -97,12 +93,10 @@ public final class NetworkDiscovery {
                 BlockPos adjacent = device.relative(direction);
                 if (!world.isLoaded(adjacent)) {
                     incomplete = true;
-                } else if (world.isCable(adjacent)) {
-                    visit(cables, adjacent);
-                } else {
-                    var connector = world.wireConnector(adjacent);
-                    if (connector != null && connector.host().equals(device)) visit(connectors, adjacent);
+                    continue;
                 }
+                var connector = world.wireConnector(adjacent);
+                if (connector != null && connector.host().equals(device)) visit(connectors, adjacent);
             }
         }
 
@@ -124,34 +118,12 @@ public final class NetworkDiscovery {
             return group;
         }
 
-        private void expandCable(BlockPos cable) {
-            for (Direction direction : Direction.values()) {
-                BlockPos neighbor = cable.relative(direction);
-                if (!world.isLoaded(neighbor)) {
-                    incomplete = true;
-                    continue;
-                }
-                if (world.isCable(neighbor)) {
-                    visit(cables, neighbor);
-                    continue;
-                }
-                var connector = world.wireConnector(neighbor);
-                if (connector != null) {
-                    if (connector.host().equals(cable)) visit(connectors, neighbor);
-                    continue;
-                }
-                endpoint(neighbor);
-            }
-        }
-
         private void expandConnector(BlockPos pos) {
             var connector = world.wireConnector(pos);
             if (connector == null) return;
             BlockPos host = connector.host();
             if (!world.isLoaded(host)) {
                 incomplete = true;
-            } else if (world.isCable(host)) {
-                visit(cables, host);
             } else {
                 endpoint(host);
             }
@@ -180,7 +152,7 @@ public final class NetworkDiscovery {
         }
 
         private void checkLimit() {
-            if (cables.size() + connectors.size() + endpoints.size() > limit) exceeded = true;
+            if (connectors.size() + endpoints.size() > limit) exceeded = true;
         }
 
         private int wires() {

@@ -23,7 +23,6 @@ public final class ModCreativeTabs {
                         output.accept(ModBlocks.TERRAIN_SCANNER_ADVANCED_ITEM);
                         // Experimental: implemented, but without recipes until the next release.
                         output.accept(ModBlocks.MODULAR_TABLE_BASE_ITEM);
-                        output.accept(ModBlocks.AVIONICS_CABLE_ITEM);
                         output.accept(ModBlocks.AVIONICS_WIRE);
                         output.accept(ModBlocks.WIRE_CONNECTOR_ITEM);
                         output.accept(ModBlocks.WIRE_SUPPORT_ITEM);

@@ -16,40 +16,26 @@ class NetworkDiscoveryTest {
     private static final BlockPos ORIGIN = new BlockPos(0, 0, 0);
 
     @Test
-    void discoversLinearNetworkAndRelativeEndpoint() {
-        var world = new FakeAccess();
-        world.cables(1, 2, 3);
-        world.endpoint(new BlockPos(4, 0, 0), "modular_table");
-
-        var snapshot = NetworkDiscovery.discover(ORIGIN, world, 4096);
-
-        assertEquals(NetworkStatus.CONNECTED, snapshot.status());
-        assertEquals(3, snapshot.cableCount());
-        assertEquals(1, snapshot.endpointCount());
-        assertEquals(new NetworkDevice("modular_table", 4, 0, 0), snapshot.devices().getFirst());
-    }
-
-    @Test
     void visitsBranchesAndCyclesOnlyOnce() {
         var world = new FakeAccess();
-        world.cable(1, 0, 0);
-        world.cable(2, 0, 0);
-        world.cable(2, 1, 0);
-        world.cable(1, 1, 0);
-        world.cable(2, -1, 0);
-        world.endpoint(new BlockPos(3, 0, 0), "modular_table");
-        world.endpoint(new BlockPos(2, -2, 0), "modular_table");
+        BlockPos a = new BlockPos(0, 1, 0), b = new BlockPos(5, 1, 0), c = new BlockPos(5, 1, 5);
+        BlockPos d = new BlockPos(9, 1, 0);
+        world.connector(a, ORIGIN, b, c);
+        world.connector(b, new BlockPos(5, 0, 0), a, c, d);
+        world.connector(c, new BlockPos(5, 0, 5), a, b);
+        world.connector(d, new BlockPos(9, 0, 0), b);
+        world.endpoint(new BlockPos(9, 0, 0), "modular_table");
 
         var snapshot = NetworkDiscovery.discover(ORIGIN, world, 4096);
 
         assertEquals(NetworkStatus.CONNECTED, snapshot.status());
-        assertEquals(5, snapshot.cableCount());
-        assertEquals(2, snapshot.endpointCount());
-        assertEquals(2, snapshot.devices().size());
+        assertEquals(1, snapshot.endpointCount());
+        assertEquals(4, snapshot.wireCount());
+        assertEquals(new NetworkDevice("modular_table", 9, 0, 0), snapshot.devices().getFirst());
     }
 
     @Test
-    void reportsDisconnectedWhenNoCableTouchesEndpoint() {
+    void reportsDisconnectedWhenNoWireTouchesEndpoint() {
         var snapshot = NetworkDiscovery.discover(ORIGIN, new FakeAccess(), 4096);
         assertEquals(NetworkSnapshot.disconnected(), snapshot);
     }
@@ -57,9 +43,10 @@ class NetworkDiscoveryTest {
     @Test
     void unloadedBoundaryMakesResultIncompleteWithoutReturningPartialDevices() {
         var world = new FakeAccess();
-        world.cable(1, 0, 0);
-        world.endpoint(new BlockPos(2, 0, 0), "modular_table");
-        world.unloaded.add(new BlockPos(1, 1, 0));
+        world.connector(new BlockPos(0, 1, 0), ORIGIN, new BlockPos(5, 1, 0), new BlockPos(0, 1, 40));
+        world.connector(new BlockPos(5, 1, 0), new BlockPos(5, 0, 0), new BlockPos(0, 1, 0));
+        world.endpoint(new BlockPos(5, 0, 0), "modular_table");
+        world.unloaded.add(new BlockPos(0, 1, 40));
 
         var snapshot = NetworkDiscovery.discover(ORIGIN, world, 4096);
 
@@ -72,8 +59,7 @@ class NetworkDiscoveryTest {
     @Test
     void neverQueriesBlocksInsideAnUnloadedChunk() {
         var world = new FakeAccess();
-        world.cable(1, 0, 0);
-        world.unloaded.add(new BlockPos(1, 1, 0));
+        world.unloaded.add(new BlockPos(1, 0, 0));
         world.throwWhenQueryingUnloaded = true;
 
         var snapshot = NetworkDiscovery.discover(ORIGIN, world, 4096);
@@ -85,8 +71,9 @@ class NetworkDiscoveryTest {
     @Test
     void stopsAtConfiguredVisitedBlockLimit() {
         var world = new FakeAccess();
-        world.cable(1, 0, 0);
-        world.endpoint(new BlockPos(2, 0, 0), "modular_table");
+        world.connector(new BlockPos(0, 1, 0), ORIGIN, new BlockPos(4, 1, 0));
+        world.connector(new BlockPos(4, 1, 0), new BlockPos(4, 0, 0), new BlockPos(0, 1, 0));
+        world.endpoint(new BlockPos(4, 0, 0), "modular_table");
 
         var snapshot = NetworkDiscovery.discover(ORIGIN, world, 1);
 
@@ -96,18 +83,20 @@ class NetworkDiscoveryTest {
     }
 
     @Test
-    void aFreshDiscoveryReflectsCableRemovalAndReconnection() {
+    void aFreshDiscoveryReflectsWireRemovalAndReconnection() {
         var world = new FakeAccess();
-        world.cable(1, 0, 0);
-        world.cable(2, 0, 0);
-        world.endpoint(new BlockPos(3, 0, 0), "modular_table");
+        world.endpoint(new BlockPos(10, 0, 0), "modular_table");
+        Runnable wire = () -> {
+            world.connector(new BlockPos(0, 1, 0), ORIGIN, new BlockPos(10, 1, 0));
+            world.connector(new BlockPos(10, 1, 0), new BlockPos(10, 0, 0), new BlockPos(0, 1, 0));
+        };
+        wire.run();
         assertEquals(NetworkStatus.CONNECTED, NetworkDiscovery.discover(ORIGIN, world, 4096).status());
 
-        world.cables.clear();
+        world.connectors.clear();
         assertEquals(NetworkStatus.DISCONNECTED, NetworkDiscovery.discover(ORIGIN, world, 4096).status());
 
-        world.cable(1, 0, 0);
-        world.cable(2, 0, 0);
+        wire.run();
         assertEquals(NetworkStatus.CONNECTED, NetworkDiscovery.discover(ORIGIN, world, 4096).status());
     }
 
@@ -121,7 +110,6 @@ class NetworkDiscoveryTest {
         var snapshot = NetworkDiscovery.discover(ORIGIN, world, 4096);
 
         assertEquals(NetworkStatus.CONNECTED, snapshot.status());
-        assertEquals(0, snapshot.cableCount());
         assertEquals(1, snapshot.wireCount());
         assertEquals(new NetworkDevice("radar_altimeter", 10, 0, 0), snapshot.devices().getFirst());
     }
@@ -143,21 +131,6 @@ class NetworkDiscoveryTest {
         assertEquals(NetworkStatus.CONNECTED, snapshot.status());
         assertEquals(2, snapshot.endpointCount());
         assertEquals(3, snapshot.wireCount());
-    }
-
-    @Test
-    void aConnectorMountedOnALegacyCableJoinsBothNetworks() {
-        var world = new FakeAccess();
-        world.cable(1, 0, 0);
-        world.connector(new BlockPos(1, 1, 0), new BlockPos(1, 0, 0), new BlockPos(1, 1, 6));
-        world.connector(new BlockPos(1, 1, 6), new BlockPos(1, 0, 6), new BlockPos(1, 1, 0));
-        world.endpoint(new BlockPos(1, 0, 6), "network_bridge");
-
-        var snapshot = NetworkDiscovery.discover(ORIGIN, world, 4096);
-
-        assertEquals(NetworkStatus.CONNECTED, snapshot.status());
-        assertEquals(1, snapshot.cableCount());
-        assertEquals(1, snapshot.devices().size());
     }
 
     @Test
@@ -210,7 +183,7 @@ class NetworkDiscoveryTest {
     }
 
     @Test
-    void aTableDockedOnTheComputerIsOnItsNetworkWithoutACable() {
+    void aTableDockedOnTheComputerIsOnItsNetworkWithoutAWire() {
         var world = new FakeAccess();
         BlockPos computer = new BlockPos(0, 0, 0), table = new BlockPos(0, 1, 0);
         world.endpoint(computer, "avionics_computer");
@@ -225,10 +198,11 @@ class NetworkDiscoveryTest {
     }
 
     @Test
-    void aDockedTableReachesTheComputersCableAndIsReachedThroughIt() {
+    void aDockedTableReachesTheComputersWireAndIsReachedThroughIt() {
         var world = new FakeAccess();
-        BlockPos computer = new BlockPos(0, 0, 0), table = new BlockPos(0, 1, 0), sensor = new BlockPos(3, 0, 0);
-        world.cables(1, 2);
+        BlockPos computer = new BlockPos(0, 0, 0), table = new BlockPos(0, 1, 0), sensor = new BlockPos(6, 0, 0);
+        world.connector(new BlockPos(1, 0, 0), computer, new BlockPos(5, 0, 0));
+        world.connector(new BlockPos(5, 0, 0), sensor, new BlockPos(1, 0, 0));
         world.endpoint(computer, "avionics_computer");
         world.endpoint(table, "modular_table");
         world.endpoint(sensor, "radar_altimeter");
@@ -245,15 +219,12 @@ class NetworkDiscoveryTest {
 
     private static final class FakeAccess implements NetworkAccess {
         private final Map<BlockPos, WireConnectorView> connectors = new HashMap<>();
-        private final Set<BlockPos> cables = new HashSet<>();
         private final Set<BlockPos> unloaded = new HashSet<>();
         private final Map<BlockPos, String> endpoints = new HashMap<>();
         private final Map<BlockPos, java.util.List<BlockPos>> docks = new HashMap<>();
         private boolean throwWhenQueryingUnloaded;
         private int unloadedBlockQueries;
 
-        void cable(int x, int y, int z) { cables.add(new BlockPos(x, y, z)); }
-        void cables(int... xs) { for (int x : xs) cable(x, 0, 0); }
         void endpoint(BlockPos pos, String type) { endpoints.put(pos, type); }
         void dock(BlockPos a, BlockPos b) {
             docks.computeIfAbsent(a, ignored -> new java.util.ArrayList<>()).add(b);
@@ -271,10 +242,6 @@ class NetworkDiscoveryTest {
             return connectors.get(pos);
         }
         @Override public boolean isLoaded(BlockPos pos) { return !unloaded.contains(pos); }
-        @Override public boolean isCable(BlockPos pos) {
-            assertLoadedBeforeBlockQuery(pos);
-            return cables.contains(pos);
-        }
         @Override public String endpointType(BlockPos pos) {
             assertLoadedBeforeBlockQuery(pos);
             return endpoints.get(pos);

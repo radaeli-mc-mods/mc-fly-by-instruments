@@ -51,12 +51,6 @@ public final class ModBlocks {
                             .lightLevel(state -> state.getValue(ModularTableBaseBlock.LIGHT))));
     public static final DeferredItem<BlockItem> MODULAR_TABLE_BASE_ITEM =
             ITEMS.registerSimpleBlockItem(MODULAR_TABLE_BASE);
-    public static final DeferredBlock<AvionicsCableBlock> AVIONICS_CABLE =
-            BLOCKS.register("avionics_cable", () -> new AvionicsCableBlock(
-                    BlockBehaviour.Properties.ofFullCopy(Blocks.CHAIN).sound(SoundType.NETHERITE_BLOCK)
-                            .noOcclusion().dynamicShape()));
-    public static final DeferredItem<BlockItem> AVIONICS_CABLE_ITEM =
-            ITEMS.registerSimpleBlockItem(AVIONICS_CABLE);
     public static final DeferredBlock<NetworkBridgeBlock> NETWORK_BRIDGE =
             BLOCKS.register("network_bridge", () -> new NetworkBridgeBlock(
                     BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK).strength(2.0f).noOcclusion()));

@@ -80,7 +80,7 @@ public final class NetworkBridgePeripheral implements IPeripheral {
     private static Map<String, Object> describe(NetworkSnapshot snapshot) {
         return Map.of("status", snapshot.status().name().toLowerCase(java.util.Locale.ROOT),
                 "connected", snapshot.status() == NetworkStatus.CONNECTED,
-                "complete", snapshot.complete(), "cableCount", snapshot.cableCount(),
+                "complete", snapshot.complete(),
                 "endpointCount", snapshot.endpointCount(), "wireCount", snapshot.wireCount());
     }
 

@@ -1,8 +1,7 @@
 # Wire Connector — latão, ponto de dados do Avionics Wire
 
 Guia: [visual-design-guide.md](../../docs/visual-design-guide.md). Uso:
-[avionics-wire.md](../../docs/avionics-wire.md). Referências: luva de latão do
-Avionics Cable (`metal_ferrule`), rope pulley e smart chute do Create (latão
+[avionics-wire.md](../../docs/avionics-wire.md). Referências: rope pulley e smart chute do Create (latão
 pequeno sobre a face), rope connector do Simulated (nó preso na face).
 
 > **Estado:** base gerada pelo bootstrap em 2026-10-28, ainda sem refino no

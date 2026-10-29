@@ -223,7 +223,7 @@ class GpwsEngineTest {
     private static GpwsSample sample(long now, Number clearance, long measurementTime, int scannerCount,
                                      boolean complete, boolean pullUpComplete,
                                      List<GpwsSample.TerrainContact> contacts) {
-        return new GpwsSample(now, NetworkStatus.CONNECTED, 12, 2, clearance == null ? 0 : 1,
+        return new GpwsSample(now, NetworkStatus.CONNECTED, 2, clearance == null ? 0 : 1,
                 false, clearance == null ? OptionalDouble.empty() : OptionalDouble.of(clearance.doubleValue()), measurementTime,
                 scannerCount, false, complete, pullUpComplete, contacts, OptionalDouble.of(0));
     }

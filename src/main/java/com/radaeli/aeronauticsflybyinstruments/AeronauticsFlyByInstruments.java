@@ -16,7 +16,6 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.fml.loading.FMLEnvironment;
 import com.radaeli.aeronauticsflybyinstruments.client.FmsClient;
 import com.radaeli.aeronauticsflybyinstruments.client.PanelClient;
-import com.radaeli.aeronauticsflybyinstruments.client.AvionicsCableModels;
 import com.radaeli.aeronauticsflybyinstruments.client.ModularTableModels;
 import com.radaeli.aeronauticsflybyinstruments.client.PanelInputHandler;
 import com.radaeli.aeronauticsflybyinstruments.client.TerrainScannerDebug;
@@ -57,7 +56,6 @@ public final class AeronauticsFlyByInstruments {
         if (FMLEnvironment.dist == Dist.CLIENT) {
             PanelClient.register(modEventBus);
             FmsClient.register(modEventBus);
-            AvionicsCableModels.register(modEventBus);
             com.radaeli.aeronauticsflybyinstruments.client.WireClient.register(modEventBus);
             ModularTableModels.register(modEventBus);
             NeoForge.EVENT_BUS.addListener(PanelInputHandler::onMouseScroll);

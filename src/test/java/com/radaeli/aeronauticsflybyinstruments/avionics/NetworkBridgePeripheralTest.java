@@ -36,7 +36,7 @@ class NetworkBridgePeripheralTest {
                     default -> null;
                 });
         peripheral.attach(computer);
-        var connected = new NetworkSnapshot(NetworkStatus.CONNECTED, 2, 1,
+        var connected = new NetworkSnapshot(NetworkStatus.CONNECTED, 1,
                 java.util.List.of(new NetworkDevice("radar_altimeter", 1, 0, -1)));
         peripheral.publishIfChanged(connected);
         assertEquals(1, events.size());

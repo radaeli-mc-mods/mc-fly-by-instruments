@@ -120,9 +120,6 @@ public final class AvionicsNetworkManager {
 
     private record LevelAccess(Level level) implements NetworkAccess {
         @Override public boolean isLoaded(BlockPos pos) { return level.hasChunkAt(pos); }
-        @Override public boolean isCable(BlockPos pos) {
-            return isLoaded(pos) && level.getBlockState(pos).is(ModBlocks.AVIONICS_CABLE.get());
-        }
         @Override public WireConnectorView wireConnector(BlockPos pos) {
             if (!isLoaded(pos) || !(level.getBlockEntity(pos) instanceof WireNodeBlockEntity node) || !node.isConnector()) {
                 return null;

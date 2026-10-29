@@ -3,7 +3,7 @@ package com.radaeli.aeronauticsflybyinstruments.avionics;
 import java.util.List;
 import java.util.Comparator;
 
-public record NetworkSnapshot(NetworkStatus status, int cableCount, int endpointCount,
+public record NetworkSnapshot(NetworkStatus status, int endpointCount,
                               List<NetworkDevice> devices, int wireCount) {
     public NetworkSnapshot {
         devices = devices.stream().sorted(Comparator.comparingInt(NetworkDevice::x)
@@ -11,9 +11,9 @@ public record NetworkSnapshot(NetworkStatus status, int cableCount, int endpoint
                 .thenComparing(NetworkDevice::type)).toList();
     }
 
-    /** Cable-only networks (no wires seen). */
-    public NetworkSnapshot(NetworkStatus status, int cableCount, int endpointCount, List<NetworkDevice> devices) {
-        this(status, cableCount, endpointCount, devices, 0);
+    /** Networks with no wires seen. */
+    public NetworkSnapshot(NetworkStatus status, int endpointCount, List<NetworkDevice> devices) {
+        this(status, endpointCount, devices, 0);
     }
 
     public boolean complete() {
@@ -21,6 +21,6 @@ public record NetworkSnapshot(NetworkStatus status, int cableCount, int endpoint
     }
 
     public static NetworkSnapshot disconnected() {
-        return new NetworkSnapshot(NetworkStatus.DISCONNECTED, 0, 0, List.of());
+        return new NetworkSnapshot(NetworkStatus.DISCONNECTED, 0, List.of());
     }
 }

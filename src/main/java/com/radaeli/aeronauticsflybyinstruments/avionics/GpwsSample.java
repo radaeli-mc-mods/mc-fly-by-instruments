@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.OptionalDouble;
 
 /** One GPWS evaluation input assembled from already-computed sensor snapshots. */
-public record GpwsSample(long gameTime, NetworkStatus networkStatus, int cableCount, int endpointCount,
+public record GpwsSample(long gameTime, NetworkStatus networkStatus, int endpointCount,
                          int altimeterCount, boolean altimeterFault, OptionalDouble clearance,
                          long clearanceGameTime, int terrainScannerCount, boolean terrainScannerFault,
                          boolean terrainCoverageComplete, boolean pullUpTerrainCoverageComplete,
@@ -13,7 +13,7 @@ public record GpwsSample(long gameTime, NetworkStatus networkStatus, int cableCo
         if (networkStatus == null || clearance == null || bankAngleDegrees == null || terrainContacts == null) {
             throw new NullPointerException("GPWS sample fields cannot be null");
         }
-        if (cableCount < 0 || endpointCount < 0 || altimeterCount < 0 || terrainScannerCount < 0) {
+        if (endpointCount < 0 || altimeterCount < 0 || terrainScannerCount < 0) {
             throw new IllegalArgumentException("Sensor and network counts cannot be negative");
         }
         if (clearance.isPresent() && (!Double.isFinite(clearance.getAsDouble()) || clearance.getAsDouble() < 0)

@@ -108,7 +108,6 @@ public final class AvionicsComputerBlockEntity extends BlockEntity implements Av
         result.put("flightPhase", lower(latestEvaluation.phase()));
         result.put("networkStatus", lower(latestSample.networkStatus()));
         result.put("networkComplete", latestSample.networkStatus() == NetworkStatus.CONNECTED);
-        result.put("cableCount", latestSample.cableCount());
         result.put("endpointCount", latestSample.endpointCount());
         result.put("sensorCount", sensors.size());
         result.put("gameTime", latestSample.gameTime());
@@ -208,7 +207,7 @@ public final class AvionicsComputerBlockEntity extends BlockEntity implements Av
         long maxAge = interval * 2L;
         NetworkSnapshot network = AvionicsNetworkManager.snapshot(level, worldPosition);
         if (network.status() != NetworkStatus.CONNECTED) {
-            return new GpwsSample(now, network.status(), network.cableCount(), network.endpointCount(),
+            return new GpwsSample(now, network.status(), network.endpointCount(),
                     0, false, OptionalDouble.empty(), now, 0, false, false, false, List.of(),
                     bankAngle(getBlockState().getValue(AvionicsComputerBlock.FACING)));
         }
@@ -325,7 +324,7 @@ public final class AvionicsComputerBlockEntity extends BlockEntity implements Av
                 .thenComparingInt(AvionicsSensor::x).thenComparingInt(AvionicsSensor::y)
                 .thenComparingInt(AvionicsSensor::z));
 
-        return new GpwsSample(now, network.status(), network.cableCount(), network.endpointCount(),
+        return new GpwsSample(now, network.status(), network.endpointCount(),
                 altimeterCount, altimeterFault,
                 minimumClearance == null ? OptionalDouble.empty() : OptionalDouble.of(minimumClearance),
                 minimumTime, scannerCount, scannerFault,
@@ -387,7 +386,7 @@ public final class AvionicsComputerBlockEntity extends BlockEntity implements Av
     }
 
     private static GpwsSample emptySample(long gameTime, NetworkStatus status) {
-        return new GpwsSample(gameTime, status, 0, 0, 0, false, OptionalDouble.empty(), gameTime,
+        return new GpwsSample(gameTime, status, 0, 0, false, OptionalDouble.empty(), gameTime,
                 0, false, false, false, List.of(), OptionalDouble.empty());
     }
 
