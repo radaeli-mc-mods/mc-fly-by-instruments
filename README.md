@@ -16,7 +16,7 @@ Every sensor works **on a moving ship** as well as on the ground. It turns and t
 your ship, never mistakes your own hull for an obstacle, and spots terrain, buildings
 and other ships alike.
 
-Want a real cockpit? The **experimental avionics suite** adds an **Avionics Computer** that
+Want a real cockpit? The **avionics suite** adds an **Avionics Computer** that
 turns your sensors into a ground proximity warning system, a **Modular Table** for warning
 lamps, buzzers and a flight management system, and **wires** to tie it all together.
 
@@ -63,10 +63,9 @@ on everything in front of the ship.
 - Left and right only wake up once the view is wide enough to see them.
 - Crafted by upgrading a regular Terrain Scanner.
 
-### The avionics suite (Experimental)
+### The avionics suite
 
-These blocks are craftable (the Network Bridge is creative-only), but they may still change between
-versions. Try them, but don't rely on them in a world you care about yet.
+The avionics suite is craftable. The Network Bridge remains Experimental and creative-only.
 
 <p align="center" style="text-align: center;"><img src="https://raw.githubusercontent.com/radaelilucca/mc-fly-by-instruments/main/docs/gallery/renders/avionics-computer.png" alt="Avionics Computer" width="300"></p>
 
@@ -110,6 +109,8 @@ watches them all, then warns you before you fly into trouble.
 ---
 
 <p align="center" style="background-color: #F4ECD0; text-align: center;"><img src="https://raw.githubusercontent.com/radaelilucca/mc-fly-by-instruments/main/docs/gallery/section-titles/how-do-i-use-it.png" alt="HOW DO I USE IT?" width="371"></p>
+
+With PonderJS, KubeJS and Rhino installed on your client, hold **W** over a supported item for an animated tutorial. The eleven [Ponder tutorials](https://mods.radaeli.dev/en/mods/flight-safety-instruments/player/ponder) cover sensors, wiring, cockpit panels and FMS navigation in English and Brazilian Portuguese.
 
 **Right-click a sensor** to open its output screen.
 
@@ -155,8 +156,8 @@ connect it with a wired modem, and read the raw data:
 | `radar_altimeter` | `getReading()`: status and altitude in blocks | `radar_altimeter_reading_changed` |
 | `terrain_scanner` | `getScan()`: every contact, with distance and direction | `terrain_scanner_scan_changed` |
 | `terrain_scanner_advanced` | Same as above, plus `getConfiguration()` and `setOpeningAngle(degrees)` | Same as above, plus `terrain_scanner_configuration_changed` |
-| `avionics_computer` *(Experimental)* | `getStatus()`, `getSensors()`, `getAlerts()`, plus sensitivity, inhibit and self-test | `avionics_alert_changed`, `avionics_status_changed`, `avionics_sensors_changed` |
-| `modular_table` *(Experimental)* | Installed modules, lamp and buzzer indications, FMS waypoints | `modular_table_changed`, `modular_table_alert_outputs_changed` |
+| `avionics_computer` | `getStatus()`, `getSensors()`, `getAlerts()`, plus sensitivity, inhibit and self-test | `avionics_alert_changed`, `avionics_status_changed`, `avionics_sensors_changed` |
+| `modular_table` | Installed modules, lamp and buzzer indications, FMS waypoints | `modular_table_changed`, `modular_table_alert_outputs_changed` |
 
 All three also expose their redstone setup: `getOutputs()`, `getOutputConfiguration()`,
 `setOutputRange(channel, min, max)` and `setLinkFrequencies(channel, first, second)`.
@@ -192,7 +193,7 @@ Yes. These server config options apply to every sensor in the world:
 
 Longer ranges and shorter intervals cost more server time on big fleets.
 
-For the experimental avionics suite:
+For the avionics suite:
 
 | Option | Default | What it does |
 | --- | --- | --- |
@@ -215,7 +216,7 @@ For the experimental avionics suite:
 
 ---
 
-The **Avionics Computer**, **Modular Table** and its modules, **FMS** and **Avionics Wire** are **Experimental** content. Their behavior may change between versions. See the [online guide](https://mods.radaeli.dev/en/mods/flight-safety-instruments/) before using these blocks in a world you rely on.
+The **Avionics Network Bridge** remains **Experimental** and creative-only. See the [documentation](https://mods.radaeli.dev/en/mods/flight-safety-instruments/) for setup and usage.
 
 ---
 
