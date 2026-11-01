@@ -40,7 +40,8 @@ public abstract class AbstractTerrainScannerBlock extends BaseEntityBlock implem
     @Override public boolean isSignalSource(BlockState state) { return true; }
     @Override public int getSignal(BlockState state, BlockGetter level, BlockPos pos, Direction direction) {
         return level.getBlockEntity(pos) instanceof TerrainScannerBlockEntity scanner
-                ? scanner.outputPower(direction) : 0;
+                // Minecraft queries from the receiving neighbour towards this block.
+                ? scanner.outputPower(direction.getOpposite()) : 0;
     }
     @Override public int getDirectSignal(BlockState state, BlockGetter level, BlockPos pos, Direction direction) { return 0; }
 
