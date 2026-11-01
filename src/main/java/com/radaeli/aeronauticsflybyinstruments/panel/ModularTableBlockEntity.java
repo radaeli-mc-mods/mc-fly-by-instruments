@@ -48,13 +48,11 @@ public final class ModularTableBlockEntity extends BlockEntity implements Avioni
     private final Map<Integer, FmsModuleData> fmsModules = new HashMap<>();
     private final Map<java.util.UUID, FmsSignalSnapshot> fmsSignals = new HashMap<>();
     private long lastFmsSignalUpdate = Long.MIN_VALUE;
-    private long lastAlertUpdate = Long.MIN_VALUE;
     private Map<String, Integer> gpwsSeverities = Map.of();
     private NetworkStatus alertNetworkStatus = NetworkStatus.DISCONNECTED;
     private boolean gpwsAvailable;
     private boolean muted;
     private long testPanelUntil;
-    private final Map<Integer, Long> nextBuzzerAt = new HashMap<>();
     private Map<String, Integer> activeSoundAlerts = Map.of();
     private final TablePeripheral peripheral = new TablePeripheral(this);
     /** Joined-panel cache, owned by TablePanel.of. */
@@ -467,17 +465,13 @@ public final class ModularTableBlockEntity extends BlockEntity implements Avioni
             if (table.grid.modules().stream().anyMatch(module -> module.type().equals("fms"))) table.sampleFmsSignals(true);
         }
         var panel = TablePanel.of(table);
-        if (panel.leader() == table
-                && (table.lastAlertUpdate == Long.MIN_VALUE || now - table.lastAlertUpdate >= interval)) {
-            table.lastAlertUpdate = now;
-            sampleGpwsAlerts(level, panel);
-        }
+        panel.tickAlerts(table, now, interval, () -> sampleGpwsAlerts(level, panel),
+                (owner, module, severity) -> PanelAudio.play(level, owner, module, severity, module.buzzerVolume()));
         int version = TablePanel.version(level);
         if (table.footprintVersion != version) {
             table.footprintVersion = version;
             table.dropUnsupportedModules(level);
         }
-        table.tickBuzzers(level, now);
         int light = emittedLight(table.brightestLampIntensity(), ModConfig.LAMP_LIGHT_LEVEL.get());
         if (state.hasProperty(ModularTableBaseBlock.LIGHT) && state.getValue(ModularTableBaseBlock.LIGHT) != light) {
             level.setBlock(pos, state.setValue(ModularTableBaseBlock.LIGHT, light), Block.UPDATE_CLIENTS);
@@ -576,24 +570,14 @@ public final class ModularTableBlockEntity extends BlockEntity implements Avioni
         }
     }
 
-    private void tickBuzzers(ServerLevel serverLevel, long now) {
+    boolean testingPanel(long now) { return testPanelUntil > now; }
+
+    void expirePanelTest(long now) {
         if (now >= testPanelUntil && testPanelUntil != 0) {
             testPanelUntil = 0;
             syncClient();
             peripheral.panelStateChanged("test", false);
             peripheral.alertOutputsChanged();
-        }
-        for (PanelGrid.Module module : grid.modules()) {
-            if (!module.type().equals("buzzer") || module.buzzerVolume() <= 0) continue;
-            boolean testing = testPanelUntil > now;
-            int severity = testing ? 3 : moduleSeverity(module);
-            if (severity == 0 || (!testing && muted)) continue;
-            int interval = PanelAlertLogic.buzzerInterval(severity);
-            int key = cellKey(module.column(), module.row());
-            long next = nextBuzzerAt.getOrDefault(key, Long.MIN_VALUE);
-            if (now < next) continue;
-            nextBuzzerAt.put(key, now + interval);
-            PanelAudio.play(serverLevel, this, module, severity, module.buzzerVolume());
         }
     }
 

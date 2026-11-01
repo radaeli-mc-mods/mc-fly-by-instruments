@@ -11,6 +11,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -61,6 +62,16 @@ public final class TablePanel {
     private final List<ModularTableBlockEntity> members;
     private final Direction facing;
     private final int minU, minV;
+    private long lastAlertUpdate = Long.MIN_VALUE;
+    private long lastBuzzerUpdate = Long.MIN_VALUE;
+    private final Map<BuzzerChannel, Long> nextBuzzerAt = new HashMap<>();
+
+    private record BuzzerChannel(String source, String channel, int severity) { }
+
+    @FunctionalInterface
+    interface BuzzerPlayer {
+        void play(ModularTableBlockEntity table, PanelGrid.Module module, int severity);
+    }
 
     private TablePanel(List<ModularTableBlockEntity> members, Direction facing) {
         this.members = List.copyOf(members);
@@ -153,6 +164,38 @@ public final class TablePanel {
 
     /** Samples shared inputs (GPWS) for the whole panel. */
     public ModularTableBlockEntity leader() { return members.get(0); }
+
+    /** The leader samples first, then sounds all buzzers on each channel in the same tick. */
+    void tickAlerts(ModularTableBlockEntity tickingTable, long now, int scanInterval,
+                    Runnable sampleAlerts, BuzzerPlayer player) {
+        if (tickingTable != leader() || lastBuzzerUpdate == now) return;
+        lastBuzzerUpdate = now;
+        if (lastAlertUpdate == Long.MIN_VALUE || now - lastAlertUpdate >= scanInterval) {
+            lastAlertUpdate = now;
+            sampleAlerts.run();
+        }
+        Map<BuzzerChannel, List<Placed>> active = new HashMap<>();
+        for (var member : members) member.expirePanelTest(now);
+        for (var placed : modules()) {
+            var module = placed.module();
+            var owner = placed.owner();
+            if (!module.type().equals("buzzer") || module.buzzerVolume() <= 0) continue;
+            boolean testing = owner.testingPanel(now);
+            int severity = testing ? 3 : owner.moduleSeverity(module);
+            if (severity == 0 || (!testing && owner.muted())) continue;
+            String source = testing ? "panel_test" : module.outputSource();
+            String name = module.outputSource().equals("test") ? module.channel() : module.alertChannel();
+            var channel = new BuzzerChannel(source, testing ? "" : name, severity);
+            active.computeIfAbsent(channel, ignored -> new ArrayList<>()).add(placed);
+        }
+        // Inactive or muted channels restart together when they next become audible.
+        nextBuzzerAt.keySet().retainAll(active.keySet());
+        active.forEach((channel, buzzers) -> {
+            if (now < nextBuzzerAt.getOrDefault(channel, Long.MIN_VALUE)) return;
+            nextBuzzerAt.put(channel, now + PanelAlertLogic.buzzerInterval(channel.severity()));
+            for (var buzzer : buzzers) player.play(buzzer.owner(), buzzer.module(), channel.severity());
+        });
+    }
 
     public int originColumn(ModularTableBlockEntity table) {
         return (u(table.getBlockPos(), facing) - minU) * PanelGrid.SIZE;
