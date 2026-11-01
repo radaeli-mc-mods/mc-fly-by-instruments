@@ -7,6 +7,7 @@ import com.radaeli.aeronauticsflybyinstruments.panel.PanelCoordinates;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.world.Containers;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.level.BlockGetter;
@@ -33,6 +34,7 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -173,7 +175,21 @@ public abstract class WireNodeBlock extends Block implements EntityBlock, Simple
 
     @Override
     public BlockState playerWillDestroy(Level level, BlockPos pos, BlockState state, Player player) {
-        if (!level.isClientSide && player.isCreative()) WireMaintenance.suppressRefund(level, pos);
+        if (!level.isClientSide && level.getBlockEntity(pos) instanceof WireNodeBlockEntity node) {
+            if (node.isConnector()) {
+                // A connector is a real endpoint, so breaking either end must sever every loaded copy
+                // before the block can be replaced. Supports keep the deferred path for contraption moves.
+                for (var route : List.copyOf(node.routes())) {
+                    var refund = WireMaintenance.cutEverywhere(level, pos, route);
+                    if (!player.getAbilities().instabuild) {
+                        Containers.dropItemStack(level, pos.getX() + .5, pos.getY() + .5, pos.getZ() + .5, refund);
+                    }
+                }
+            } else {
+                if (player.isCreative()) WireMaintenance.suppressRefund(level, pos);
+                WireMaintenance.nodeRemoved(level, pos, node.routes());
+            }
+        }
         return super.playerWillDestroy(level, pos, state, player);
     }
 

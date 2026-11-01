@@ -42,8 +42,16 @@ public final class WireMaintenance {
         if (routes.isEmpty()) return;
         var suppressed = NO_REFUND.get(level);
         boolean refund = suppressed == null || !suppressed.remove(pos);
-        CUTS.computeIfAbsent(level, ignored -> new ArrayList<>())
-                .add(new Cut(pos.immutable(), routes, refund, level.getGameTime()));
+        var queue = CUTS.computeIfAbsent(level, ignored -> new ArrayList<>());
+        var alreadyQueued = new HashSet<java.util.UUID>();
+        for (var cut : queue) {
+            if (cut.pos().equals(pos)) {
+                for (var route : cut.routes()) alreadyQueued.add(route.id());
+            }
+        }
+        var newRoutes = routes.stream().filter(route -> !alreadyQueued.contains(route.id())).toList();
+        if (newRoutes.isEmpty()) return;
+        queue.add(new Cut(pos.immutable(), newRoutes, refund, level.getGameTime()));
     }
 
     public static synchronized void validateLater(Level level, BlockPos pos) {
