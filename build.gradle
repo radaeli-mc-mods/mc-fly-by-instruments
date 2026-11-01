@@ -18,6 +18,19 @@ java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 if (providers.gradleProperty('tableGameTests').isPresent()) {
     sourceSets.main.java.srcDir 'src/gametest/java'
 }
+if (providers.gradleProperty('ponderValidation').isPresent()) {
+    // Keep the opt-in harness separate from ordinary builds running in another chat/IDE.
+    layout.buildDirectory = layout.projectDirectory.dir('build-ponder')
+    sourceSets.main.java.srcDir 'src/ponderValidation/java'
+}
+if (providers.gradleProperty('ponderServerValidation').isPresent()) {
+    layout.buildDirectory = layout.projectDirectory.dir('build-ponder-server')
+    sourceSets.main.java.srcDir 'src/ponderServerValidation/java'
+}
+def preparePonderServerValidation = tasks.register('preparePonderServerValidation', Copy) {
+    from 'src/gametest/structures'
+    into 'run-ponder-server/gameteststructures'
+}
 def prepareTableGameTests = tasks.register('prepareTableGameTests', Copy) {
     from 'src/gametest/structures'
     into 'run-gametests/gameteststructures'
@@ -40,6 +53,8 @@ def aeronauticsJar = configuredFile('aeronautics_jar')
 def sableJar = configuredFile('sable_jar')
 def computercraftJar = configuredFile('computercraft_jar')
 def rUiLibJar = configuredFile('r_ui_lib_jar')
+def ponderJsJar = configuredFile('ponderjs_jar')
+def kubeJsJar = configuredFile('kubejs_jar')
 
 def existingDependencyFiles = {
     [createJar, aeronauticsJar, sableJar, computercraftJar, rUiLibJar]
@@ -91,6 +106,14 @@ configurations {
 }
 
 dependencies {
+    // Optional client tutorial integration; never bundle these libraries.
+    compileOnly files([ponderJsJar, kubeJsJar].findAll { it != null && it.isFile() })
+    if (providers.gradleProperty('ponderTutorials').isPresent()) {
+        localRuntime files([ponderJsJar, kubeJsJar, configuredFile('rhino_jar')]
+                .findAll { it != null && it.isFile() })
+    } else if (providers.gradleProperty('ponderKubeOnly').isPresent()) {
+        localRuntime files([kubeJsJar, configuredFile('rhino_jar')].findAll { it != null && it.isFile() })
+    }
     testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.4'
     testCompileOnly files(existingDependencyFiles)
@@ -115,8 +138,22 @@ neoForge {
     }
 
     runs {
+        ponderValidationServer {
+            server()
+            gameDirectory = file('run-ponder-server')
+            systemProperty 'neoforge.gameTestServer', 'true'
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+            taskBefore preparePonderServerValidation
+        }
+        ponderValidationClient {
+            client()
+            gameDirectory = file('run-ponder')
+            programArgument '--quickPlaySingleplayer'
+            programArgument 'Ponder Validation'
+        }
         client {
             client()
+            // The ordinary client discovers optional tutorial mods in run/mods.
             systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
             programArgument '--quickPlaySingleplayer'
             programArgument 'New World'
@@ -137,7 +174,7 @@ neoForge {
 
         configureEach {
             systemProperty 'forge.logging.markers', 'REGISTRIES'
-            logLevel = org.slf4j.event.Level.DEBUG
+            logLevel = name.startsWith('ponderValidation') ? org.slf4j.event.Level.INFO : org.slf4j.event.Level.DEBUG
         }
     }
 

@@ -1,8 +1,12 @@
 /.gradle/
 /.gradle-aeronauticsflybyinstruments/
 /build/
+/build-ponder/
+/build-ponder-server/
 /run/
 /run-gametests/
+/run-ponder/
+/run-ponder-server/
 /logs/
 /crash-reports/
 /.idea/
