@@ -1,4 +1,4 @@
-# Avionics Wire (experimental)
+# Avionics Wire
 
 Physical data wires. They are not blocks: a black wire hangs between brass
 **Wire Connectors** and passes through industrial iron **Wire Supports**, and carries

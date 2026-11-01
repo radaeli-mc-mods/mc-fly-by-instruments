@@ -5,11 +5,25 @@ All notable changes to Aeronautics: Fly by Instruments are documented in this fi
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.3.0] - 2026-11-01
+
+### Added
+
+- Added eleven Ponder tutorials in English and Brazilian Portuguese for sensors, wiring, cockpit panels and FMS navigation.
+- Added optional PonderJS, KubeJS and Rhino support for the in-game tutorials.
+
+### Changed
+
+- Removed the Experimental label from the avionics blocks and modules; the Network Bridge remains Experimental and creative-only.
 
 ### Fixed
 
-- Fixed the buzzer tooltip to say that clicking a sounding buzzer silences the alarm and that sneak-click opens its settings.
+- Fixed wires remaining connected or visible after a connector or support was removed.
+- Fixed duplicate wire refunds when removing wire nodes.
+- Fixed the Advanced Terrain Scanner sending redstone signals through the wrong faces.
+- Fixed buzzers on the same panel channel sounding out of sync.
+- Fixed lit panel lamps being covered by sky and clouds with shaders.
+- Fixed the buzzer tooltip to explain silencing and sneak-click configuration.
 
 ## [0.2.0] - 2026-10-28
 

@@ -200,9 +200,9 @@ cobre é fluidos e vapor, ferro industrial é a parte pesada do Aeronautics.
 | Terrain Scanner | **Andesito + madeira média** (v2 entregue), bocal escalonado frontal | andesite casing, laser sensor, laser pointer |
 | Advanced Terrain Scanner | **Latão + ferro industrial** (v2 entregue), barra com três lentes | content observer, smart observer, optical sensor |
 | Mesa modular e módulos | Ver seção 9.3 (base v2.1 em 2026-10-27) | navigation table, nixie tube, display link, gauges |
-| Avionics Computer (experimental, ex-GPWS Computer) | **Ferro industrial + latão, sem madeira** (v2.1 em 2026-10-28): ferro dominante, latão no acabamento, tela frontal com um estado por textura | navigation table, stockpile switch, industrial iron (Aeronautics) |
+| Avionics Computer (ex-GPWS Computer) | **Ferro industrial + latão, sem madeira** (v2.1 em 2026-10-28): ferro dominante, latão no acabamento, tela frontal com um estado por textura | navigation table, stockpile switch, industrial iron (Aeronautics) |
 | Network Bridge (experimental) | **Liga de andesito + metal escuro e latão** (v2.1 em 2026-10-28): caixa de metal lisa, placa de metal escuro no topo (56% da face) com grade fina de ranhuras de latão (só no topo); laterais lisas com rebites e, em duas opostas, um socket de dados 4×4 discreto (eixo X/Z ao colocar). Diferenciada do Avionics Computer por material, silhueta lisa e grade de latão no topo ([README](../blockbench/network-bridge/README.md)) | andesite alloy, andesite casing |
-| Avionics Wire (experimental) | Fio **preto** (rampa Fio isolado), **Wire Connector em latão** (ponto de dados), **Wire Support em ferro industrial** (braçadeira: o fio passa por dentro). Nós podem ter uma haste de até 2 px abaixo de Y = 0, dentro do bloco hospedeiro, para encostar em blocos com recuo. Base de 2026-10-28 | rope connector do Simulated, bearings do Aeronautics |
+| Avionics Wire | Fio **preto** (rampa Fio isolado), **Wire Connector em latão** (ponto de dados), **Wire Support em ferro industrial** (braçadeira: o fio passa por dentro). Nós podem ter uma haste de até 2 px abaixo de Y = 0, dentro do bloco hospedeiro, para encostar em blocos com recuo. Base de 2026-10-28 | rope connector do Simulated, bearings do Aeronautics |
 
 ### Diferenciação entre os sensores
 
