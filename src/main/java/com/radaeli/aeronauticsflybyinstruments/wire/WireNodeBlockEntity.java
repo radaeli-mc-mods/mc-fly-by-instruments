@@ -140,7 +140,9 @@ public final class WireNodeBlockEntity extends BlockEntity implements Transforma
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
-        if (!routes.isEmpty()) tag.put("Routes", ROUTES.encodeStart(NbtOps.INSTANCE, routes).getOrThrow());
+        // NeoForge ignores empty block-entity update packets. Send the empty list too so removing
+        // the last wire clears the client's route data and cached geometry.
+        tag.put("Routes", ROUTES.encodeStart(NbtOps.INSTANCE, routes).getOrThrow());
     }
 
     @Override
