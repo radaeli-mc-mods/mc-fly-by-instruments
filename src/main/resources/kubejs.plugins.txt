@@ -1,0 +1,1 @@
+com.radaeli.aeronauticsflybyinstruments.client.ponder.FbiPonderPlugin client ponderjs
