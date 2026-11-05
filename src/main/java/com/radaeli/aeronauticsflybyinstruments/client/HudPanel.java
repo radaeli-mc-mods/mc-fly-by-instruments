@@ -1,6 +1,9 @@
 package com.radaeli.aeronauticsflybyinstruments.client;
 
 import com.radaeli.ruilib.ui.Bounds;
+import com.radaeli.ruilib.ui.Divider;
+import com.radaeli.ruilib.ui.Insets;
+import com.radaeli.ruilib.ui.InfoBox;
 import com.radaeli.ruilib.ui.Radio;
 import com.radaeli.ruilib.ui.UiContext;
 import com.radaeli.ruilib.ui.UiPaint;
@@ -41,7 +44,7 @@ public final class HudPanel {
     private sealed interface Line permits Header, Highlight, Section, Row, Choice, Stepper, Buttons, Note, Items, Field, Scrolled {}
     private record Header(String title, String meta) implements Line {}
     private record Highlight(String text, int color) implements Line {}
-    private record Section(String title) implements Line {}
+    private record Section(String title, String info) implements Line {}
     private record Row(String label, String value, int color, Runnable action) implements Line {}
     private record Choice(String label, String note, boolean selected, boolean enabled, Runnable action,
                           Runnable secondary) implements Line {}
@@ -119,7 +122,9 @@ public final class HudPanel {
     public HudPanel accent(int color) { accent = color; return this; }
     public HudPanel header(String title, String meta) { lines.add(new Header(title, meta)); return this; }
     public HudPanel highlight(String text, int color) { lines.add(new Highlight(text, color)); return this; }
-    public HudPanel section(String title) { lines.add(new Section(title)); return this; }
+    public HudPanel section(String title) { lines.add(new Section(title, null)); return this; }
+    /** A section title with a "?" that explains it on hover. */
+    public HudPanel section(String title, String info) { lines.add(new Section(title, info)); return this; }
     public HudPanel row(String label, String value) { return row(label, value, palette().text(), null); }
     public HudPanel row(String label, String value, int color, Runnable action) {
         lines.add(new Row(label, value, color, action));
@@ -286,9 +291,23 @@ public final class HudPanel {
                 y += ROW;
             }
             case Section section -> {
-                g.fill(left, y - 3, right, y - 2, palette.divider());
-                g.drawString(font, fit(font, section.title().toUpperCase(java.util.Locale.ROOT), inner), left, y,
-                        palette.mutedText(), false);
+                // R-UI Lib's horizontal divider, one pixel above the title. The section gap already spaces it,
+                // so it asks for no extra spacing.
+                var rule = new Divider(Divider.Orientation.HORIZONTAL, 1, null, Insets.ZERO);
+                rule.layout(font, UiTheme.DARK, new Bounds(left, y - 3, right - left, 1));
+                rule.render(new UiContext(g, font, UiTheme.DARK, mouseX, mouseY, 0, 0, System.nanoTime()));
+                boolean info = section.info() != null;
+                String heading = fit(font, section.title().toUpperCase(java.util.Locale.ROOT),
+                        info ? inner - InfoBox.SIZE - 4 : inner);
+                g.drawString(font, heading, left, y, palette.mutedText(), false);
+                if (info) {
+                    // The R-UI InfoBox draws the "?" and reports its explanation as the hovered tooltip.
+                    var box = new InfoBox(Component.literal(section.info()));
+                    box.layout(font, UiTheme.DARK, new Bounds(left + font.width(heading) + 4, y - 1,
+                            InfoBox.SIZE, InfoBox.SIZE));
+                    box.render(new UiContext(g, font, UiTheme.DARK, mouseX, mouseY, 0, 0, System.nanoTime()));
+                    if (box.bounds().contains(mouseX, mouseY)) hoveredTooltip = section.info();
+                }
                 y += ROW;
             }
             case Row row -> {
@@ -317,9 +336,11 @@ public final class HudPanel {
                         new Bounds(left, y, Radio.INDICATOR, Radio.INDICATOR), choice.selected(), hover,
                         choice.enabled(), false);
                 int labelLeft = left + Radio.INDICATOR + 4;
-                int noteWidth = font.width(choice.note());
+                // The note never takes more than half the row, and the label gets what the note leaves.
+                String note = fit(font, choice.note(), (right - labelLeft) / 2);
+                int noteWidth = font.width(note);
                 g.drawString(font, fit(font, choice.label(), right - labelLeft - noteWidth - 6), labelLeft, y, color, false);
-                g.drawString(font, choice.note(), right - noteWidth, y,
+                g.drawString(font, note, right - noteWidth, y,
                         choice.enabled() ? palette.mutedText() : palette.disabled(), false);
                 if (choice.enabled() && (choice.action() != null || choice.secondary() != null)) {
                     hits.add(new Hit(left - 4, y - 1, right + 2, y + ROW - 1, choice.action(),

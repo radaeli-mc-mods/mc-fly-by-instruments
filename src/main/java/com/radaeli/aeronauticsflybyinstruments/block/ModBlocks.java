@@ -14,6 +14,8 @@ import com.radaeli.aeronauticsflybyinstruments.fms.FmsRegistries;
 import dev.simulated_team.simulated.index.SimDataComponents;
 import com.radaeli.aeronauticsflybyinstruments.panel.ModularTableBlockEntity;
 import com.radaeli.aeronauticsflybyinstruments.avionics.NetworkBridgeBlockEntity;
+import com.radaeli.aeronauticsflybyinstruments.attitude.AttitudeReferenceUnitBlock;
+import com.radaeli.aeronauticsflybyinstruments.attitude.AttitudeReferenceUnitBlockEntity;
 import com.radaeli.aeronauticsflybyinstruments.sensor.RadarAltimeterBlockEntity;
 import com.radaeli.aeronauticsflybyinstruments.sensor.RadarAltimeterBlock;
 import com.radaeli.aeronauticsflybyinstruments.sensor.TerrainScannerBlock;
@@ -74,6 +76,11 @@ public final class ModBlocks {
                     BlockBehaviour.Properties.ofFullCopy(Blocks.OBSERVER).strength(2.0f).noOcclusion()));
     public static final DeferredItem<BlockItem> TERRAIN_SCANNER_ADVANCED_ITEM =
             ITEMS.registerSimpleBlockItem(TERRAIN_SCANNER_ADVANCED);
+    public static final DeferredBlock<AttitudeReferenceUnitBlock> ATTITUDE_REFERENCE_UNIT =
+            BLOCKS.register("attitude_reference_unit", () -> new AttitudeReferenceUnitBlock(
+                    BlockBehaviour.Properties.ofFullCopy(Blocks.IRON_BLOCK).strength(2.0f).noOcclusion()));
+    public static final DeferredItem<BlockItem> ATTITUDE_REFERENCE_UNIT_ITEM =
+            ITEMS.registerSimpleBlockItem(ATTITUDE_REFERENCE_UNIT);
     public static final DeferredItem<LampModuleItem> LAMP_MODULE =
             ITEMS.register("lamp_module", () -> new LampModuleItem(new Item.Properties()));
     public static final DeferredItem<LampModule2x1Item> LAMP_MODULE_2X1 =
@@ -125,6 +132,9 @@ public final class ModBlocks {
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<RadarAltimeterBlockEntity>> RADAR_ALTIMETER_ENTITY =
             BLOCK_ENTITIES.register("radar_altimeter", () -> BlockEntityType.Builder.of(
                     RadarAltimeterBlockEntity::new, RADAR_ALTIMETER.get()).build(null));
+    public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<AttitudeReferenceUnitBlockEntity>> ATTITUDE_REFERENCE_UNIT_ENTITY =
+            BLOCK_ENTITIES.register("attitude_reference_unit", () -> BlockEntityType.Builder.of(
+                    AttitudeReferenceUnitBlockEntity::new, ATTITUDE_REFERENCE_UNIT.get()).build(null));
     public static final DeferredHolder<BlockEntityType<?>, BlockEntityType<TerrainScannerBlockEntity>> TERRAIN_SCANNER_ENTITY =
             BLOCK_ENTITIES.register("terrain_scanner", () -> BlockEntityType.Builder.of(
                     TerrainScannerBlockEntity::new, TERRAIN_SCANNER.get(), TERRAIN_SCANNER_ADVANCED.get()).build(null));

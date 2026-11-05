@@ -1,0 +1,35 @@
+{
+  "credit": "Made with Blockbench for Aeronautics: Fly by Instruments",
+  "parent": "minecraft:block/block",
+  "ambientocclusion": true,
+  "textures": {
+    "0": "aeronautics_fly_by_instruments:block/attitude_reference_unit",
+    "particle": "aeronautics_fly_by_instruments:block/attitude_reference_unit"
+  },
+  "elements": [
+    {
+      "name": "face_south",
+      "from": [
+        1,
+        1,
+        1
+      ],
+      "to": [
+        15,
+        15,
+        15
+      ],
+      "faces": {
+        "south": {
+          "uv": [
+            0,
+            0,
+            7,
+            7
+          ],
+          "texture": "#0"
+        }
+      }
+    }
+  ]
+}
