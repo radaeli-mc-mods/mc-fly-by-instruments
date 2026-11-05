@@ -1,0 +1,491 @@
+{
+  "credit": "Made with Blockbench for Aeronautics: Fly by Instruments",
+  "parent": "minecraft:block/block",
+  "ambientocclusion": true,
+  "textures": {
+    "0": "aeronautics_fly_by_instruments:block/attitude_reference_unit",
+    "particle": "aeronautics_fly_by_instruments:block/attitude_reference_unit"
+  },
+  "elements": [
+    {
+      "name": "edge_x_down_n",
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        1,
+        2
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8,
+            8,
+            16,
+            8.5
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            8,
+            10,
+            9,
+            10.5
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            8,
+            8,
+            16,
+            8.5
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            8,
+            10,
+            9,
+            10.5
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            8,
+            8.5,
+            16,
+            9.5
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            8,
+            8.5,
+            16,
+            9.5
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "edge_x_down_s",
+      "from": [
+        0,
+        0,
+        14
+      ],
+      "to": [
+        16,
+        1,
+        16
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8,
+            8,
+            16,
+            8.5
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            8,
+            10,
+            9,
+            10.5
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            8,
+            8,
+            16,
+            8.5
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            8,
+            10,
+            9,
+            10.5
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            8,
+            8.5,
+            16,
+            9.5
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            8,
+            8.5,
+            16,
+            9.5
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "edge_z_down_w",
+      "from": [
+        0,
+        0,
+        2
+      ],
+      "to": [
+        2,
+        1,
+        14
+      ],
+      "faces": {
+        "east": {
+          "uv": [
+            8,
+            9.5,
+            14,
+            10
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            8,
+            9.5,
+            14,
+            10
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            15,
+            10,
+            16,
+            16
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            15,
+            10,
+            16,
+            16
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "edge_z_down_e",
+      "from": [
+        14,
+        0,
+        2
+      ],
+      "to": [
+        16,
+        1,
+        14
+      ],
+      "faces": {
+        "east": {
+          "uv": [
+            8,
+            9.5,
+            14,
+            10
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            8,
+            9.5,
+            14,
+            10
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            15,
+            10,
+            16,
+            16
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            15,
+            10,
+            16,
+            16
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "edge_x_up_n",
+      "from": [
+        0,
+        15,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        2
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8,
+            8,
+            16,
+            8.5
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            8,
+            10,
+            9,
+            10.5
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            8,
+            8,
+            16,
+            8.5
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            8,
+            10,
+            9,
+            10.5
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            8,
+            8.5,
+            16,
+            9.5
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            8,
+            8.5,
+            16,
+            9.5
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "edge_x_up_s",
+      "from": [
+        0,
+        15,
+        14
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8,
+            8,
+            16,
+            8.5
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            8,
+            10,
+            9,
+            10.5
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            8,
+            8,
+            16,
+            8.5
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            8,
+            10,
+            9,
+            10.5
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            8,
+            8.5,
+            16,
+            9.5
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            8,
+            8.5,
+            16,
+            9.5
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "edge_z_up_w",
+      "from": [
+        0,
+        15,
+        2
+      ],
+      "to": [
+        2,
+        16,
+        14
+      ],
+      "faces": {
+        "east": {
+          "uv": [
+            8,
+            9.5,
+            14,
+            10
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            8,
+            9.5,
+            14,
+            10
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            15,
+            10,
+            16,
+            16
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            15,
+            10,
+            16,
+            16
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "edge_z_up_e",
+      "from": [
+        14,
+        15,
+        2
+      ],
+      "to": [
+        16,
+        16,
+        14
+      ],
+      "faces": {
+        "east": {
+          "uv": [
+            8,
+            9.5,
+            14,
+            10
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            8,
+            9.5,
+            14,
+            10
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            15,
+            10,
+            16,
+            16
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            15,
+            10,
+            16,
+            16
+          ],
+          "texture": "#0"
+        }
+      }
+    }
+  ]
+}

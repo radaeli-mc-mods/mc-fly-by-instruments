@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "SGS",
+    "TCT",
+    " B "
+  ],
+  "key": {
+    "S": {
+      "item": "create:iron_sheet"
+    },
+    "G": {
+      "item": "create:precision_mechanism"
+    },
+    "T": {
+      "item": "create:electron_tube"
+    },
+    "C": {
+      "item": "create:brass_casing"
+    },
+    "B": {
+      "item": "create:brass_sheet"
+    }
+  },
+  "result": {
+    "id": "aeronautics_fly_by_instruments:attitude_reference_unit",
+    "count": 1
+  }
+}

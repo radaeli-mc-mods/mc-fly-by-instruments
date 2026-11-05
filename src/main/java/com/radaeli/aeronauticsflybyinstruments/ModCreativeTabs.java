@@ -21,7 +21,8 @@ public final class ModCreativeTabs {
                         output.accept(ModBlocks.RADAR_ALTIMETER_ITEM);
                         output.accept(ModBlocks.TERRAIN_SCANNER_ITEM);
                         output.accept(ModBlocks.TERRAIN_SCANNER_ADVANCED_ITEM);
-                        // The avionics suite is craftable; only the Network Bridge remains Experimental.
+                        output.accept(ModBlocks.ATTITUDE_REFERENCE_UNIT_ITEM);
+                        // The avionics suite is craftable; the Network Bridge and the Attitude Reference Unit are Experimental.
                         output.accept(ModBlocks.MODULAR_TABLE_BASE_ITEM);
                         output.accept(ModBlocks.AVIONICS_WIRE);
                         output.accept(ModBlocks.WIRE_CONNECTOR_ITEM);

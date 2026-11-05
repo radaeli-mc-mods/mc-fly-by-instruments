@@ -1,6 +1,8 @@
 package com.radaeli.aeronauticsflybyinstruments.avionics;
 
 import com.mojang.logging.LogUtils;
+import com.radaeli.aeronauticsflybyinstruments.attitude.AttitudeReading;
+import com.radaeli.aeronauticsflybyinstruments.attitude.AttitudeReferenceUnitBlockEntity;
 import com.radaeli.aeronauticsflybyinstruments.block.AvionicsComputerBlock;
 import com.radaeli.aeronauticsflybyinstruments.block.ModBlocks;
 import com.radaeli.aeronauticsflybyinstruments.config.ModConfig;
@@ -52,6 +54,8 @@ public final class AvionicsComputerBlockEntity extends BlockEntity implements Av
     private List<AvionicsSensor> sensors = List.of();
     private long testUntil;
     private boolean loggedEvaluationFailure;
+    /** Where the bank angle of the last sample came from: an Attitude Reference Unit or the computer's own pose. */
+    private String bankSource = "computer";
 
     public AvionicsComputerBlockEntity(BlockPos pos, BlockState state) {
         super(ModBlocks.AVIONICS_COMPUTER_ENTITY.get(), pos, state);
@@ -117,6 +121,7 @@ public final class AvionicsComputerBlockEntity extends BlockEntity implements Av
                 false, latestSample.gameTime(), "blocks_per_second"));
         result.put("bankAngle", readingSnapshot(latestSample.bankAngleDegrees(), false,
                 latestSample.gameTime(), "degrees"));
+        result.put("bankSource", bankSource);
         return Map.copyOf(result);
     }
 
@@ -207,6 +212,7 @@ public final class AvionicsComputerBlockEntity extends BlockEntity implements Av
         long maxAge = interval * 2L;
         NetworkSnapshot network = AvionicsNetworkManager.snapshot(level, worldPosition);
         if (network.status() != NetworkStatus.CONNECTED) {
+            bankSource = "computer";
             return new GpwsSample(now, network.status(), network.endpointCount(),
                     0, false, OptionalDouble.empty(), now, 0, false, false, false, List.of(),
                     bankAngle(getBlockState().getValue(AvionicsComputerBlock.FACING)));
@@ -324,12 +330,47 @@ public final class AvionicsComputerBlockEntity extends BlockEntity implements Av
                 .thenComparingInt(AvionicsSensor::x).thenComparingInt(AvionicsSensor::y)
                 .thenComparingInt(AvionicsSensor::z));
 
+        // A valid Attitude Reference Unit on this aircraft gives the roll (the true bank); otherwise the pose.
+        OptionalDouble aruBank = aruRoll(network, host, now, maxAge);
+        bankSource = aruBank.isPresent() ? "aru" : "computer";
         return new GpwsSample(now, network.status(), network.endpointCount(),
                 altimeterCount, altimeterFault,
                 minimumClearance == null ? OptionalDouble.empty() : OptionalDouble.of(minimumClearance),
                 minimumTime, scannerCount, scannerFault,
                 scannerCount > 0 && allScannerCoverageComplete, scannerCount > 0 && pullUpCoverageComplete,
-                contacts, bankAngle(nose.orElse(getBlockState().getValue(AvionicsComputerBlock.FACING))));
+                contacts, aruBank.isPresent() ? aruBank
+                        : bankAngle(nose.orElse(getBlockState().getValue(AvionicsComputerBlock.FACING))));
+    }
+
+    /**
+     * Roll of the nearest Attitude Reference Unit that is valid, fresh and on the same aircraft. Empty
+     * when there is none, so the GPWS keeps using the computer's own pose.
+     */
+    private OptionalDouble aruRoll(NetworkSnapshot network, SubLevel host, long now, long maxAge) {
+        if (host == null) return OptionalDouble.empty();
+        NetworkDevice nearest = null;
+        long nearestDistance = Long.MAX_VALUE;
+        for (NetworkDevice device : network.devices()) {
+            if (!device.type().equals("attitude_reference_unit")) continue;
+            long distance = (long) device.x() * device.x() + (long) device.y() * device.y() + (long) device.z() * device.z();
+            if (distance >= nearestDistance) continue;
+            BlockPos sourcePos = worldPosition.offset(device.x(), device.y(), device.z());
+            if (!level.hasChunkAt(sourcePos)
+                    || !(level.getBlockEntity(sourcePos) instanceof AttitudeReferenceUnitBlockEntity unit)
+                    || containingSubLevel(unit) != host) continue;
+            var reading = unit.reading();
+            if (reading.status() != AttitudeReading.Status.VALID || reading.gameTime() > now
+                    || now - reading.gameTime() > maxAge) continue;
+            nearest = device;
+            nearestDistance = distance;
+        }
+        if (nearest == null) return OptionalDouble.empty();
+        BlockPos sourcePos = worldPosition.offset(nearest.x(), nearest.y(), nearest.z());
+        return OptionalDouble.of(((AttitudeReferenceUnitBlockEntity) level.getBlockEntity(sourcePos)).reading().roll());
+    }
+
+    public String bankSource() {
+        return bankSource;
     }
 
     /**

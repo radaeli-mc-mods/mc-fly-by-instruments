@@ -48,6 +48,7 @@ public final class AeronauticsFlyByInstruments {
         modEventBus.addListener(TerrainScannerNetwork::registerPayloads);
         modEventBus.addListener(AvionicsComputerNetwork::registerPayloads);
         modEventBus.addListener(SensorOutputNetwork::registerPayloads);
+        modEventBus.addListener(com.radaeli.aeronauticsflybyinstruments.network.AttitudeReferenceNetwork::registerPayloads);
         modEventBus.addListener(FmsNetwork::registerPayloads);
         modEventBus.addListener(com.radaeli.aeronauticsflybyinstruments.network.WireNetwork::registerPayloads);
         modEventBus.addListener(this::registerCapabilities);
@@ -78,6 +79,8 @@ public final class AeronauticsFlyByInstruments {
                 (computer, side) -> computer.peripheral());
         event.registerBlockEntity(PeripheralCapability.get(), ModBlocks.RADAR_ALTIMETER_ENTITY.get(),
                 (altimeter, side) -> altimeter.peripheral());
+        event.registerBlockEntity(PeripheralCapability.get(), ModBlocks.ATTITUDE_REFERENCE_UNIT_ENTITY.get(),
+                (unit, side) -> unit.peripheral());
         event.registerBlockEntity(PeripheralCapability.get(), ModBlocks.TERRAIN_SCANNER_ENTITY.get(),
                 (scanner, side) -> scanner.peripheral());
     }
