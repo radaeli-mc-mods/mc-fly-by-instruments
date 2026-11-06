@@ -480,10 +480,16 @@ tem arremate nas pontas, para emendar sem costura. Referência de implementaçã
 | FMS 2×3 | **v2.1 em 2026-10-28** (carcaça de ferro industrial, tela em moldura de latão, 2 knobs de latão e 2 teclas, relevo de 1 unidade; 6 cubos, 10×3×14); faltam refino no Blockbench e validação no jogo: [README](../blockbench/fms-module-2x3/README.md) |
 | FMS Compass (item) | **v2.1 em 2026-10-28** (bússola de bolso redonda em degraus: aro de ferro, bezel de latão, lente com índice e ponteiro, alça de latão; 6 cubos; variante `_linked` acende a ponta do ponteiro e o reflexo da lente); faltam refino no Blockbench e validação no jogo: [README](../blockbench/fms-navigator/README.md) |
 | Attitude Indicator 2×2 | **v2 visual em 2026-11-05** (cunha de 5 cubos 10×12×10: caixa de ferro, tampo a 22,5° recuado 1, tela sólida com moldura de latão pintada e lente 8×8, viseira de latão, sem controles; placa de 2 cubos; atlas 32×32; display por geometria com valores mockados; só criativo, sem receita). Substitui a v1 3×3 (11 cubos, frestas atrás da tela): [README](../blockbench/attitude-indicator-module/README.md) |
+| Attitude Indicator (item) | **v1 em 2026-11-06** (medidor de bolso próprio, deitado como o FMS Compass: placa de ferro 12×12 com cantos chanfrados, degrau de latão com lente 8×8 de horizonte pintado; 4 cubos, atlas 32×32). O item não herda mais o modelo da cunha; a mesa pede cunha e placa por `custom_model_data` 2 e 1; faltam refino no Blockbench e validação no jogo: [README](../blockbench/attitude-indicator-item/README.md) |
 | Base da mesa | **v2.1 em 2026-10-27** (latão + madeira escura, tampo rente, texturas conectadas); faltam refino no Blockbench e validação no jogo: [README](../blockbench/modular-table-base/README.md) |
 
 Variantes de tamanho de um módulo (como a lâmpada 2×1) são modelos próprios, nunca
 esticamentos: mesma linguagem, mesmas texturas, com regiões novas para as faces longas.
+
+**Item que o jogador carrega × modelo que a mesa desenha** (2026-11-06): quando o modelo da mesa não se lê como item
+(cunha de pé, vista de trás no inventário), o item ganha um modelo próprio, deitado e visto de cima como o FMS e o FMS
+Compass, na mesma linguagem de material. A mesa passa a pedir os seus modelos por `custom_model_data` do item
+(Attitude Indicator: 1 = placa, 2 = cunha).
 
 ## 10. Fluxo de entrega
 

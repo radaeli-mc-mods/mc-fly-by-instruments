@@ -39,17 +39,76 @@ class AttitudeIndicatorAssetsTest {
     }
 
     @Test
-    void itemUsesTheWedgeAndSwitchesToThePlateByCustomModelData() throws Exception {
+    void itemIsItsOwnPocketGaugeAndTheTableAsksForTheWedgeAndPlateByCustomModelData() throws Exception {
         var item = json("models/item/attitude_indicator_module.json");
-        assertEquals(NS + ":block/attitude_indicator_desk", item.get("parent").getAsString());
+        // The inventory item is its own model, not the table wedge; the table renderer reaches the wedge (2) and the
+        // plate (1) through overrides (ModularTableRenderer).
+        assertEquals(NS + ":block/attitude_indicator_item", item.get("parent").getAsString());
         assertEquals("front", item.get("gui_light").getAsString());
         for (String context : new String[]{"gui", "ground", "fixed", "thirdperson_righthand", "thirdperson_lefthand",
                 "firstperson_righthand", "firstperson_lefthand"}) {
             assertTrue(item.getAsJsonObject("display").has(context), context);
         }
-        var override = item.getAsJsonArray("overrides").get(0).getAsJsonObject();
-        assertEquals(1, override.getAsJsonObject("predicate").get("custom_model_data").getAsInt());
-        assertEquals(NS + ":block/attitude_indicator_wall", override.get("model").getAsString());
+        var overrides = new java.util.HashMap<Integer, String>();
+        for (var entry : item.getAsJsonArray("overrides")) {
+            var override = entry.getAsJsonObject();
+            overrides.put(override.getAsJsonObject("predicate").get("custom_model_data").getAsInt(),
+                    override.get("model").getAsString());
+        }
+        assertEquals(Map.of(1, NS + ":block/attitude_indicator_wall", 2, NS + ":block/attitude_indicator_desk"),
+                overrides);
+    }
+
+    @Test
+    void itemModelIsAFlatGaugeInTheCompassLanguage() throws Exception {
+        var model = json("models/block/attitude_indicator_item.json");
+        assertEquals("create:block/industrial_iron_block", model.getAsJsonObject("textures").get("particle").getAsString());
+        var elements = model.getAsJsonArray("elements");
+        assertEquals(4, elements.size());
+        double[] low = {16, 16, 16}, high = {0, 0, 0};
+        var names = new HashSet<String>();
+        for (var entry : elements) {
+            var cube = entry.getAsJsonObject();
+            names.add(cube.get("name").getAsString());
+            assertFalse(cube.has("rotation"), cube.get("name") + ": unrotated");
+            var from = vec(cube.getAsJsonArray("from")); var to = vec(cube.getAsJsonArray("to"));
+            for (int axis = 0; axis < 3; axis++) {
+                assertEquals(Math.rint(from[axis]), from[axis], cube.get("name") + ": integer coordinates");
+                assertEquals(Math.rint(to[axis]), to[axis], cube.get("name") + ": integer coordinates");
+                low[axis] = Math.min(low[axis], from[axis]); high[axis] = Math.max(high[axis], to[axis]);
+            }
+            for (var face : cube.getAsJsonObject("faces").entrySet()) {
+                var f = face.getValue().getAsJsonObject();
+                var uv = f.getAsJsonArray("uv");
+                double texels = f.get("texture").getAsString().equals("#0") ? 2 : 1; // 32 px atlas, 16 px Create texture
+                int[] axes = AXES.get(face.getKey());
+                assertEquals(to[axes[0]] - from[axes[0]], Math.abs(uv.get(2).getAsDouble() - uv.get(0).getAsDouble()) * texels,
+                        1e-9, cube.get("name") + "." + face.getKey() + " u");
+                assertEquals(to[axes[1]] - from[axes[1]], Math.abs(uv.get(3).getAsDouble() - uv.get(1).getAsDouble()) * texels,
+                        1e-9, cube.get("name") + "." + face.getKey() + " v");
+            }
+        }
+        assertTrue(names.containsAll(java.util.List.of("case", "case_north", "case_south", "bezel")));
+        // Lies flat on Y 0, centred on X/Z 8: a 12 x 12 plate with a 1 unit bezel step.
+        assertArrayEquals(new double[]{2, 0, 2}, low);
+        assertArrayEquals(new double[]{14, 3, 14}, high);
+        var bezel = element(model, "bezel");
+        assertArrayEquals(new double[]{3, 2, 3}, vec(bezel.getAsJsonArray("from")));
+        assertArrayEquals(new double[]{13, 3, 13}, vec(bezel.getAsJsonArray("to")));
+        assertTrue(bezel.getAsJsonObject("faces").has("up"), "The painted lens faces up");
+    }
+
+    @Test
+    void itemAtlasIs32SquareAndOpaque() throws Exception {
+        try (var input = AttitudeIndicatorAssetsTest.class.getResourceAsStream(
+                "/assets/" + NS + "/textures/block/attitude_indicator_item.png")) {
+            var image = ImageIO.read(input);
+            assertEquals(32, image.getWidth());
+            assertEquals(32, image.getHeight());
+            for (int y = 0; y < 32; y++) for (int x = 0; x < 32; x++) {
+                assertEquals(255, image.getRGB(x, y) >>> 24, "opaque at " + x + "," + y);
+            }
+        }
     }
 
     @Test
