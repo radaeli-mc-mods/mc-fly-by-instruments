@@ -4,7 +4,9 @@
 > histórico do git. A **v2.1** (2026-10-27) consolida o que os três sensores
 > entregues (Radar Altimeter, Terrain Scanner e Advanced Terrain Scanner)
 > estabeleceram na prática (seção 8) e define as regras dos módulos da mesa
-> (seção 9).
+> (seção 9). Em 2026-11-04 entrou a convenção de faces configuráveis por
+> blockstate (seção 8.7); em 2026-11-05 ela ganhou as hastes de referência e a
+> caixa de vidro do ARU.
 > Ferramenta oficial de modelagem e pintura: **Blockbench**.
 >
 > **Leitura obrigatória antes de qualquer pedido de modelagem ou texturização**
@@ -83,7 +85,7 @@ famílias de casing do Create (andesito/latão/cobre/ferro industrial).
 | Grade | Snap de **1 unidade** (16 = 1 bloco). Frações só com motivo forte, registrado no README do bloco, e nunca para "afinar" uma peça |
 | Elemento mínimo | 1 unidade; preferir 2 ou mais em peças visíveis |
 | Elementos por bloco | Sensor ou bloco simples: 2–8 (os sensores v2 usam 3–5). Instrumento: até ~15. Acima de 20, justificar (Create chega a 25, Simulated a 39) |
-| Rotação | Só 22,5° e 45°, e só em peças mecânicas (ponteiro, alavanca, aleta). Carcaça sempre alinhada à grade |
+| Rotação | Só 22,5° e 45°, e só em peças mecânicas (ponteiro, alavanca, aleta). Carcaça sempre alinhada à grade. **Exceção (2026-11-05):** o tampo da cunha do Attitude Indicator (`housing_slope`) é um cubo girado 22,5° em X; o exportador só aceita rotação num cubo nomeado no `rotatable` do exportador. Cubo girado não pode deixar fresta: suas faces que não ficam à vista (baixo, trás, ponta) terminam **dentro** de cubos sólidos, e ele fica recuado 1 dos vizinhos para não ter face coplanar |
 | Camadas | Base/pé (2–3 de altura) + corpo + tampa ou placa (2 de altura). Corpo costuma recuar 1 unidade em relação à tampa ou base |
 | Peça funcional | Grande e saliente: lente 6–10 unidades, mostrador com moldura, antena com volume. É o item que define a silhueta |
 | Partes móveis | Modeladas como elemento ou modelo separado (como as partials do Simulated: `hand`, `needle`, `fan`), para animar no futuro sem refazer a carcaça |
@@ -137,8 +139,8 @@ famílias de casing do Create (andesito/latão/cobre/ferro industrial).
   aleatório. Padrões repetitivos (tábuas, nós) usam uma regra determinística
   escrita à mão, como em `planks()` do Terrain Scanner.
 - Sem antialiasing, sem gradiente suave, sem texto legível (letras viram ruído
-  a 16 px por bloco). Sem alpha parcial, exceto em lente translúcida declarada
-  (seção 9).
+  a 16 px por bloco). Sem alpha parcial, exceto em vidro translúcido declarado: o da
+  lâmpada (seção 9) e a caixa de vidro do Attitude Reference Unit (§8.7), com alpha baixo e uniforme.
 - **Assets do Create são *All Rights Reserved*** (só o código é MIT). Podemos
   **referenciar** as texturas pelo id, porque elas são carregadas do jar do
   Create em runtime. Não podemos **copiar** PNGs, pixels ou trechos deles para o
@@ -188,6 +190,8 @@ carcaça: ela existe pontualmente no Create, mas nunca como material principal.
 | **Pergaminho** com marcas cinza | Leitura/medição | Mostrador de altura ou distância, se houver |
 | **Lente escura** com reflexo azul | Emissor/receptor óptico | Face de medição (raycast) dos scanners e do altímetro |
 | **Latão** | Tier "smart"/avançado | Variante avançada; instrumentos de cockpit |
+| **Cobre** na ponta de uma haste de referência | — (convenção do mod, 2026-11-05) | Haste do **Nariz** num bloco orientável por faces ([§8.7](#87-faces-configuráveis-por-blockstate)) |
+| **Latão** na ponta de uma haste de referência | — (convenção do mod, 2026-11-05) | Haste do **Acima** |
 
 ## 7. Famílias de material por tier
 
@@ -312,6 +316,47 @@ Cada `blockbench/<bloco>/README.md` segue o mesmo esqueleto:
 6. **Mudou a geometria?** classes de colisão/sockets e testes a rodar.
 7. **Pendente:** o que não foi verificado ou falta ligar no código.
 
+### 8.7 Faces configuráveis por blockstate
+
+Convenção de 2026-11-04 (origem: [plano do Attitude Reference Unit](attitude-reference-unit-plan.md)).
+Vale para qualquer bloco em que o jogador escolhe o papel de uma face (Nariz,
+Acima, entrada, saída) em vez de só girar o bloco.
+
+- **A marcação segue o blockstate, não um renderer.** A face marcada aparece igual no
+  mundo, no item, no Ponder, em schematics e dentro de sublevels, sem custo por frame.
+  Block entity renderer só se a marcação precisar animar.
+- **Duas formas de marcar o papel de uma face** (escolha por bloco):
+  1. *Marca na face* (convenção de 2026-11-04): corpo exportado em 6 partes multipart, uma por face, cada
+     uma um único elemento com o volume do corpo e **só aquela face desenhada**, com um modelo por papel
+     (`plain`, `nose`, `up`) escolhido pelo blockstate; Nariz = arco de 1 px em cobre, Acima = o mesmo arco em
+     latão. Sem renderer; símbolos simétricos, sem rotação de UV (evite seta: lê como "para a frente").
+     Foi usada no Attitude Reference Unit v2.1 e saiu dele.
+  2. *Hastes de referência* (Attitude Reference Unit v3, 2026-11-05): uma haste por papel, um único modelo-fonte
+     por haste girado por `x`/`y` do blockstate. Cada haste tem **uma ponta diferente da outra** (bulbo 4×4×2 na
+     frente, tampa lisa 2×2 atrás): cobre = Nariz (fonte com a frente em NORTH), latão = Acima (fonte com a frente
+     em UP). As hastes terminam em peças do gimbal para nunca se sobreporem, e as faces do bloco ficam todas
+     iguais.
+- Um papel novo ganha material e forma distintos dos existentes antes de entrar no guia; nunca reutilize
+  vermelho redstone, gema azul ou lente escura (§6) como marcação.
+- **Parte decorativa animada** (só no v3): o gimbal do ARU é desenhado por um block entity renderer em loop fixo
+  (relógio do jogo), com os modelos registrados como adicionais e fora do blockstate; ele não lê nem reage ao
+  frame. A marcação do papel continua estática no blockstate. O modelo do item leva o gimbal em repouso.
+- **Caixa de vidro** (v3): vidro de 1 cubo `[1,1,1]–[15,15,15]` em modelo próprio com `render_type: translucent`
+  (os postes e sockets ficam no modelo cutout), 4 postes verticais de ferro industrial 2×16×2 nas quinas, sem
+  aros horizontais.
+- **Socket de dados** fica no centro de toda face onde o cabo encaixa, inclusive
+  sobre a placa marcada; o contrato de `CableSocketProvider` não muda com o papel.
+- **Fenda de redstone** (marca na face) fica só nas faces neutras; a variante `powered` (§8.5) troca
+  apenas os pixels da fenda. O Attitude Reference Unit v3 não tem indicador de redstone.
+- **Legibilidade:** a marcação precisa ser reconhecida a 16 px, a ~5 blocos, sem
+  tooltip. Validar no Blockbench e no jogo antes de fechar o desenho de um bloco.
+- **Código:** `rotate`/`mirror` transformam todas as propriedades de face juntas;
+  combinações inválidas (ex.: Nariz colinear com Acima) nunca chegam ao blockstate.
+- **Testes de assets:** marca na face: as 6 partes cobrem exatamente o volume do corpo, cada papel usa a mesma
+  textura em todas as faces e toda combinação válida resolve para um modelo. Hastes: a ponta de cada haste,
+  depois das rotações do blockstate, cai na face do papel em todas as orientações válidas. Sempre: o volume dos
+  modelos estáticos igual ao `SHAPE`.
+
 ## 9. Mesa modular e módulos (v2.1)
 
 Os módulos da mesa foram redesenhados na linguagem v2 (estado na seção 9.5). Esta seção
@@ -355,8 +400,10 @@ entre módulos vizinhos:
 | 1×1 | 4×4 | lâmpada, buzzer |
 | 2×1 | 10×4 | lâmpada longa |
 | 2×3 | 10×14 | FMS |
+| 2×2 | 10×10 | Attitude Indicator (cunha na mesa de chão, placa fina em parede e teto) |
+| 3×3 | 14×14 | — |
 
-- **Altura:** 2–4 unidades acima da mesa. Em módulo grande (FMS), detalhes sobre a carcaça
+- **Altura:** 2–4 unidades acima da mesa. **Exceção "módulo de display de pé" (2026-11-05, revista na v2 2×2):** a cunha do Attitude Indicator tem 12, e o topo da tela encosta no topo do bloco (4 da mesa + 12); seu volume de seleção vai até o topo do bloco (`PanelCoordinates.moduleTop`). Tela de pé é **um cubo sólido** com a moldura pintada, nunca barras soltas em volta de uma lente de uma face: o display é desenhado sem cull e apareceria por qualquer fresta. Em módulo grande (FMS), detalhes sobre a carcaça
   sobem só 1 unidade: relevos de 2 ou mais ficaram estranhos no jogo. Até 6 só para peça funcional que precisa
   ser vista de lado (alavanca, knob). Base/aro de 1 unidade + corpo/face.
 - **Elementos:** 1×1 com 2–5 cubos; 2×1 até 8; módulo de tela (2×3) até ~15.
@@ -394,7 +441,7 @@ tem arremate nas pontas, para emendar sem costura. Referência de implementaçã
   quando apagado, xadrez de redstone quando aceso. Vidro, soquete e filamento são
   texturas separadas (o renderer classifica as faces pelo nome do sprite); aceso e
   apagado mantêm a geometria; a emissão pertence à lâmpada, não à mesa
-  (`docs/lamp-emission.md`). O vidro é a **única** peça que pode ser translúcida.
+  (`docs/lamp-emission.md`). O vidro é a **única** peça que pode ser translúcida (o vidro de bloco do Attitude Reference Unit, §8.7, é o outro caso declarado).
 - **Cores de alerta:** Warning = rampa de redstone. Caution = âmbar feito com os
   tons claros do latão (`#E4B763`–`#FFEB8C`), porque o amarelo de sinalização saiu
   da paleta. Na lâmpada (entregue em 2026-10-28), o âmbar é o mesmo mapa do vermelho
@@ -418,6 +465,7 @@ tem arremate nas pontas, para emendar sem costura. Referência de implementaçã
   **textura animada vanilla**
   (faixa de quadros quadrados + `.mcmeta`), dentro da paleta, trocada por uma propriedade de
   blockstate com a mesma geometria. Sem renderer nem emissão. É a técnica do CC:Tweaked.
+- **Display de horizonte artificial** (2026-11-05, Attitude Indicator): mesma exceção, também geometria em um passe plano e sem luz do mundo (como a bússola), com fonte 5×7 própria em polígonos. Fundo preto, traços de pelo menos 0,07 unidade, cores saturadas (céu e terra fora da paleta), brasão do símbolo da aeronave em latão (`#E4B763`). Layout puro e testável: `AttitudeDisplayLayout`. A estratégia de render-to-texture do plano não foi usada neste estágio ([README](../blockbench/attitude-indicator-module/README.md)).
 - **Legibilidade de perto:** a 1 bloco, um módulo 1×1 ocupa poucos texels por face.
   Cada pixel precisa de função: contorno, aro, lente, reflexo. Nada de textura de
   material em peça de 4 unidades além do contorno.
@@ -431,6 +479,7 @@ tem arremate nas pontas, para emendar sem costura. Referência de implementaçã
 | Buzzer 1×1 | **v2.1 em 2026-10-29** (carcaça de metal escuro com aro de latão, tampa em degrau com grade pintada; 2 cubos, 4×4×3, atlas 16×16); faltam refino no Blockbench e validação no jogo: [README](../blockbench/buzzer-module-1x1/README.md) |
 | FMS 2×3 | **v2.1 em 2026-10-28** (carcaça de ferro industrial, tela em moldura de latão, 2 knobs de latão e 2 teclas, relevo de 1 unidade; 6 cubos, 10×3×14); faltam refino no Blockbench e validação no jogo: [README](../blockbench/fms-module-2x3/README.md) |
 | FMS Compass (item) | **v2.1 em 2026-10-28** (bússola de bolso redonda em degraus: aro de ferro, bezel de latão, lente com índice e ponteiro, alça de latão; 6 cubos; variante `_linked` acende a ponta do ponteiro e o reflexo da lente); faltam refino no Blockbench e validação no jogo: [README](../blockbench/fms-navigator/README.md) |
+| Attitude Indicator 2×2 | **v2 visual em 2026-11-05** (cunha de 5 cubos 10×12×10: caixa de ferro, tampo a 22,5° recuado 1, tela sólida com moldura de latão pintada e lente 8×8, viseira de latão, sem controles; placa de 2 cubos; atlas 32×32; display por geometria com valores mockados; só criativo, sem receita). Substitui a v1 3×3 (11 cubos, frestas atrás da tela): [README](../blockbench/attitude-indicator-module/README.md) |
 | Base da mesa | **v2.1 em 2026-10-27** (latão + madeira escura, tampo rente, texturas conectadas); faltam refino no Blockbench e validação no jogo: [README](../blockbench/modular-table-base/README.md) |
 
 Variantes de tamanho de um módulo (como a lâmpada 2×1) são modelos próprios, nunca
@@ -466,6 +515,8 @@ esticamentos: mesma linguagem, mesmas texturas, com regiões novas para as faces
 - [ ] Silhueta em camadas; peça funcional legível na distância de uso (seção 2)
 - [ ] Face funcional coerente com a direção real do código
 - [ ] Indicador de redstone escuro/aceso, se houver; variante só troca textura
+- [ ] Faces configuráveis, se houver: multipart por face, símbolos da seção 8.7
+      legíveis a ~5 blocos e corretos em todas as orientações válidas
 - [ ] Ao lado de casings do Create, parece da mesma família
 - [ ] Colisão/outline e testes de assets atualizados e verdes
 - [ ] `.bbmodel` e README do bloco atualizados; o que não foi verificado no

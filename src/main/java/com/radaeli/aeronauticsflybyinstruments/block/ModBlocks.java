@@ -89,6 +89,9 @@ public final class ModBlocks {
             ITEMS.register("buzzer_module", () -> new BuzzerModuleItem(new Item.Properties()));
     public static final DeferredItem<FmsModuleItem> FMS_MODULE =
             ITEMS.register("fms_module", () -> new FmsModuleItem(new Item.Properties()));
+    public static final DeferredItem<com.radaeli.aeronauticsflybyinstruments.item.AttitudeIndicatorModuleItem>
+            ATTITUDE_INDICATOR_MODULE = ITEMS.register("attitude_indicator_module",
+            () -> new com.radaeli.aeronauticsflybyinstruments.item.AttitudeIndicatorModuleItem(new Item.Properties()));
     public static final DeferredItem<FmsNavigatorItem> FMS_NAVIGATOR = ITEMS.register("fms_navigator",
             () -> new FmsNavigatorItem(new Item.Properties()
                     .component(SimDataComponents.TARGET, FmsRegistries.NAVIGATOR_TARGET)));

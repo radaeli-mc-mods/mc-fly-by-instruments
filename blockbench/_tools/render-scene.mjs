@@ -93,7 +93,9 @@ const FACE = {
  * modules), textures: { key: id } overrides }.
  */
 export function modelQuads(instance) {
-  const model = JSON.parse(readFileSync(new URL(`models/block/${instance.model}.json`, ASSETS), 'utf8'));
+  // instance.json / instance.lookup: render a model that is not exported yet (straight from a .bbmodel).
+  const model = instance.json ?? JSON.parse(readFileSync(new URL(`models/block/${instance.model}.json`, ASSETS), 'utf8'));
+  const lookup = instance.lookup ?? texture;
   const textures = { ...model.textures, ...(instance.textures ?? {}) };
   const resolve = ref => { let id = ref; while (id?.startsWith('#')) id = textures[id.slice(1)]; return id; };
   const quads = [];
@@ -115,7 +117,7 @@ export function modelQuads(instance) {
         const at = instance.at ?? [0, 0, 0], offset = instance.offset ?? [0, 0, 0];
         return [q[0] / 16 + at[0] + offset[0], q[1] / 16 + at[1] + offset[1], q[2] / 16 + at[2] + offset[2]];
       });
-      quads.push({ corners, uvs: uvs.map(([u, v]) => [u / 16, v / 16]), texture: texture(resolve(face.texture)),
+      quads.push({ corners, uvs: uvs.map(([u, v]) => [u / 16, v / 16]), texture: lookup(resolve(face.texture)),
         glow: instance.glow ?? 0 });
     }
   }

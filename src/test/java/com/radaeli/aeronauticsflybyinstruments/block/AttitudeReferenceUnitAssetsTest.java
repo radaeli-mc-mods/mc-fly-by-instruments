@@ -21,20 +21,20 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 /**
- * Attitude Reference Unit: the exported model and blockstate match the Blockbench source rules
- * (guide v2.1 section 8.7) and the block's collision shape.
+ * Attitude Reference Unit: the exported glass-cube models and the blockstate that points the Nose and Up
+ * reference arms match the Blockbench source rules (guide section 8.7) and the block's collision shape.
  */
 class AttitudeReferenceUnitAssetsTest {
     private static final String NS = "aeronautics_fly_by_instruments";
     private static final String NAME = "attitude_reference_unit";
-    private static final List<String> SIDES = List.of("north", "east", "south", "west", "up", "down");
+    private static final List<String> STATIC_MODELS = List.of("frame", "glass");
+    private static final List<String> GIMBAL_MODELS = List.of("gimbal_ring", "gimbal_rotor");
 
     private static JsonObject json(String relativePath) throws Exception {
         try (var input = AttitudeReferenceUnitAssetsTest.class.getResourceAsStream("/assets/" + NS + "/" + relativePath)) {
@@ -76,15 +76,21 @@ class AttitudeReferenceUnitAssetsTest {
         return true;
     }
 
+    /** Minecraft blockstate rotation: x first, then y; x=90 turns NORTH into DOWN and UP into NORTH. */
+    private static double[] turn(double[] v, int x, int y) {
+        double rx = Math.toRadians(x), ry = Math.toRadians(y);
+        double[] a = {v[0], v[1] * Math.cos(rx) + v[2] * Math.sin(rx), -v[1] * Math.sin(rx) + v[2] * Math.cos(rx)};
+        return new double[]{a[0] * Math.cos(ry) - a[2] * Math.sin(ry), a[1], a[0] * Math.sin(ry) + a[2] * Math.cos(ry)};
+    }
+
+    private static Direction nearest(double[] v) {
+        return Direction.getNearest(v[0], v[1], v[2]);
+    }
+
     @Test
-    void bodyFacesAndRimCoverTheVolumeOfTheCollisionShape() throws Exception {
-        var northNose = model(NAME + "_north_nose");
-        var rim = model(NAME + "_rim");
+    void glassAndFrameCoverTheVolumeOfTheCollisionShape() throws Exception {
         var volume = Shapes.empty();
-        for (String side : SIDES) {
-            volume = Shapes.or(volume, volume(model(NAME + "_" + side + "_plain")));
-        }
-        volume = Shapes.or(volume, volume(rim));
+        for (String part : STATIC_MODELS) volume = Shapes.or(volume, volume(model(NAME + "_" + part)));
         var state = ModBlocks.ATTITUDE_REFERENCE_UNIT.get().defaultBlockState();
         var outline = state.getShape(EmptyBlockGetter.INSTANCE, BlockPos.ZERO);
         var collision = state.getCollisionShape(EmptyBlockGetter.INSTANCE, BlockPos.ZERO, CollisionContext.empty());
@@ -92,78 +98,110 @@ class AttitudeReferenceUnitAssetsTest {
         assertFalse(Shapes.joinIsNotEmpty(volume, collision, BooleanOp.NOT_SAME));
         assertFalse(state.canOcclude());
         assertFalse(Shapes.block().equals(outline));
-        assertNotNull(northNose);
     }
 
     @Test
-    void everyBodyPartDrawsExactlyItsOwnFaceInTheRightRegion() throws Exception {
-        for (String side : SIDES) {
-            for (String role : List.of("plain", "nose", "up")) {
-                for (String suffix : List.of("", "_powered")) {
-                    var part = model(NAME + "_" + side + "_" + role + suffix);
-                    var elements = part.getAsJsonArray("elements");
-                    assertEquals(1, elements.size(), side + " " + role);
-                    var cube = elements.get(0).getAsJsonObject();
-                    assertEquals("face_" + side, cube.get("name").getAsString());
-                    var faces = cube.getAsJsonObject("faces");
-                    assertEquals(1, faces.size(), side + " " + role + ": only the side's own face is drawn");
-                    assertTrue(faces.has(side), side);
-                    var uv = faces.getAsJsonObject(side).getAsJsonArray("uv");
-                    double[] expected = switch (role) {
-                        case "nose" -> new double[]{8, 0, 15, 7};
-                        case "up" -> new double[]{0, 8, 7, 15};
-                        default -> new double[]{0, 0, 7, 7};
-                    };
-                    for (int i = 0; i < 4; i++) assertEquals(expected[i], uv.get(i).getAsDouble(), 1.0E-9, side + " " + role);
-                    assertEquals("#0", faces.getAsJsonObject(side).get("texture").getAsString());
-                    var from = vector(cube.getAsJsonArray("from"));
-                    var to = vector(cube.getAsJsonArray("to"));
-                    assertArrayEquals(new double[]{1, 1, 1}, from);
-                    assertArrayEquals(new double[]{15, 15, 15}, to);
-                }
-            }
-        }
-    }
-
-    @Test
-    void theRimHasEightBarsAndNoSideFaceOverlapsTheBody() throws Exception {
-        var rim = model(NAME + "_rim");
-        assertEquals(8, rim.getAsJsonArray("elements").size());
-        for (JsonElement entry : rim.getAsJsonArray("elements")) {
+    void theFrameHasFourSlimPostsAndSixSocketsAndTheGlassIsOneTranslucentCube() throws Exception {
+        var frame = model(NAME + "_frame").getAsJsonArray("elements");
+        int posts = 0, sockets = 0;
+        for (JsonElement entry : frame) {
             var cube = entry.getAsJsonObject();
-            for (var face : cube.getAsJsonObject("faces").entrySet()) {
-                assertEquals("#0", face.getValue().getAsJsonObject().get("texture").getAsString());
+            String name = cube.get("name").getAsString();
+            var from = vector(cube.getAsJsonArray("from"));
+            var to = vector(cube.getAsJsonArray("to"));
+            if (name.startsWith("post_")) {
+                posts++;
+                assertArrayEquals(new double[]{2, 16, 2}, new double[]{to[0] - from[0], to[1] - from[1], to[2] - from[2]}, name);
+            } else if (name.startsWith("socket_")) {
+                sockets++;
+                // 6x6x2: the connector stem (4x4, 2 deep) stays buried in it instead of crossing the glass.
+                double[] size = {to[0] - from[0], to[1] - from[1], to[2] - from[2]};
+                java.util.Arrays.sort(size);
+                assertArrayEquals(new double[]{2, 6, 6}, size, name);
             }
-            for (double v : vector(cube.getAsJsonArray("from"))) assertEquals(Math.rint(v), v);
-            for (double v : vector(cube.getAsJsonArray("to"))) assertEquals(Math.rint(v), v);
+        }
+        assertEquals(4, posts);
+        assertEquals(6, sockets);
+        var glass = model(NAME + "_glass");
+        assertEquals("minecraft:translucent", glass.get("render_type").getAsString());
+        assertEquals(1, glass.getAsJsonArray("elements").size());
+        var cube = glass.getAsJsonArray("elements").get(0).getAsJsonObject();
+        assertArrayEquals(new double[]{1, 1, 1}, vector(cube.getAsJsonArray("from")));
+        assertArrayEquals(new double[]{15, 15, 15}, vector(cube.getAsJsonArray("to")));
+    }
+
+    @Test
+    void theCableSocketIsOnTheFacePlaneOfEveryFace() {
+        var block = (AttitudeReferenceUnitBlock) ModBlocks.ATTITUDE_REFERENCE_UNIT.get();
+        var state = block.defaultBlockState();
+        for (Direction face : Direction.values()) {
+            var socket = block.cableSocket(state, face);
+            assertEquals(.5 + .5 * face.getStepX(), socket.x, 1e-9, face.toString());
+            assertEquals(.5 + .5 * face.getStepY(), socket.y, 1e-9, face.toString());
+            assertEquals(.5 + .5 * face.getStepZ(), socket.z, 1e-9, face.toString());
         }
     }
 
     @Test
-    void everyValidFrameAndPowerStateResolvesToOneModelPerFace() throws Exception {
+    void everyModelHasIntegerCoordinatesAndNoRotation() throws Exception {
+        for (String part : List.of("frame", "glass", "arm_nose", "arm_up", "gimbal_ring", "gimbal_rotor", "item")) {
+            for (JsonElement entry : model(NAME + "_" + part).getAsJsonArray("elements")) {
+                var cube = entry.getAsJsonObject();
+                assertFalse(cube.has("rotation"), part);
+                for (double v : vector(cube.getAsJsonArray("from"))) assertEquals(Math.rint(v), v, part);
+                for (double v : vector(cube.getAsJsonArray("to"))) assertEquals(Math.rint(v), v, part);
+            }
+        }
+    }
+
+    @Test
+    void theNoseAndUpArmsHaveDistinctEndsAndPointTheRightWayInEveryValidFrame() throws Exception {
+        // Source arms: the Nose arm's copper bulb is at the NORTH end (z low), the Up arm's brass bulb at the top.
+        var nose = model(NAME + "_arm_nose").getAsJsonArray("elements");
+        var up = model(NAME + "_arm_up").getAsJsonArray("elements");
+        assertEquals("nose_bulb", nose.get(0).getAsJsonObject().get("name").getAsString());
+        assertEquals(1.0, vector(nose.get(0).getAsJsonObject().getAsJsonArray("from"))[2]);
+        assertEquals("up_bulb", up.get(0).getAsJsonObject().get("name").getAsString());
+        assertEquals(15.0, vector(up.get(0).getAsJsonObject().getAsJsonArray("to"))[1]);
+
         var multipart = json("blockstates/" + NAME + ".json").getAsJsonArray("multipart");
-        for (Direction nose : Direction.values()) {
-            for (Direction up : Direction.values()) {
-                if (!AttitudeOrientation.valid(nose, up)) continue;
-                for (boolean powered : new boolean[]{false, true}) {
-                    var state = Map.of("nose", nose.getSerializedName(), "up", up.getSerializedName(),
-                            "powered", Boolean.toString(powered));
-                    List<String> applied = new ArrayList<>();
-                    for (JsonElement entry : multipart) {
-                        var part = entry.getAsJsonObject();
-                        if (part.has("when") && !matches(part.getAsJsonObject("when"), state)) continue;
-                        applied.add(part.getAsJsonObject("apply").get("model").getAsString());
-                    }
-                    assertEquals(1 + SIDES.size(), applied.size(), nose + "/" + up + "/" + powered);
-                    for (String side : SIDES) {
-                        String role = nose.getSerializedName().equals(side) ? "nose"
-                                : up.getSerializedName().equals(side) ? "up" : "plain";
-                        String suffix = powered ? "_powered" : "";
-                        String expected = NS + ":block/" + NAME + "_" + side + "_" + role + suffix;
-                        assertTrue(applied.contains(expected), nose + "/" + up + "/" + powered + ": " + expected);
+        for (Direction noseFace : Direction.values()) {
+            for (Direction upFace : Direction.values()) {
+                if (!AttitudeOrientation.valid(noseFace, upFace)) continue;
+                var state = Map.of("nose", noseFace.getSerializedName(), "up", upFace.getSerializedName());
+                Direction noseTip = null, upTip = null;
+                int arms = 0, always = 0;
+                for (JsonElement entry : multipart) {
+                    var part = entry.getAsJsonObject();
+                    if (part.has("when") && !matches(part.getAsJsonObject("when"), state)) continue;
+                    var apply = part.getAsJsonObject("apply");
+                    String model = apply.get("model").getAsString();
+                    int x = apply.has("x") ? apply.get("x").getAsInt() : 0;
+                    int y = apply.has("y") ? apply.get("y").getAsInt() : 0;
+                    if (model.endsWith("_arm_nose")) {
+                        arms++;
+                        noseTip = nearest(turn(new double[]{0, 0, -1}, x, y));
+                    } else if (model.endsWith("_arm_up")) {
+                        arms++;
+                        upTip = nearest(turn(new double[]{0, 1, 0}, x, y));
+                    } else {
+                        always++;
                     }
                 }
+                String label = noseFace + "/" + upFace;
+                assertEquals(2, arms, label);
+                assertEquals(STATIC_MODELS.size(), always, label);
+                assertEquals(noseFace, noseTip, label + ": Nose arm tip");
+                assertEquals(upFace, upTip, label + ": Up arm tip");
             }
+        }
+    }
+
+    @Test
+    void theGimbalModelsExistAndNeverAppearInTheBlockstate() throws Exception {
+        for (String part : GIMBAL_MODELS) assertNotNull(model(NAME + "_" + part), part);
+        for (JsonElement entry : json("blockstates/" + NAME + ".json").getAsJsonArray("multipart")) {
+            assertFalse(entry.getAsJsonObject().getAsJsonObject("apply").get("model").getAsString().contains("gimbal"));
         }
     }
 
@@ -181,26 +219,28 @@ class AttitudeReferenceUnitAssetsTest {
     }
 
     @Test
-    void blockstateKeepsNoseUpAndPoweredAndDefaultsToTheStandardFrame() {
+    void blockstateKeepsNoseAndUpAndDefaultsToTheStandardFrame() {
         BlockState state = ModBlocks.ATTITUDE_REFERENCE_UNIT.get().defaultBlockState();
         assertEquals(Direction.NORTH, state.getValue(AttitudeReferenceUnitBlock.NOSE));
         assertEquals(Direction.UP, state.getValue(AttitudeReferenceUnitBlock.UP));
-        assertFalse(state.getValue(AttitudeReferenceUnitBlock.POWERED));
-        assertEquals(6 * 6 * 2, ModBlocks.ATTITUDE_REFERENCE_UNIT.get().getStateDefinition().getPossibleStates().size());
+        assertEquals(6 * 6, ModBlocks.ATTITUDE_REFERENCE_UNIT.get().getStateDefinition().getPossibleStates().size());
+        assertNull(ModBlocks.ATTITUDE_REFERENCE_UNIT.get().getStateDefinition().getProperty("powered"));
     }
 
     @Test
-    void texturesResolveInTheirOwnNamespaceAreOpaqueAndSquare() throws Exception {
-        for (String name : List.of(NAME, NAME + "_powered")) {
+    void texturesAreSquareAndOnlyTheGlassIsTranslucent() throws Exception {
+        for (String name : List.of(NAME + "_parts", NAME + "_glass")) {
             try (var input = getClass().getClassLoader()
                     .getResourceAsStream("assets/" + NS + "/textures/block/" + name + ".png")) {
                 assertNotNull(input, name);
                 BufferedImage image = ImageIO.read(input);
-                assertEquals(32, image.getWidth(), name);
-                assertEquals(32, image.getHeight(), name);
+                assertEquals(image.getWidth(), image.getHeight(), name);
+                boolean glass = name.endsWith("_glass");
                 for (int x = 0; x < image.getWidth(); x++) {
                     for (int y = 0; y < image.getHeight(); y++) {
-                        assertEquals(255, image.getRGB(x, y) >>> 24, name + " opaque at " + x + "," + y);
+                        int alpha = image.getRGB(x, y) >>> 24;
+                        if (glass) assertTrue(alpha > 0 && alpha < 255, name + " translucent at " + x + "," + y);
+                        else assertEquals(255, alpha, name + " opaque at " + x + "," + y);
                     }
                 }
             }

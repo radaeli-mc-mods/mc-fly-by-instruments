@@ -5,12 +5,28 @@ All notable changes to Aeronautics: Fly by Instruments are documented in this fi
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Added the Attitude Reference Unit: a cable endpoint that reads pitch, roll and heading from the aircraft's own pose, with Nose and Up faces set by the wrench or the screen, a level calibration (up to 15° per axis) and an optional damping mode.
+- Added the `attitude_reference_unit` CC:Tweaked peripheral (`getAttitude`, `getRates`, `getConfig`, `setOrientation`, `calibrateLevel`, `resetCalibration`, `setDamping`).
+- Added the `attitude.*` channels to the avionics network: pitch, roll, heading, turn rate, vertical speed and slip.
+
+- Added the Attitude Indicator module (Experimental, creative only): a 2×2 table module with a slanted housing and upright screen on floor tables and a flat plate on wall and ceiling tables.
+- The Attitude Indicator display is live: it draws the pitch and roll of the nearest Attitude Reference Unit on the table's cable network and, on an optional altitude tape, the height of the lowest Radar Altimeter. Both must be on the same aircraft as the table. Without a usable unit the screen goes black with a red ATT flag; near vertical it shows a small amber ATT.
+- Added the Attitude Indicator screen (empty-hand click): the live attitude, the state of each source on the network, and the altitude tape switch. The speed tape is listed as coming soon.
+
+### Changed
+
+- The Attitude Reference Unit is now a glass cube with slim industrial-iron corner posts and a looping gimbal inside; two reference arms (copper-tipped for Nose, brass-tipped for Up) show the configured frame, replacing the face markings. The unused `powered` blockstate property was removed.
+- The GPWS bank angle now prefers the roll of a valid Attitude Reference Unit on the same aircraft, and falls back to the computer's own pose when there is none; `getStatus()` reports the source as `bankSource`.
+
 ## [0.3.0] - 2026-11-01
 
 ### Added
 
 - Added eleven Ponder tutorials in English and Brazilian Portuguese for sensors, wiring, cockpit panels and FMS navigation.
-- Added optional PonderJS, KubeJS and Rhino support for the in-game tutorials.
 
 ### Changed
 

@@ -211,7 +211,8 @@ def generateModMetadata = tasks.register('generateModMetadata', ProcessResources
         aeronautics_version_range  : aeronautics_version_range,
         sable_version_range        : sable_version_range,
         computercraft_version_range: computercraft_version_range,
-        r_ui_lib_version_range     : r_ui_lib_version_range
+        r_ui_lib_version_range     : r_ui_lib_version_range,
+        ponderjs_version_range     : ponderjs_version_range
     ]
     inputs.properties replaceProperties
     expand replaceProperties

@@ -14,6 +14,8 @@
 - [Terrain Scanner: varreduras, cobertura e API CC:Tweaked](terrain-scanner.md)
 - [Avionics Computer: sensores, função GPWS e API CC:Tweaked](avionics-computer.md)
 - [Plano: Avionics Computer e simplificação da mesa](avionics-computer-plan.md)
+- [Plano: Attitude Reference Unit e Attitude Indicator (fases 1, 3 em parte e 4 implementadas)](attitude-reference-unit-plan.md)
+- [Plano: módulo Attitude Indicator na mesa (visual, dados da rede e tela implementados)](attitude-table-module-plan.md)
 - [Fase 4 — GPWS Computer e motor de alertas (arquivado)](gpws-phase-4-plan.md)
 - [PRD e roadmap](../PRD.md)
 

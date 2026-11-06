@@ -36,6 +36,7 @@ public final class ItemTooltips {
             guide(ModBlocks.BUZZER_MODULE.get());
             guide(ModBlocks.FMS_MODULE.get());
             guide(ModBlocks.FMS_NAVIGATOR.get());
+            guide(ModBlocks.ATTITUDE_INDICATOR_MODULE.get());
         });
     }
 

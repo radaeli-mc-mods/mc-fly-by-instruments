@@ -3,6 +3,7 @@ package com.radaeli.aeronauticsflybyinstruments.panel;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import net.minecraft.core.Direction;
 
 /**
  * Occupancy of one table, owned by each module's top-left cell. {@link #place} keeps a footprint
@@ -12,8 +13,18 @@ public final class PanelGrid {
     public static final int SIZE = 3;
     private final List<Module> modules = new ArrayList<>();
 
+    /**
+     * {@code view} is the horizontal direction the player was looking when the module was placed; only the
+     * attitude indicator reads it (see {@link PanelCoordinates#attitudeTurn}).
+     */
     public record Module(String type, int column, int row, int width, int height, String channel, double threshold,
-                         String outputSource, String alertChannel, int minimumSeverity, int buzzerVolume) {
+                         String outputSource, String alertChannel, int minimumSeverity, int buzzerVolume,
+                         Direction view) {
+        public Module(String type, int column, int row, int width, int height, String channel, double threshold,
+                      String outputSource, String alertChannel, int minimumSeverity, int buzzerVolume) {
+            this(type, column, row, width, height, channel, threshold, outputSource, alertChannel, minimumSeverity,
+                    buzzerVolume, Direction.NORTH);
+        }
         public Module(String type, int column, int row, int width, int height) {
             this(type, column, row, width, height, "test", 0.5, "test", "gpws.any", 2, 100);
         }
@@ -84,7 +95,7 @@ public final class PanelGrid {
         var module = existing.get();
         modules.set(modules.indexOf(module), new Module(module.type(), module.column(), module.row(),
                 module.width(), module.height(), channel, threshold, "test", module.alertChannel(),
-                module.minimumSeverity(), module.buzzerVolume()));
+                module.minimumSeverity(), module.buzzerVolume(), module.view()));
         return true;
     }
 
@@ -108,7 +119,7 @@ public final class PanelGrid {
         modules.set(modules.indexOf(module), new Module(module.type(), module.column(), module.row(),
                 module.width(), module.height(), source.equals("test") ? localChannel : module.channel(),
                 source.equals("test") ? localThreshold : module.threshold(), source, alertChannel,
-                minimumSeverity, module.buzzerVolume()));
+                minimumSeverity, module.buzzerVolume(), module.view()));
         return true;
     }
 
@@ -118,7 +129,7 @@ public final class PanelGrid {
         var module = existing.get();
         modules.set(modules.indexOf(module), new Module(module.type(), module.column(), module.row(),
                 module.width(), module.height(), module.channel(), module.threshold(), module.outputSource(),
-                module.alertChannel(), module.minimumSeverity(), volume));
+                module.alertChannel(), module.minimumSeverity(), volume, module.view()));
         return true;
     }
 

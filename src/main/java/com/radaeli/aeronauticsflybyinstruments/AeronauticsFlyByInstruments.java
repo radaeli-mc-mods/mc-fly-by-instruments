@@ -50,6 +50,7 @@ public final class AeronauticsFlyByInstruments {
         modEventBus.addListener(SensorOutputNetwork::registerPayloads);
         modEventBus.addListener(com.radaeli.aeronauticsflybyinstruments.network.AttitudeReferenceNetwork::registerPayloads);
         modEventBus.addListener(FmsNetwork::registerPayloads);
+        modEventBus.addListener(com.radaeli.aeronauticsflybyinstruments.network.AttitudeIndicatorNetwork::registerPayloads);
         modEventBus.addListener(com.radaeli.aeronauticsflybyinstruments.network.WireNetwork::registerPayloads);
         modEventBus.addListener(this::registerCapabilities);
         NeoForge.EVENT_BUS.addListener(PanelNetwork::onPlayerLoggedIn);
@@ -57,10 +58,12 @@ public final class AeronauticsFlyByInstruments {
         if (FMLEnvironment.dist == Dist.CLIENT) {
             PanelClient.register(modEventBus);
             FmsClient.register(modEventBus);
+            com.radaeli.aeronauticsflybyinstruments.client.AttitudeReferenceClient.register(modEventBus);
             com.radaeli.aeronauticsflybyinstruments.client.ItemTooltips.register(modEventBus);
             com.radaeli.aeronauticsflybyinstruments.client.WireClient.register(modEventBus);
             ModularTableModels.register(modEventBus);
             NeoForge.EVENT_BUS.addListener(PanelInputHandler::onMouseScroll);
+            NeoForge.EVENT_BUS.addListener(com.radaeli.aeronauticsflybyinstruments.client.AttitudeDisplayClient::onLoggingOut);
             if (!FMLEnvironment.production) {
                 modEventBus.addListener(TerrainScannerDebug::registerKeyMapping);
                 NeoForge.EVENT_BUS.addListener(TerrainScannerDebug::onClientTick);

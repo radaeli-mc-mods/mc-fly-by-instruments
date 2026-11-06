@@ -1,6 +1,6 @@
 # Plano: Attitude Reference Unit e Attitude Indicator
 
-**Estado:** fase 1 (ARU) e fase 4 (derivados) implementadas; GPWS da fase 3 implementado. Pendentes: o display Attitude Indicator (fase 2) e as saídas de redstone por faixa (resto da fase 3). Decisões em aberto na última seção.
+**Estado:** fase 1 (ARU), fase 2 (display Attitude Indicator ligado à rede, com tela de configuração; sem Ponder) e fase 4 (derivados) implementadas; GPWS da fase 3 implementado. Pendentes: o slip no display, o Ponder e as saídas de redstone por faixa (resto da fase 3). O display **não** recalcula a atitude no cliente: usa a leitura do ARU enviada a 10 Hz e suavizada no cliente (ver [modular-table.md](modular-table.md)). Decisões em aberto na última seção.
 
 ## Objetivo
 
@@ -87,32 +87,25 @@ vetor da face `up` transformado, já com os offsets aplicados:
 `GpwsAttitude` passa a ser `AttitudeMath`, com pitch, roll e heading testados nas
 24 orientações válidas (nível, inclinado, invertido, perto da vertical).
 
-### Visual: faces marcadas
+### Visual: caixa de vidro com hastes de referência (v3, 2026-11-05)
 
-As faces configuradas precisam se distinguir de longe das neutras. A marcação muda
-com o blockstate, sem block entity renderer: funciona em item, Ponder, schematic e
-dentro do sublevel sem custo por frame.
+Substitui os arcos nas faces (v2.1). O bloco é um horizonte artificial visto por dentro: um
+cubo de vidro, quatro postes verticais slim de ferro industrial nas quinas, um gimbal no
+centro e duas hastes de referência que mostram o frame configurado.
 
-- **Blockstate multipart:** o corpo é exportado como 6 partes, uma por face, cada
-  uma com um único elemento do mesmo volume do corpo e só aquela face desenhada. Cada
-  parte tem 3 modelos: `plain`, `nose` e `up`, escolhidos por `nose`/`up`. Não há
-  sobreposição de faces, então não há z-fighting nem coordenada fracionária.
-- **Nariz:** um arco de cobre em volta do socket, aplicado dinamicamente só na face
-  escolhida (sem placa preenchida).
-- **Acima:** um arco de latão no mesmo lugar. Sem seta (lia como "para a frente"), então
-  não há rotação de UV por orientação.
-- **Neutras:** moldura de casing padrão com o socket de dados 4×4 no centro.
-- Aros de latão finos (1 px) só nas arestas de cima e de baixo, fixos; só os arcos mudam com o blockstate.
-- Socket de dados: nas faces marcadas ele fica no centro do arco, mantendo o
-  contrato de `CableSocketProvider` (cabo encaixa em qualquer face).
-- Variante `powered` (redstone) só troca os pixels da fenda, como guia §8.5. A fenda
-  fica nas faces neutras; o exportador gera as combinações `plain`/`nose`/`up` ×
-  `powered`.
-- Testes de assets: as 6 partes cobrem exatamente o volume do corpo, a textura de
-  cada papel é a mesma em todas as faces, toda combinação válida resolve para um
-  modelo e as faces Nariz e Acima ficam em faces perpendiculares nas 24 orientações.
-- Segue a convenção do [guia visual §8.7](visual-design-guide.md#87-faces-configuráveis-por-blockstate)
-  (registrada em 2026-11-04).
+- **Hastes (blockstate, sem animação):** a haste do **Nariz** tem bulbo de cobre na
+  ponta da frente e tampa lisa atrás; a haste do **Acima** tem bulbo de latão em cima e
+  tampa lisa embaixo. Um modelo-fonte por haste (`arm_nose` com a frente em NORTH, `arm_up`
+  com a frente em UP), girado por `x`/`y` do blockstate conforme `nose` e `up`.
+- **Gimbal (BER, não reage a nada):** um anel que balança ±14° em Y e um volante que gira
+  em Z, em loop fixo (`AttitudeReferenceRenderer`). Os modelos `gimbal_ring` e `gimbal_rotor`
+  são registrados como modelos adicionais e não entram no blockstate.
+- **Sockets de dados:** 6 anéis 4×4×1 no centro de cada parede, por fora do vidro; o contrato
+  de `CableSocketProvider` não muda.
+- **Sem `powered`:** o indicador de redstone foi removido (a propriedade nunca era ligada).
+- Testes de assets: volume dos modelos estáticos igual ao `SHAPE`; nas 24 orientações a ponta
+  de cada haste, depois das rotações do blockstate, cai na face de `nose` e de `up`.
+- Convenção registrada no [guia visual §8.7](visual-design-guide.md#87-faces-configuráveis-por-blockstate).
 
 ## Canais na rede
 
@@ -191,8 +184,8 @@ Tipo `attitude_reference_unit`:
 - **Rotação do Create:** exigir RPM para o rotor (spin-up, perda de leitura sem
   rotação, como falha de vácuo). Proposta: opção de servidor, desligada por padrão.
 - **Gestos da wrench:** clique = Nariz (implementado). Scroll = Acima ainda não existe; o Acima é definido só pela tela.
-- **Símbolos das faces:** arco de cobre (Nariz) e arco de latão (Acima) são proposta; validar
-  legibilidade a 16 px no Blockbench antes de fechar o guia.
+- **Hastes de referência:** validar no jogo a leitura das pontas (cobre = Nariz, latão = Acima)
+  a ~5 blocos, através do vidro.
 - **Nome no jogo:** "Attitude Reference Unit" ou "Attitude Gyro".
 - **Footprint do display:** 2×2 (proposto) ou 3×3.
 - **Vertical speed do ARU no GPWS:** substituir a estimativa pelo histórico do Radar
