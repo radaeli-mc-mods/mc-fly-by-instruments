@@ -5,23 +5,18 @@ All notable changes to Aeronautics: Fly by Instruments are documented in this fi
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.4.0-beta.1] - 2026-11-06
 
 ### Added
 
-- Added the Attitude Reference Unit: a cable endpoint that reads pitch, roll and heading from the aircraft's own pose, with Nose and Up faces set by the wrench or the screen, a level calibration (up to 15° per axis) and an optional damping mode.
-- Added the `attitude_reference_unit` CC:Tweaked peripheral (`getAttitude`, `getRates`, `getConfig`, `setOrientation`, `calibrateLevel`, `resetCalibration`, `setDamping`).
-- Added the `attitude.*` channels to the avionics network: pitch, roll, heading, turn rate, vertical speed and slip.
-
-- Added the Attitude Indicator module (Experimental, creative only): a 2×2 table module with a slanted housing and upright screen on floor tables and a flat plate on wall and ceiling tables.
-- The Attitude Indicator display is live: it draws the pitch and roll of the nearest Attitude Reference Unit on the table's cable network and, on an optional altitude tape, the height of the lowest Radar Altimeter. Both must be on the same aircraft as the table. Without a usable unit the screen goes black with a red ATT flag; near vertical it shows a small amber ATT.
-- Added the Attitude Indicator screen (empty-hand click): the live attitude, the state of each source on the network, and the altitude tape switch. The speed tape is listed as coming soon.
-- Added three Ponder tutorials in English and Brazilian Portuguese for the Experimental attitude devices: setting the aircraft frame (Attitude Reference Unit), reading the artificial horizon (installing the Attitude Indicator) and sources, tapes and ATT flags. They open from the Attitude Reference Unit, the Attitude Indicator, the Modular Table and the Radar Altimeter.
+- Added the Attitude Reference Unit, a configurable aircraft instrument that measures pitch, roll, heading, turn rate, vertical speed and slip, with level calibration and optional damping.
+- Added CC:Tweaked and avionics network access to Attitude Reference Unit readings and settings.
+- Added the Experimental, creative-only Attitude Indicator for Modular Tables, displaying pitch and roll from a connected Attitude Reference Unit with an optional Radar Altimeter tape and source status.
+- Added three Ponder tutorials in English and Brazilian Portuguese for setting up and using the Attitude Reference Unit and Attitude Indicator.
 
 ### Changed
 
-- The Attitude Reference Unit is now a glass cube with slim industrial-iron corner posts and a looping gimbal inside; two reference arms (copper-tipped for Nose, brass-tipped for Up) show the configured frame, replacing the face markings. The unused `powered` blockstate property was removed.
-- The GPWS bank angle now prefers the roll of a valid Attitude Reference Unit on the same aircraft, and falls back to the computer's own pose when there is none; `getStatus()` reports the source as `bankSource`.
+- The Avionics Computer uses a valid Attitude Reference Unit on the same aircraft for its bank warning, and falls back to its own orientation when no unit is available.
 
 ## [0.3.0] - 2026-11-01
 
