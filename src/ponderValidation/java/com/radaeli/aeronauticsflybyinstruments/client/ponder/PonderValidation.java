@@ -58,12 +58,12 @@ public final class PonderValidation {
                     done = true; LogUtils.getLogger().info("FBI_PONDER_OPTIONAL_ABSENCE_PASSED kubejs={}",
                             net.neoforged.fml.ModList.get().isLoaded("kubejs")); mc.stop(); return;
                 }
-                if (entries.size() != 28) throw new IllegalStateException("Expected 28 item/scene associations, got " + entries.size());
+                if (entries.size() != 35) throw new IllegalStateException("Expected 35 item/scene associations, got " + entries.size());
                 // Entries for multiple items reuse a board but PonderJS wraps it per registration call.
                 scenes = PonderIndex.getSceneAccess().compile(entries).stream()
                         .collect(java.util.stream.Collectors.toMap(PonderScene::getId, s -> s, (a,b) -> a, LinkedHashMap::new))
                         .values().stream().toList();
-                if (scenes.size() != 11) throw new IllegalStateException("Expected 11 scenes, got " + scenes.size());
+                if (scenes.size() != 14) throw new IllegalStateException("Expected 14 scenes, got " + scenes.size());
                 for (PonderScene scene : scenes) {
                     for (int replay = 0; replay < 2; replay++) {
                         scene.begin();

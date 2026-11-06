@@ -30,10 +30,15 @@ public final class ModularTableRenderer implements BlockEntityRenderer<ModularTa
     private final LampModuleRenderer lamps2x1 = new LampModuleRenderer(ModBlocks.LAMP_MODULE_2X1.get());
     private final ItemStack buzzerStack = new ItemStack(ModBlocks.BUZZER_MODULE.get());
     private final ItemStack fmsStack = new ItemStack(ModBlocks.FMS_MODULE.get());
-    /** Attitude indicator: the wedge for tables facing up, the flat plate (custom model data 1) for the others. */
+    /**
+     * Attitude indicator: the item's own model is the pocket gauge, so the table asks for its models through custom
+     * model data: 2 = the wedge for tables facing up, 1 = the flat plate for the others.
+     */
     private final ItemStack attitudeWedgeStack = new ItemStack(ModBlocks.ATTITUDE_INDICATOR_MODULE.get());
     private final ItemStack attitudePlateStack = new ItemStack(ModBlocks.ATTITUDE_INDICATOR_MODULE.get());
     {
+        attitudeWedgeStack.set(net.minecraft.core.component.DataComponents.CUSTOM_MODEL_DATA,
+                new net.minecraft.world.item.component.CustomModelData(2));
         attitudePlateStack.set(net.minecraft.core.component.DataComponents.CUSTOM_MODEL_DATA,
                 new net.minecraft.world.item.component.CustomModelData(1));
     }
@@ -195,7 +200,7 @@ public final class ModularTableRenderer implements BlockEntityRenderer<ModularTa
         var model = items.getModel(stack, table.getLevel(), null, 0);
         items.renderModelLists(model, stack, light, overlay, poses, buffers.getBuffer(Sheets.solidBlockSheet()));
         AttitudeDisplayRenderer.render(poses, buffers, wedge,
-                AttitudeDisplayClient.state(table.getBlockPos(), module.column(), module.row()));
+                AttitudeDisplayClient.state(table.getLevel(), table.getBlockPos(), module.column(), module.row()));
         poses.popPose();
     }
 

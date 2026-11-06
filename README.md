@@ -110,7 +110,7 @@ watches them all, then warns you before you fly into trouble.
 
 <p align="center" style="background-color: #F4ECD0; text-align: center;"><img src="https://raw.githubusercontent.com/radaelilucca/mc-fly-by-instruments/main/docs/gallery/section-titles/how-do-i-use-it.png" alt="HOW DO I USE IT?" width="371"></p>
 
-With PonderJS, KubeJS and Rhino installed on your client, hold **W** over a supported item for an animated tutorial. The eleven [Ponder tutorials](https://mods.radaeli.dev/en/mods/fly-by-instruments/player/ponder) cover sensors, wiring, cockpit panels and FMS navigation in English and Brazilian Portuguese.
+With PonderJS, KubeJS and Rhino installed on your client, hold **W** over a supported item for an animated tutorial. The fourteen [Ponder tutorials](https://mods.radaeli.dev/en/mods/fly-by-instruments/player/ponder) cover sensors, wiring, cockpit panels, FMS navigation and the Experimental Attitude Reference Unit and Attitude Indicator in English and Brazilian Portuguese.
 
 **Right-click a sensor** to open its output screen.
 
