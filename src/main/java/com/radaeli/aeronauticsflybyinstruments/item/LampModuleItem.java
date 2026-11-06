@@ -32,7 +32,8 @@ public final class LampModuleItem extends Item {
         if (!TablePanel.canFit(table, column, row, width, height)) return InteractionResult.FAIL;
         if (!level.isClientSide) {
             boolean placed = table.placeSpanning(type, column, row, width, height,
-                    type.equals("fms") ? FmsModuleItem.load(context.getItemInHand()) : null);
+                    type.equals("fms") ? FmsModuleItem.load(context.getItemInHand()) : null,
+                    context.getHorizontalDirection());
             if (!placed) return InteractionResult.FAIL;
             context.getItemInHand().consume(1, context.getPlayer());
             context.getPlayer().getInventory().setChanged();

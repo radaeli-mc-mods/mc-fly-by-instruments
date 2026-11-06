@@ -158,9 +158,11 @@ const AXES = { north: [0, 1], south: [0, 1], east: [2, 1], west: [2, 1], up: [0,
  * Fails on rotated cuboids, fractional coordinates or any face that is not 1 texel per unit.
  * renderType: e.g. 'minecraft:translucent' for glass; writeBase: false when only the variants are runtime models.
  * textures: 'write' (this source owns its PNGs) or 'verify' (PNGs owned by another source must match pixel for pixel).
+ * rotatable: { cubeName: angle } — the only cuboids allowed to turn, about X only, by 22.5 degrees (the Minecraft
+ * element limit) around the cube's own origin; the sloped lid of the Attitude Indicator wedge (guide §3).
  */
 export function exportBlockModel({ projectUrl, assetsUrl, model, variants = {}, renderType = null, writeBase = true,
-                                   textures: textureMode = 'write' }) {
+                                   textures: textureMode = 'write', rotatable = {} }) {
   const project = JSON.parse(readFileSync(projectUrl, 'utf8'));
   assert.equal(project.meta.model_format, 'java_block');
   const base = t => t.name.replace(/\.png$/, '');
@@ -187,7 +189,11 @@ export function exportBlockModel({ projectUrl, assetsUrl, model, variants = {}, 
   const elements = project.elements.map(c => {
     assert.equal(c.type, 'cube');
     assert.ok(SIDES.every(side => side in c.faces), `${c.name}: all six faces listed (Blockbench cannot open it otherwise)`);
-    assert.ok(!c.rotation?.some(v => v !== 0), `${c.name}: cuboids stay unrotated`);
+    const turn = c.rotation ?? [0, 0, 0];
+    const allowed = rotatable[c.name];
+    if (allowed === undefined) assert.ok(turn.every(v => v === 0), `${c.name}: cuboids stay unrotated`);
+    else assert.ok(turn[1] === 0 && turn[2] === 0 && turn[0] === allowed && Math.abs(allowed) === 22.5,
+      `${c.name}: only a 22.5 degree turn about X (${allowed})`);
     for (const v of [...c.from, ...c.to]) assert.ok(Number.isInteger(v), `${c.name}: integer coordinates`);
     const size = [0, 1, 2].map(i => c.to[i] - c.from[i]);
     const faces = {};
@@ -203,7 +209,8 @@ export function exportBlockModel({ projectUrl, assetsUrl, model, variants = {}, 
       if (f.rotation) faces[side].rotation = f.rotation;
       used.add(f.texture);
     }
-    return { name: c.name, from: c.from, to: c.to, faces };
+    return { name: c.name, from: c.from, to: c.to,
+      ...(allowed === undefined ? {} : { rotation: { angle: allowed, axis: 'x', origin: c.origin } }), faces };
   });
   const particle = project.textures.findIndex(t => t.particle);
   const write = (suffix, swap) => {

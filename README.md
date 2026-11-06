@@ -110,7 +110,7 @@ watches them all, then warns you before you fly into trouble.
 
 <p align="center" style="background-color: #F4ECD0; text-align: center;"><img src="https://raw.githubusercontent.com/radaelilucca/mc-fly-by-instruments/main/docs/gallery/section-titles/how-do-i-use-it.png" alt="HOW DO I USE IT?" width="371"></p>
 
-With PonderJS, KubeJS and Rhino installed on your client, hold **W** over a supported item for an animated tutorial. The eleven [Ponder tutorials](https://mods.radaeli.dev/en/mods/flight-safety-instruments/player/ponder) cover sensors, wiring, cockpit panels and FMS navigation in English and Brazilian Portuguese.
+With PonderJS, KubeJS and Rhino installed on your client, hold **W** over a supported item for an animated tutorial. The eleven [Ponder tutorials](https://mods.radaeli.dev/en/mods/fly-by-instruments/player/ponder) cover sensors, wiring, cockpit panels and FMS navigation in English and Brazilian Portuguese.
 
 **Right-click a sensor** to open its output screen.
 
@@ -175,9 +175,9 @@ end
 
 Full API reference: [Radar Altimeter](https://github.com/radaelilucca/mc-fly-by-instruments/blob/main/docs/radar-altimeter.md) ·
 [Terrain Scanners](https://github.com/radaelilucca/mc-fly-by-instruments/blob/main/docs/terrain-scanner.md) ·
-[Computer Craft API and Lua examples](https://mods.radaeli.dev/en/mods/flight-safety-instruments/player/computer-craft).
+[Computer Craft API and Lua examples](https://mods.radaeli.dev/en/mods/fly-by-instruments/player/computer-craft).
 
-Browse the [online guide](https://mods.radaeli.dev/en/mods/flight-safety-instruments/) for the sensors, the [Avionics Computer](https://mods.radaeli.dev/en/mods/flight-safety-instruments/player/avionics-computer), the [Modular Table](https://mods.radaeli.dev/en/mods/flight-safety-instruments/player/modular-table) and the [Avionics Wire](https://mods.radaeli.dev/en/mods/flight-safety-instruments/player/avionics-network).
+Browse the [online guide](https://mods.radaeli.dev/en/mods/fly-by-instruments/) for the sensors, the [Avionics Computer](https://mods.radaeli.dev/en/mods/fly-by-instruments/player/avionics-computer), the [Modular Table](https://mods.radaeli.dev/en/mods/fly-by-instruments/player/modular-table) and the [Avionics Wire](https://mods.radaeli.dev/en/mods/fly-by-instruments/player/avionics-network).
 
 ---
 
@@ -216,7 +216,7 @@ For the avionics suite:
 
 ---
 
-The **Avionics Network Bridge** remains **Experimental** and creative-only. See the [documentation](https://mods.radaeli.dev/en/mods/flight-safety-instruments/) for setup and usage.
+The **Avionics Network Bridge** remains **Experimental** and creative-only. See the [documentation](https://mods.radaeli.dev/en/mods/fly-by-instruments/) for setup and usage.
 
 ---
 
@@ -235,4 +235,4 @@ to this page is appreciated.
 
 ---
 
-*Getting started: [player guide](https://mods.radaeli.dev/en/mods/flight-safety-instruments/player/). References: [Computer Craft API and examples](https://mods.radaeli.dev/en/mods/flight-safety-instruments/player/computer-craft) · [sensors](https://mods.radaeli.dev/en/mods/flight-safety-instruments/player/sensors) · [all guides](https://mods.radaeli.dev/en/mods/flight-safety-instruments/). Development setup: [source guide](https://github.com/radaelilucca/mc-fly-by-instruments/blob/main/docs/development.md). What changed in each version: [CHANGELOG](https://github.com/radaelilucca/mc-fly-by-instruments/blob/main/CHANGELOG.md).*
+*Getting started: [player guide](https://mods.radaeli.dev/en/mods/fly-by-instruments/player/). References: [Computer Craft API and examples](https://mods.radaeli.dev/en/mods/fly-by-instruments/player/computer-craft) · [sensors](https://mods.radaeli.dev/en/mods/fly-by-instruments/player/sensors) · [all guides](https://mods.radaeli.dev/en/mods/fly-by-instruments/). Development setup: [source guide](https://github.com/radaelilucca/mc-fly-by-instruments/blob/main/docs/development.md). What changed in each version: [CHANGELOG](https://github.com/radaelilucca/mc-fly-by-instruments/blob/main/CHANGELOG.md).*

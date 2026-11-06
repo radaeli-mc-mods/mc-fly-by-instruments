@@ -46,6 +46,58 @@ class ModularTableBlockEntityTest {
         }
     }
 
+    /** The server syncs the table through its update tag: a module type the loader rejects vanishes on the client. */
+    @Test
+    void attitudeIndicatorSurvivesSaveAndClientSync() {
+        var original = table();
+        assertTrue(original.placeSpanning(PanelCoordinates.ATTITUDE_INDICATOR, 0, 0, 2, 2, null));
+        assertFalse(original.placeLamp(1, 1), "The 2x2 takes its four cells");
+        for (var data : new CompoundTag[]{original.saveWithoutMetadata(REGISTRIES), original.getUpdateTag(REGISTRIES)}) {
+            var restored = table();
+            restored.loadCustomOnly(data, REGISTRIES);
+            assertEquals(original.grid().modules(), restored.grid().modules());
+            assertEquals(1, restored.grid().modules().size());
+            assertTrue(restored.removeModule(1, 1));
+            assertTrue(restored.grid().modules().isEmpty());
+        }
+    }
+
+    @Test
+    void attitudeIndicatorSettingsPersistSyncAndDieWithTheModule() {
+        var original = table();
+        assertTrue(original.attitudeIndicatorAt(0, 0).isEmpty());
+        assertFalse(original.setAttitudeAltitudeTape(0, 0, false), "Nothing there to configure");
+        assertTrue(original.placeSpanning(PanelCoordinates.ATTITUDE_INDICATOR, 1, 1, 2, 2, null));
+        assertTrue(original.attitudeIndicatorAt(1, 1).orElseThrow().altitudeTape(), "The tape is on by default");
+        assertTrue(original.attitudeIndicatorAt(2, 2).isPresent(), "Any cell of the footprint finds the module");
+        assertTrue(original.setAttitudeAltitudeTape(2, 2, false));
+        assertFalse(original.attitudeIndicatorAt(1, 1).orElseThrow().altitudeTape());
+        assertFalse(original.setAttitudeAltitudeTape(0, 0, true));
+
+        for (var data : new CompoundTag[]{original.saveWithoutMetadata(REGISTRIES), original.getUpdateTag(REGISTRIES)}) {
+            var restored = table();
+            restored.loadCustomOnly(data, REGISTRIES);
+            assertFalse(restored.attitudeIndicatorAt(1, 1).orElseThrow().altitudeTape());
+        }
+
+        assertTrue(original.removeModule(1, 1));
+        assertTrue(original.attitudeIndicatorAt(1, 1).isEmpty());
+        assertTrue(original.placeSpanning(PanelCoordinates.ATTITUDE_INDICATOR, 1, 1, 2, 2, null));
+        assertTrue(original.attitudeIndicatorAt(1, 1).orElseThrow().altitudeTape(),
+                "A new module starts from the defaults, not from the one removed");
+    }
+
+    @Test
+    void anAttitudeIndicatorSavedBeforeItHadSettingsKeepsTheDefaults() {
+        var original = table();
+        assertTrue(original.placeSpanning(PanelCoordinates.ATTITUDE_INDICATOR, 0, 0, 2, 2, null));
+        var data = original.saveWithoutMetadata(REGISTRIES);
+        data.getList("Modules", net.minecraft.nbt.Tag.TAG_COMPOUND).getCompound(0).remove("AttitudeData");
+        var restored = table();
+        restored.loadCustomOnly(data, REGISTRIES);
+        assertTrue(restored.attitudeIndicatorAt(0, 0).orElseThrow().altitudeTape());
+    }
+
     @Test
     void newModulesUseGpwsDefaultsAndLegacyModuleDataKeepsLocalTestMode() {
         var table = table();

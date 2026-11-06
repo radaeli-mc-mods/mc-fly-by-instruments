@@ -18,6 +18,7 @@ import com.radaeli.aeronauticsflybyinstruments.item.FmsModuleItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.server.level.ServerLevel;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
@@ -46,6 +47,10 @@ public final class ModularTableBlockEntity extends BlockEntity implements Avioni
     private final Map<String, Double> testSignals = new HashMap<>();
     private final Map<Integer, Integer> lampTestIntensities = new HashMap<>();
     private final Map<Integer, FmsModuleData> fmsModules = new HashMap<>();
+    /** Settings of each Attitude Indicator, by origin cell; created on first use. */
+    private final Map<Integer, AttitudeIndicatorData> attitudeModules = new HashMap<>();
+    /** What each Attitude Indicator's clients were last told, and when (game time). Server only, not saved. */
+    private final Map<Integer, SentAttitude> attitudeSent = new HashMap<>();
     private final Map<java.util.UUID, FmsSignalSnapshot> fmsSignals = new HashMap<>();
     private long lastFmsSignalUpdate = Long.MIN_VALUE;
     private Map<String, Integer> gpwsSeverities = Map.of();
@@ -191,6 +196,8 @@ public final class ModularTableBlockEntity extends BlockEntity implements Avioni
         grid = new PanelGrid();
         installationTokens.clear();
         fmsModules.clear();
+        attitudeModules.clear();
+        attitudeSent.clear();
         fmsSignals.clear();
         lampTestIntensities.clear();
         return stacks;
@@ -284,8 +291,13 @@ public final class ModularTableBlockEntity extends BlockEntity implements Avioni
     }
 
     private static PanelGrid.Module defaultAlertModule(String type, int column, int row, int width, int height) {
+        return defaultAlertModule(type, column, row, width, height, Direction.NORTH);
+    }
+
+    private static PanelGrid.Module defaultAlertModule(String type, int column, int row, int width, int height,
+                                                       Direction view) {
         return new PanelGrid.Module(type, column, row, width, height,
-                "test", 0.5, "gpws", "gpws.any", 2, 100);
+                "test", 0.5, "gpws", "gpws.any", 2, 100, view);
     }
 
     public boolean placeFmsModule(int column, int row, FmsModuleData data) {
@@ -319,8 +331,14 @@ public final class ModularTableBlockEntity extends BlockEntity implements Avioni
      * joined tables after it. Callers check the whole footprint with {@link TablePanel#canFit} first.
      */
     public boolean placeSpanning(String type, int column, int row, int width, int height, FmsModuleData fms) {
+        return placeSpanning(type, column, row, width, height, fms, Direction.NORTH);
+    }
+
+    /** As above; {@code view} is the horizontal direction the player looks when placing (see {@link PanelGrid.Module#view()}). */
+    public boolean placeSpanning(String type, int column, int row, int width, int height, FmsModuleData fms,
+                                 Direction view) {
         if (type.equals("fms")) return placeFms(column, row, width, height, fms, true);
-        return placeModule(defaultAlertModule(type, column, row, width, height), true);
+        return placeModule(defaultAlertModule(type, column, row, width, height, view), true);
     }
 
     private boolean placeModule(PanelGrid.Module module) {
@@ -332,6 +350,78 @@ public final class ModularTableBlockEntity extends BlockEntity implements Avioni
         lampTestIntensities.remove(cellKey(module.column(), module.row()));
         changed("placed", module);
         return true;
+    }
+
+    // --- Attitude Indicator ----------------------------------------------------------------
+
+    /** Ticks between samples of the attitude feed (10 Hz): the clients smooth between them. */
+    static final int ATTITUDE_SAMPLE_TICKS = 2;
+    /** An unchanged feed is still repeated this often, so a player who just came into range gets it. */
+    static final int ATTITUDE_HEARTBEAT_TICKS = 20;
+
+    private record SentAttitude(AttitudeIndicatorFeed.Sample sample, long gameTime) {}
+
+    /** Settings of the Attitude Indicator at this origin cell, or empty when there is none. */
+    public java.util.Optional<AttitudeIndicatorData> attitudeIndicatorAt(int column, int row) {
+        var module = grid.at(column, row).filter(found -> found.type().equals(PanelCoordinates.ATTITUDE_INDICATOR));
+        if (module.isEmpty()) return java.util.Optional.empty();
+        var found = module.orElseThrow();
+        return java.util.Optional.of(attitudeModules.computeIfAbsent(cellKey(found.column(), found.row()),
+                ignored -> new AttitudeIndicatorData()).copy());
+    }
+
+    public boolean setAttitudeAltitudeTape(int column, int row, boolean shown) {
+        var module = grid.at(column, row).filter(found -> found.type().equals(PanelCoordinates.ATTITUDE_INDICATOR));
+        if (module.isEmpty()) return false;
+        var found = module.orElseThrow();
+        var data = attitudeModules.computeIfAbsent(cellKey(found.column(), found.row()),
+                ignored -> new AttitudeIndicatorData());
+        if (data.altitudeTape() == shown) return true;
+        data.setAltitudeTape(shown);
+        setChanged();
+        syncClient();
+        // The displays redraw at once instead of waiting for the next sample.
+        attitudeSent.remove(cellKey(found.column(), found.row()));
+        return true;
+    }
+
+    /** The feed of the Attitude Indicator at this origin cell as of now; server only. */
+    public AttitudeIndicatorFeed.Sample attitudeSample(int column, int row) {
+        var data = attitudeIndicatorAt(column, row);
+        if (data.isEmpty() || !(level instanceof ServerLevel serverLevel)) return AttitudeIndicatorFeed.Sample.DISCONNECTED;
+        var source = connectedSource(serverLevel, TablePanel.of(this));
+        return AttitudeIndicatorSampler.sample(serverLevel, this, source.position(), source.topology(),
+                data.get().altitudeTape(), serverLevel.getGameTime());
+    }
+
+    /** Samples every Attitude Indicator of this table and tells the players watching it what changed. */
+    private void sampleAttitudeIndicators(ServerLevel serverLevel, long now) {
+        var indicators = grid.modules().stream()
+                .filter(module -> module.type().equals(PanelCoordinates.ATTITUDE_INDICATOR)).toList();
+        if (indicators.isEmpty()) {
+            attitudeSent.clear();
+            return;
+        }
+        // Tables take turns, so a big panel does not sample everything in one tick.
+        if (Math.floorMod(now + worldPosition.asLong(), (long) ATTITUDE_SAMPLE_TICKS) != 0) return;
+        var source = connectedSource(serverLevel, TablePanel.of(this));
+        for (var module : indicators) {
+            int key = cellKey(module.column(), module.row());
+            boolean tape = attitudeModules.computeIfAbsent(key, ignored -> new AttitudeIndicatorData()).altitudeTape();
+            var sample = AttitudeIndicatorSampler.sample(serverLevel, this, source.position(), source.topology(),
+                    tape, now);
+            var last = attitudeSent.get(key);
+            if (last != null && !sample.differsFrom(last.sample()) && now - last.gameTime() < ATTITUDE_HEARTBEAT_TICKS) {
+                continue;
+            }
+            attitudeSent.put(key, new SentAttitude(sample, now));
+            net.neoforged.neoforge.network.PacketDistributor.sendToPlayersTrackingChunk(serverLevel,
+                    new net.minecraft.world.level.ChunkPos(worldPosition),
+                    com.radaeli.aeronauticsflybyinstruments.network.AttitudeDisplayPayload.of(worldPosition,
+                            module.column(), module.row(), sample));
+        }
+        attitudeSent.keySet().removeIf(key -> indicators.stream()
+                .noneMatch(module -> cellKey(module.column(), module.row()) == key));
     }
 
     public record FmsModuleAt(int column, int row, FmsModuleData data) {}
@@ -464,6 +554,7 @@ public final class ModularTableBlockEntity extends BlockEntity implements Avioni
             table.lastFmsSignalUpdate = now;
             if (table.grid.modules().stream().anyMatch(module -> module.type().equals("fms"))) table.sampleFmsSignals(true);
         }
+        table.sampleAttitudeIndicators(level, now);
         var panel = TablePanel.of(table);
         panel.tickAlerts(table, now, interval, () -> sampleGpwsAlerts(level, panel),
                 (owner, module, severity) -> PanelAudio.play(level, owner, module, severity, module.buzzerVolume()));
@@ -488,6 +579,29 @@ public final class ModularTableBlockEntity extends BlockEntity implements Avioni
         return Math.round(intensity * ceiling / 15.0f);
     }
 
+    /** The cable network a panel is read from: where it was discovered and what it holds. */
+    private record NetworkSource(BlockPos position, com.radaeli.aeronauticsflybyinstruments.avionics.NetworkSnapshot topology) {}
+
+    /**
+     * A cable on any joined table feeds the whole panel: the leader's network, or else the first member's that is
+     * complete. When none is, the leader's incomplete network stands (its status is what the panel reports).
+     */
+    private static NetworkSource connectedSource(ServerLevel serverLevel, TablePanel panel) {
+        var leader = panel.leader();
+        BlockPos source = leader.worldPosition;
+        var topology = AvionicsNetworkManager.snapshot(serverLevel, source);
+        for (var member : panel.members()) {
+            if (topology.status() == NetworkStatus.CONNECTED) break;
+            if (member == leader) continue;
+            var candidate = AvionicsNetworkManager.snapshot(serverLevel, member.worldPosition);
+            if (candidate.status() == NetworkStatus.CONNECTED) {
+                topology = candidate;
+                source = member.worldPosition;
+            }
+        }
+        return new NetworkSource(source, topology);
+    }
+
     /**
      * Run by the panel leader for every joined table: a cable on any of them feeds the whole
      * panel, and mute clears on all of them together.
@@ -497,17 +611,9 @@ public final class ModularTableBlockEntity extends BlockEntity implements Avioni
         if (members.stream().noneMatch(member -> member.grid.modules().stream()
                 .anyMatch(module -> isLampModule(module) || module.type().equals("buzzer")))) return;
         var leader = panel.leader();
-        BlockPos source = leader.worldPosition;
-        var topology = AvionicsNetworkManager.snapshot(serverLevel, source);
-        for (var member : members) {
-            if (topology.status() == NetworkStatus.CONNECTED) break;
-            if (member == leader) continue;
-            var candidate = AvionicsNetworkManager.snapshot(serverLevel, member.worldPosition);
-            if (candidate.status() == NetworkStatus.CONNECTED) {
-                topology = candidate;
-                source = member.worldPosition;
-            }
-        }
+        var network = connectedSource(serverLevel, panel);
+        BlockPos source = network.position();
+        var topology = network.topology();
         Map<String, Integer> updated = new HashMap<>();
         boolean foundGpws = false;
         if (topology.status() == NetworkStatus.CONNECTED) {
@@ -647,6 +753,10 @@ public final class ModularTableBlockEntity extends BlockEntity implements Avioni
                 var data = fmsModules.remove(cellKey(module.column(), module.row()));
                 if (data != null) fmsSignals.remove(data.id());
             }
+            if (module.type().equals(PanelCoordinates.ATTITUDE_INDICATOR)) {
+                attitudeModules.remove(cellKey(module.column(), module.row()));
+                attitudeSent.remove(cellKey(module.column(), module.row()));
+            }
             changed("removed", module);
         });
         return removed.isPresent();
@@ -687,9 +797,14 @@ public final class ModularTableBlockEntity extends BlockEntity implements Avioni
             entry.putString("AlertChannel", module.alertChannel());
             entry.putInt("MinimumSeverity", module.minimumSeverity());
             entry.putInt("BuzzerVolume", module.buzzerVolume());
+            entry.putString("View", module.view().getName());
             if (module.type().equals("fms")) {
                 var data = fmsModules.get(cellKey(module.column(), module.row()));
                 if (data != null) entry.put("FmsData", data.save());
+            }
+            if (module.type().equals(PanelCoordinates.ATTITUDE_INDICATOR)) {
+                var data = attitudeModules.get(cellKey(module.column(), module.row()));
+                if (data != null) entry.put("AttitudeData", data.save());
             }
             list.add(entry);
         }
@@ -705,6 +820,7 @@ public final class ModularTableBlockEntity extends BlockEntity implements Avioni
         grid = new PanelGrid();
         installationTokens.clear();
         fmsModules.clear();
+        attitudeModules.clear();
         fmsSignals.clear();
         var list = tag.getList("Modules", Tag.TAG_COMPOUND);
         for (int i = 0; i < list.size(); i++) {
@@ -718,7 +834,8 @@ public final class ModularTableBlockEntity extends BlockEntity implements Avioni
                     && (width == 2 && height == 1 || width == 1 && height == 2);
             boolean validBuzzer = type.equals("buzzer") && width == 1 && height == 1;
             boolean validFms = type.equals("fms") && width == 2 && (height == 3 || height == 2);
-            if (validLamp || validLamp2x1 || validBuzzer || validFms) {
+            boolean validAttitude = type.equals(PanelCoordinates.ATTITUDE_INDICATOR) && width == 2 && height == 2;
+            if (validLamp || validLamp2x1 || validBuzzer || validFms || validAttitude) {
                 String channel = entry.contains("Channel", Tag.TAG_STRING) ? entry.getString("Channel") : "test";
                 double threshold = entry.contains("Threshold", Tag.TAG_DOUBLE) ? entry.getDouble("Threshold") : 0.5;
                 String outputSource = entry.contains("OutputSource", Tag.TAG_STRING)
@@ -729,6 +846,9 @@ public final class ModularTableBlockEntity extends BlockEntity implements Avioni
                         ? entry.getInt("MinimumSeverity") : 2;
                 int buzzerVolume = entry.contains("BuzzerVolume", Tag.TAG_INT)
                         ? entry.getInt("BuzzerVolume") : 100;
+                // Saves from before the attitude indicator turned had no view: they keep the old north view.
+                Direction view = Direction.byName(entry.getString("View"));
+                if (view == null || !view.getAxis().isHorizontal()) view = Direction.NORTH;
                 if (!channel.isBlank() && channel.length() <= 64 && Double.isFinite(threshold)
                         && (outputSource.equals("test") || outputSource.equals("gpws")
                             || outputSource.equals(LampIndication.SOURCE_REDSTONE_LINK))
@@ -737,10 +857,14 @@ public final class ModularTableBlockEntity extends BlockEntity implements Avioni
                     int column = entry.getInt("Column");
                     int row = entry.getInt("Row");
                     // Spanning footprints restore as saved; serverTick drops them if a table is gone.
-                    if (grid.placeAnchored(new PanelGrid.Module(type, column, row, width, height,
-                            channel, threshold, outputSource, alertChannel, minimumSeverity, buzzerVolume)) && validFms) {
+                    boolean restored = grid.placeAnchored(new PanelGrid.Module(type, column, row, width, height,
+                            channel, threshold, outputSource, alertChannel, minimumSeverity, buzzerVolume, view));
+                    if (restored && validFms) {
                         fmsModules.put(cellKey(column, row), entry.contains("FmsData", Tag.TAG_COMPOUND)
                                 ? FmsModuleData.load(entry.getCompound("FmsData")) : new FmsModuleData());
+                    } else if (restored && validAttitude && entry.contains("AttitudeData", Tag.TAG_COMPOUND)) {
+                        attitudeModules.put(cellKey(column, row),
+                                AttitudeIndicatorData.load(entry.getCompound("AttitudeData")));
                     }
                 }
             }
@@ -753,7 +877,7 @@ public final class ModularTableBlockEntity extends BlockEntity implements Avioni
             int height = grid.canFit(module.column(), module.row(), 2, 3) ? 3 : 2;
             grid.place(new PanelGrid.Module(module.type(), module.column(), module.row(), 2, height,
                     module.channel(), module.threshold(), module.outputSource(), module.alertChannel(),
-                    module.minimumSeverity(), module.buzzerVolume()));
+                    module.minimumSeverity(), module.buzzerVolume(), module.view()));
         }
         testSignals.clear();
         if (tag.contains("TestSignals", Tag.TAG_COMPOUND)) {

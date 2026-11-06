@@ -34,6 +34,7 @@ public final class ModCreativeTabs {
                         output.accept(ModBlocks.BUZZER_MODULE);
                         output.accept(ModBlocks.FMS_MODULE);
                         output.accept(ModBlocks.FMS_NAVIGATOR);
+                        output.accept(ModBlocks.ATTITUDE_INDICATOR_MODULE);
                     })
                     .build());
 

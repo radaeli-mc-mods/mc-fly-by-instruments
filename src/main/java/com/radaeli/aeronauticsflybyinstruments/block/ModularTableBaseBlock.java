@@ -152,13 +152,19 @@ public final class ModularTableBaseBlock extends Block implements EntityBlock, A
             var owner = placed.get().owner();
             FmsNetwork.open(serverPlayer, owner.getBlockPos(), module.get().column(), module.get().row(), owner);
         }
+        boolean attitude = module.filter(value -> value.type().equals(PanelCoordinates.ATTITUDE_INDICATOR)).isPresent();
+        if (attitude && !level.isClientSide && player instanceof ServerPlayer serverPlayer) {
+            var owner = placed.get().owner();
+            com.radaeli.aeronauticsflybyinstruments.network.AttitudeIndicatorNetwork.open(serverPlayer, owner,
+                    module.get().column(), module.get().row());
+        }
         boolean controlPanel = module.isEmpty() || module.filter(value -> value.type().equals("lamp")
                 || value.type().equals("lamp_2x1") || value.type().equals("buzzer")).isPresent();
         if (controlPanel && !level.isClientSide && player instanceof ServerPlayer serverPlayer) {
             PanelNetwork.open(serverPlayer, table, placed.map(found -> TablePanel.of(table).toPanel(table, found))
                     .orElse(null));
         }
-        return module.filter(value -> value.type().equals("fms")).isPresent() || controlPanel
+        return module.filter(value -> value.type().equals("fms")).isPresent() || attitude || controlPanel
                 ? net.minecraft.world.InteractionResult.sidedSuccess(level.isClientSide)
                 : net.minecraft.world.InteractionResult.PASS;
     }
@@ -218,6 +224,8 @@ public final class ModularTableBaseBlock extends Block implements EntityBlock, A
             case "lamp_2x1" -> new ItemStack(ModBlocks.LAMP_MODULE_2X1.get());
             case "buzzer" -> new ItemStack(ModBlocks.BUZZER_MODULE.get());
             case "fms" -> new ItemStack(ModBlocks.FMS_MODULE.get());
+            case com.radaeli.aeronauticsflybyinstruments.panel.PanelCoordinates.ATTITUDE_INDICATOR ->
+                    new ItemStack(ModBlocks.ATTITUDE_INDICATOR_MODULE.get());
             default -> ItemStack.EMPTY;
         };
     }
@@ -258,7 +266,7 @@ public final class ModularTableBaseBlock extends Block implements EntityBlock, A
                 double z = Math.max(0, placed.row() / 3.0 + 0.06);
                 var start = PanelCoordinates.fromPanel(facing, new Vec3(x, PanelCoordinates.SURFACE, z));
                 var end = PanelCoordinates.fromPanel(facing, new Vec3(
-                        Math.min(1, (placed.column() + module.width()) / 3.0 - 0.06), PanelCoordinates.MODULE_TOP,
+                        Math.min(1, (placed.column() + module.width()) / 3.0 - 0.06), PanelCoordinates.moduleTop(module.type()),
                         Math.min(1, (placed.row() + module.height()) / 3.0 - 0.06)));
                 shape = Shapes.or(shape, Shapes.box(Math.min(start.x, end.x), Math.min(start.y, end.y), Math.min(start.z, end.z),
                         Math.max(start.x, end.x), Math.max(start.y, end.y), Math.max(start.z, end.z)));

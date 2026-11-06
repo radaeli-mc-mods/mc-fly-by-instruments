@@ -24,7 +24,6 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
-import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
@@ -36,32 +35,32 @@ import org.jetbrains.annotations.Nullable;
 /**
  * Attitude Reference Unit: the aircraft's pitch, roll and heading, taken from the pose of its
  * sublevel. Its two faces Nose and Up define the aircraft frame in any mounting; the blockstate keeps
- * them, so they survive schematics, contraptions and item use. Model: docs/attitude-reference-unit-plan.md.
+ * them, so they survive schematics, contraptions and item use. Its model is a glass cube: the two reference
+ * arms point at the Nose and Up faces. Model: docs/attitude-reference-unit-plan.md.
  */
 public final class AttitudeReferenceUnitBlock extends BaseEntityBlock implements AvionicsWrenchable, CableSocketProvider {
     public static final MapCodec<AttitudeReferenceUnitBlock> CODEC = simpleCodec(AttitudeReferenceUnitBlock::new);
     public static final DirectionProperty NOSE = DirectionProperty.create("nose");
     public static final DirectionProperty UP = DirectionProperty.create("up");
-    /** Lights the slit on the neutral faces while the unit drives a redstone output (guide §8.5). */
-    public static final BooleanProperty POWERED = BooleanProperty.create("powered");
 
-    // Same geometry as blockbench/attitude-reference-unit: a 14-unit andesite body plus the brass rims.
-    private static final VoxelShape SHAPE = Shapes.or(
+    // Same geometry as blockbench/attitude-reference-unit: the glass cube, four corner posts and the six sockets.
+    public static final VoxelShape SHAPE = Shapes.or(
             Block.box(1, 1, 1, 15, 15, 15),
-            Block.box(0, 0, 0, 16, 1, 2), Block.box(0, 0, 14, 16, 1, 16),
-            Block.box(0, 0, 2, 2, 1, 14), Block.box(14, 0, 2, 16, 1, 14),
-            Block.box(0, 15, 0, 16, 16, 2), Block.box(0, 15, 14, 16, 16, 16),
-            Block.box(0, 15, 2, 2, 16, 14), Block.box(14, 15, 2, 16, 16, 14)).optimize();
+            Block.box(0, 0, 0, 2, 16, 2), Block.box(14, 0, 0, 16, 16, 2),
+            Block.box(0, 0, 14, 2, 16, 16), Block.box(14, 0, 14, 16, 16, 16),
+            Block.box(5, 5, 0, 11, 11, 2), Block.box(5, 5, 14, 11, 11, 16),
+            Block.box(0, 5, 5, 2, 11, 11), Block.box(14, 5, 5, 16, 11, 11),
+            Block.box(5, 0, 5, 11, 2, 11), Block.box(5, 14, 5, 11, 16, 11)).optimize();
 
     public AttitudeReferenceUnitBlock(Properties properties) {
         super(properties);
         registerDefaultState(stateDefinition.any()
-                .setValue(NOSE, Direction.NORTH).setValue(UP, Direction.UP).setValue(POWERED, false));
+                .setValue(NOSE, Direction.NORTH).setValue(UP, Direction.UP));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(NOSE, UP, POWERED);
+        builder.add(NOSE, UP);
     }
 
     /** The Nose faces where the player looks; Up is the block's own up. */
@@ -130,17 +129,13 @@ public final class AttitudeReferenceUnitBlock extends BaseEntityBlock implements
         return SHAPE;
     }
 
-    /** Socket at the centre of every face (guide §8.7): the cable lands in the same place on any face. */
+    /**
+     * Socket at the centre of every face, on the face plane: the connector seats on the outer face of the 6x6x2
+     * socket block, so its 2-unit stem stays buried in it and never crosses the glass.
+     */
     @Override
     public Vec3 cableSocket(BlockState state, Direction face) {
-        return (switch (face) {
-            case NORTH -> new Vec3(8, 8, 1);
-            case SOUTH -> new Vec3(8, 8, 15);
-            case WEST -> new Vec3(1, 8, 8);
-            case EAST -> new Vec3(15, 8, 8);
-            case DOWN -> new Vec3(8, 1, 8);
-            case UP -> new Vec3(8, 15, 8);
-        }).scale(1.0 / 16);
+        return new Vec3(.5 + .5 * face.getStepX(), .5 + .5 * face.getStepY(), .5 + .5 * face.getStepZ());
     }
 
     @Nullable

@@ -43,6 +43,45 @@ class PanelCoordinatesTest {
     }
 
     @Test
+    void floorWedgeLensFacesThePlayerForEveryLookDirection() {
+        for (var view : Direction.Plane.HORIZONTAL) {
+            var turned = rotateY(new Vec3(0, 0, 1), PanelCoordinates.attitudeTurn(Direction.UP, view));
+            assertWorld(Direction.UP, turned, view.getOpposite());
+        }
+    }
+
+    @Test
+    void ceilingDisplayTopPointsAwayFromThePlayerForEveryLookDirection() {
+        for (var view : Direction.Plane.HORIZONTAL) {
+            var turned = rotateY(new Vec3(0, 0, -1), PanelCoordinates.attitudeTurn(Direction.DOWN, view));
+            assertWorld(Direction.DOWN, turned, view);
+        }
+    }
+
+    @Test
+    void wallPlateTopPointsUpOnEveryWall() {
+        for (var facing : Direction.Plane.HORIZONTAL) {
+            for (var view : Direction.Plane.HORIZONTAL) {
+                var turned = rotateY(new Vec3(0, 0, -1), PanelCoordinates.attitudeTurn(facing, view));
+                assertWorld(facing, turned, Direction.UP);
+            }
+        }
+    }
+
+    /** Turns a panel-frame vector about the panel normal, as the renderer does (right-hand rule about +Y). */
+    private static Vec3 rotateY(Vec3 v, double degrees) {
+        double r = Math.toRadians(degrees);
+        return new Vec3(v.x * Math.cos(r) + v.z * Math.sin(r), v.y, -v.x * Math.sin(r) + v.z * Math.cos(r));
+    }
+
+    private static void assertWorld(Direction facing, Vec3 panelDirection, Direction expected) {
+        var centre = new Vec3(0.5, 0.5, 0.5);
+        var world = PanelCoordinates.fromPanel(facing, centre.add(panelDirection))
+                .subtract(PanelCoordinates.fromPanel(facing, centre));
+        assertEquals(0, world.distanceTo(Vec3.atLowerCornerOf(expected.getNormal())), 1e-6);
+    }
+
+    @Test
     void outerEdgesRemainInsideButInvalidCoordinatesAreRejected() {
         assertEquals(0, PanelCoordinates.cell(0));
         assertEquals(1, PanelCoordinates.cell(1.0 / 3));

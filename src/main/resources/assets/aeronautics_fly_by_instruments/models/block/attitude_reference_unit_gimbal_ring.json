@@ -1,0 +1,287 @@
+{
+  "credit": "Made with Blockbench for Aeronautics: Fly by Instruments",
+  "parent": "minecraft:block/block",
+  "ambientocclusion": true,
+  "textures": {
+    "0": "aeronautics_fly_by_instruments:block/attitude_reference_unit_parts",
+    "particle": "aeronautics_fly_by_instruments:block/attitude_reference_unit_parts"
+  },
+  "elements": [
+    {
+      "name": "ring_top",
+      "from": [
+        4,
+        11,
+        6
+      ],
+      "to": [
+        12,
+        12,
+        10
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            7,
+            6,
+            11,
+            6.5
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            11,
+            6,
+            13,
+            6.5
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            7,
+            6,
+            11,
+            6.5
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            11,
+            6,
+            13,
+            6.5
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            7.5,
+            0,
+            11.5,
+            2
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            7.5,
+            0,
+            11.5,
+            2
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "ring_bottom",
+      "from": [
+        4,
+        4,
+        6
+      ],
+      "to": [
+        12,
+        5,
+        10
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            7,
+            6,
+            11,
+            6.5
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            11,
+            6,
+            13,
+            6.5
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            7,
+            6,
+            11,
+            6.5
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            11,
+            6,
+            13,
+            6.5
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            7.5,
+            0,
+            11.5,
+            2
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            7.5,
+            0,
+            11.5,
+            2
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "ring_left",
+      "from": [
+        4,
+        5,
+        6
+      ],
+      "to": [
+        5,
+        11,
+        10
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            7,
+            0,
+            7.5,
+            3
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            4,
+            0,
+            6,
+            3
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            7,
+            0,
+            7.5,
+            3
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            4,
+            0,
+            6,
+            3
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            4,
+            4,
+            4.5,
+            6
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            4,
+            4,
+            4.5,
+            6
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "ring_right",
+      "from": [
+        11,
+        5,
+        6
+      ],
+      "to": [
+        12,
+        11,
+        10
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            7,
+            0,
+            7.5,
+            3
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            4,
+            0,
+            6,
+            3
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            7,
+            0,
+            7.5,
+            3
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            4,
+            0,
+            6,
+            3
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            4,
+            4,
+            4.5,
+            6
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            4,
+            4,
+            4.5,
+            6
+          ],
+          "texture": "#0"
+        }
+      }
+    }
+  ]
+}

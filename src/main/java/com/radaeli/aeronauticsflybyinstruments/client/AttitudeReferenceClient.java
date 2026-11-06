@@ -1,11 +1,30 @@
 package com.radaeli.aeronauticsflybyinstruments.client;
 
+import com.radaeli.aeronauticsflybyinstruments.block.ModBlocks;
 import com.radaeli.aeronauticsflybyinstruments.network.AttitudeReferenceScreenPayload;
 import net.minecraft.client.Minecraft;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
+import net.neoforged.neoforge.client.event.ModelEvent;
 
-/** Opens the Attitude Reference Unit screen, or refreshes the one already open for the same unit. */
+/** Client side of the Attitude Reference Unit: the gimbal renderer and its screen. */
 public final class AttitudeReferenceClient {
     private AttitudeReferenceClient() {}
+
+    public static void register(IEventBus bus) {
+        bus.addListener(AttitudeReferenceClient::registerRenderers);
+        bus.addListener(AttitudeReferenceClient::registerModels);
+    }
+
+    private static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
+        event.registerBlockEntityRenderer(ModBlocks.ATTITUDE_REFERENCE_UNIT_ENTITY.get(), AttitudeReferenceRenderer::new);
+    }
+
+    /** The gimbal parts are not part of the blockstate: load them as standalone models for the renderer. */
+    private static void registerModels(ModelEvent.RegisterAdditional event) {
+        event.register(AttitudeReferenceRenderer.RING);
+        event.register(AttitudeReferenceRenderer.ROTOR);
+    }
 
     public static void openOrUpdate(AttitudeReferenceScreenPayload payload) {
         Minecraft minecraft = Minecraft.getInstance();

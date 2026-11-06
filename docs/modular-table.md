@@ -137,6 +137,31 @@ de latão na parte de cima e, embaixo, dois knobs de latão e duas teclas. Com u
 sem destino, fica escura.
 Fonte editável: [Blockbench FMS 2×3](../blockbench/fms-module-2x3/README.md).
 
+O `attitude_indicator` (item `attitude_indicator_module`, Experimental, só criativo) ocupa **2×2**
+células, numa mesa ou atravessando mesas unidas. Em mesa de chão (`FACING == UP`) o modelo é uma
+cunha de 12 de altura com a tela de pé voltada para +Z (o topo da tela encosta no topo do bloco); em parede e teto,
+uma placa reta. Seu volume de seleção para na altura do bloco
+(`PanelCoordinates.moduleTop`). Fonte: [Blockbench Attitude Indicator](../blockbench/attitude-indicator-module/README.md).
+
+### Attitude Indicator: dados e tela
+
+- **Fontes (servidor):** a rede de cabos do painel (a do líder, ou a primeira completa de uma mesa unida,
+  como no GPWS). Vale o **ARU mais próximo** da origem da rede que esteja na mesma aeronave da mesa e com
+  leitura recente, e o **Radar Altimeter de menor folga** (a regra do altímetro primário do Computer). Sem
+  rede completa ou sem ARU utilizável, o display mostra a bandeira vermelha **ATT**; `DEGRADED` (nariz perto
+  da vertical) mostra o ATT âmbar pequeno. Falha do altímetro nunca apaga o horizonte: só a fita mostra `----`.
+- **Sincronização:** `ModularTableBlockEntity` amostra a cada 2 ticks (10 Hz) e manda `AttitudeDisplayPayload`
+  aos jogadores que rastreiam o chunk só quando algo muda (0,25° de pitch/roll, 0,5 bloco de altura, status ou
+  fonte), com repetição a cada 1 s para quem acabou de entrar. O cliente (`AttitudeDisplayFeed`) suaviza entre as
+  amostras (constante de 0,08 s), toma a primeira amostra como está, anima a fita em 0,25 s e vai para ATT se
+  ficar 3 s sem notícia.
+- **Configuração por módulo** (`AttitudeIndicatorData`, no NBT do módulo como `AttitudeData`): fita de altitude
+  ligada/desligada (padrão ligada). A fita só aparece com a opção ligada **e** um Radar Altimeter na rede. A fita
+  de velocidade está reservada para um sensor futuro e aparece na tela como "em breve".
+- **Tela** (`AttitudeIndicatorScreen`, clique com a mão vazia, sneak abre o painel geral): atitude ao vivo,
+  estado de cada fonte na rede (`ok`, `no_network`, `none`, `other_vessel`, `stale`) e o botão da fita. Ações
+  levam o token do módulo, como no FMS, e a tela pede o estado de novo a cada meio segundo.
+
 ## Mesas unidas (painel)
 
 Mesas lado a lado no mesmo plano e montadas na mesma face (todas no chão, todas

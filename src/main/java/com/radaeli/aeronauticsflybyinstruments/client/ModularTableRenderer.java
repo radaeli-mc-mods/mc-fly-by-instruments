@@ -30,6 +30,13 @@ public final class ModularTableRenderer implements BlockEntityRenderer<ModularTa
     private final LampModuleRenderer lamps2x1 = new LampModuleRenderer(ModBlocks.LAMP_MODULE_2X1.get());
     private final ItemStack buzzerStack = new ItemStack(ModBlocks.BUZZER_MODULE.get());
     private final ItemStack fmsStack = new ItemStack(ModBlocks.FMS_MODULE.get());
+    /** Attitude indicator: the wedge for tables facing up, the flat plate (custom model data 1) for the others. */
+    private final ItemStack attitudeWedgeStack = new ItemStack(ModBlocks.ATTITUDE_INDICATOR_MODULE.get());
+    private final ItemStack attitudePlateStack = new ItemStack(ModBlocks.ATTITUDE_INDICATOR_MODULE.get());
+    {
+        attitudePlateStack.set(net.minecraft.core.component.DataComponents.CUSTOM_MODEL_DATA,
+                new net.minecraft.world.item.component.CustomModelData(1));
+    }
     /** Per table and FMS origin cell: when the lock was first drawn, for the compass boot-in. */
     private final java.util.Map<ModularTableBlockEntity, java.util.Map<Integer, Double>> compassLocks =
             new java.util.WeakHashMap<>();
@@ -57,6 +64,8 @@ public final class ModularTableRenderer implements BlockEntityRenderer<ModularTa
                 renderBuzzer(table, module, poses, buffers, light, overlay);
             } else if (module.type().equals("fms")) {
                 renderFms(table, module, partialTick, poses, buffers, light, overlay);
+            } else if (module.type().equals(PanelCoordinates.ATTITUDE_INDICATOR)) {
+                renderAttitudeIndicator(table, module, partialTick, facing, poses, buffers, light, overlay);
             } else {
                 // Keep a fallback for future module types without authored renderers.
                 var lampState = Blocks.REDSTONE_LAMP.defaultBlockState()
@@ -164,6 +173,30 @@ public final class ModularTableRenderer implements BlockEntityRenderer<ModularTa
                 buffers.getBuffer(Sheets.solidBlockSheet()));
         poses.popPose();
         renderFmsCompass(table, module, partialTick, poses, buffers);
+    }
+
+    /**
+     * The attitude indicator: the housing (wedge on floor tables, plate otherwise) and a display drawn from the
+     * feed the server sends for this module ({@link AttitudeDisplayClient}); the ATT flag without one.
+     */
+    private void renderAttitudeIndicator(ModularTableBlockEntity table, PanelGrid.Module module, float partialTick,
+                                         Direction facing, PoseStack poses, MultiBufferSource buffers, int light,
+                                         int overlay) {
+        boolean wedge = facing == Direction.UP;
+        poses.pushPose();
+        var offset = PanelCoordinates.modelOffset(module);
+        poses.translate(offset.x, offset.y, offset.z);
+        // Housing and display turn together about the footprint centre (see PanelCoordinates.attitudeTurn).
+        poses.translate(0.5, 0, 0.5);
+        poses.mulPose(Axis.YP.rotationDegrees((float) PanelCoordinates.attitudeTurn(facing, module.view())));
+        poses.translate(-0.5, 0, -0.5);
+        var items = Minecraft.getInstance().getItemRenderer();
+        var stack = wedge ? attitudeWedgeStack : attitudePlateStack;
+        var model = items.getModel(stack, table.getLevel(), null, 0);
+        items.renderModelLists(model, stack, light, overlay, poses, buffers.getBuffer(Sheets.solidBlockSheet()));
+        AttitudeDisplayRenderer.render(poses, buffers, wedge,
+                AttitudeDisplayClient.state(table.getBlockPos(), module.column(), module.row()));
+        poses.popPose();
     }
 
     /** Compass rose on the lens while a waypoint is locked (FmsCompass). */

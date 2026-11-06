@@ -78,13 +78,7 @@ side="CLIENT"
 [[dependencies.${mod_id}]]
 modId="ponderjs"
 type="optional"
-versionRange="[1.21.1-2.4.0,)"
+versionRange="${ponderjs_version_range}"
 ordering="AFTER"
 side="CLIENT"
 
-[[dependencies.${mod_id}]]
-modId="kubejs"
-type="optional"
-versionRange="[2101.7.2-build.377,)"
-ordering="AFTER"
-side="CLIENT"
