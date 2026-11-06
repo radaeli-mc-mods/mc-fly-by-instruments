@@ -1,0 +1,261 @@
+{
+  "credit": "Made with Blockbench for Aeronautics: Fly by Instruments",
+  "parent": "minecraft:block/block",
+  "ambientocclusion": true,
+  "textures": {
+    "0": "aeronautics_fly_by_instruments:block/attitude_indicator_item",
+    "1": "create:block/industrial_iron_block",
+    "particle": "create:block/industrial_iron_block"
+  },
+  "elements": [
+    {
+      "name": "case",
+      "from": [
+        2,
+        0,
+        3
+      ],
+      "to": [
+        14,
+        2,
+        13
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            2,
+            14,
+            14,
+            16
+          ],
+          "texture": "#1"
+        },
+        "east": {
+          "uv": [
+            3,
+            14,
+            13,
+            16
+          ],
+          "texture": "#1"
+        },
+        "south": {
+          "uv": [
+            2,
+            14,
+            14,
+            16
+          ],
+          "texture": "#1"
+        },
+        "west": {
+          "uv": [
+            3,
+            14,
+            13,
+            16
+          ],
+          "texture": "#1"
+        },
+        "up": {
+          "uv": [
+            0,
+            0.5,
+            6,
+            5.5
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            2,
+            3,
+            14,
+            13
+          ],
+          "texture": "#1"
+        }
+      }
+    },
+    {
+      "name": "case_north",
+      "from": [
+        3,
+        0,
+        2
+      ],
+      "to": [
+        13,
+        2,
+        3
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            3,
+            14,
+            13,
+            16
+          ],
+          "texture": "#1"
+        },
+        "east": {
+          "uv": [
+            2,
+            14,
+            3,
+            16
+          ],
+          "texture": "#1"
+        },
+        "west": {
+          "uv": [
+            2,
+            14,
+            3,
+            16
+          ],
+          "texture": "#1"
+        },
+        "up": {
+          "uv": [
+            0.5,
+            0,
+            5.5,
+            0.5
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            3,
+            2,
+            13,
+            3
+          ],
+          "texture": "#1"
+        }
+      }
+    },
+    {
+      "name": "case_south",
+      "from": [
+        3,
+        0,
+        13
+      ],
+      "to": [
+        13,
+        2,
+        14
+      ],
+      "faces": {
+        "east": {
+          "uv": [
+            13,
+            14,
+            14,
+            16
+          ],
+          "texture": "#1"
+        },
+        "south": {
+          "uv": [
+            3,
+            14,
+            13,
+            16
+          ],
+          "texture": "#1"
+        },
+        "west": {
+          "uv": [
+            13,
+            14,
+            14,
+            16
+          ],
+          "texture": "#1"
+        },
+        "up": {
+          "uv": [
+            0.5,
+            5.5,
+            5.5,
+            6
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            3,
+            13,
+            13,
+            14
+          ],
+          "texture": "#1"
+        }
+      }
+    },
+    {
+      "name": "bezel",
+      "from": [
+        3,
+        2,
+        3
+      ],
+      "to": [
+        13,
+        3,
+        13
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            6,
+            5,
+            11,
+            5.5
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            6,
+            5.5,
+            11,
+            6
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            6,
+            5.5,
+            11,
+            6
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            6,
+            5,
+            11,
+            5.5
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            6,
+            0,
+            11,
+            5
+          ],
+          "texture": "#0"
+        }
+      }
+    }
+  ]
+}

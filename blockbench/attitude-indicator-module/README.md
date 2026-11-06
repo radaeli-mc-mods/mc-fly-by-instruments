@@ -8,6 +8,10 @@ viseira de latão que sobe 1 unidade. Referências: navigation table do Simulate
 **Estado: só visual.** Modelos, textura, registro do item, colocação na mesa e um display com valores
 mockados. Nada lê o ARU nem o Radar Altimeter ainda (ver *Pendente*).
 
+**O item no inventário não é mais este modelo:** ele é um medidor de bolso próprio
+([`attitude-indicator-item`](../attitude-indicator-item/README.md)). A cunha e a placa só são desenhadas pela mesa,
+que as pede ao item por `custom_model_data` (2 = cunha, 1 = placa).
+
 Dois modelos, escolhidos pela face da mesa (`FACING == UP` → cunha; parede e teto → placa). Fonte em
 Blockbench (Java Block/Item, 1.21.1, *Box UV* desligado, resolução 32×32): abra `attitude_indicator_desk.bbmodel`
 e `attitude_indicator_wall.bbmodel`. Modelados com a mesa voltada para cima: apoio em Y = 0, centro em X/Z = 8,
@@ -107,7 +111,8 @@ dentro da tela (perfil em `preview-side.png`): é o que impede frestas.
   (AGL), com interpolação por `ClientSubLevel.renderPose` e o alinhamento de ~1 s ao ligar.
 - Configuração (fita de altitude liga/desliga, velocidade "em breve") e rotação (`yaw`) da cunha: hoje a cunha
   olha sempre para o lado +Z do painel.
-- Receita e Ponder. O item é Experimental, só no criativo.
+- Receita. O item é Experimental, só no criativo. Ponder: cenas `attitude_indicator` e `attitude_sources` em
+  `FbiPonderScenes` (usam o módulo real do jogo; reconfira o diorama se a geometria mudar).
 - A transição de 0,25 s do reflow existe no layout (`altitudeTape` de 0 a 1), mas nada anima o valor ainda.
 - Fita de velocidade: só reserva espaço; não desenha nada.
 - Não verificado no jogo: a v2 2×2 inteira (ausência de frestas por trás, cunha nos 4 sentidos, mesa de parede e
