@@ -9,7 +9,7 @@
 - Create Aeronautics bundled 1.3+
 - Sable 2.0.5
 - CC:Tweaked 1.120.0+
-- R-UI Lib 0.8.0+
+- R-UI Lib 0.9.0+
 
 The Gradle properties default to the Create, Create Aeronautics, and Sable JARs
 used by the sibling `sable-horses` workspace. The CC:Tweaked 1.120.0 JAR is
