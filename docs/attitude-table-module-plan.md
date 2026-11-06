@@ -143,7 +143,8 @@ render local antes de ligar no jogo, como o `compass-preview.png` do FMS.
   (geometria pura, testável).
 - **Interação:** mão vazia → config no padrão §12 (Altitude liga/desliga, Velocidade "em
   breve", linhas de estado ARU/Radar); wrench + scroll na cunha → girar `yaw` com rótulo.
-- Receita, lang en/pt, modelos de item. Ponder fica como follow-up.
+- Receita, lang en/pt, modelos de item. Ponder: entregue em três cenas Experimentais (`attitude_unit`,
+  `attitude_indicator`, `attitude_sources`), listadas em [ponder.md](ponder.md).
 
 ## Docs a atualizar
 

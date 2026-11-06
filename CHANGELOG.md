@@ -16,6 +16,7 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Added the Attitude Indicator module (Experimental, creative only): a 2×2 table module with a slanted housing and upright screen on floor tables and a flat plate on wall and ceiling tables.
 - The Attitude Indicator display is live: it draws the pitch and roll of the nearest Attitude Reference Unit on the table's cable network and, on an optional altitude tape, the height of the lowest Radar Altimeter. Both must be on the same aircraft as the table. Without a usable unit the screen goes black with a red ATT flag; near vertical it shows a small amber ATT.
 - Added the Attitude Indicator screen (empty-hand click): the live attitude, the state of each source on the network, and the altitude tape switch. The speed tape is listed as coming soon.
+- Added three Ponder tutorials in English and Brazilian Portuguese for the Experimental attitude devices: setting the aircraft frame (Attitude Reference Unit), reading the artificial horizon (installing the Attitude Indicator) and sources, tapes and ATT flags. They open from the Attitude Reference Unit, the Attitude Indicator, the Modular Table and the Radar Altimeter.
 
 ### Changed
 

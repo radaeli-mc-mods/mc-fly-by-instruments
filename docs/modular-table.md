@@ -161,6 +161,10 @@ uma placa reta. Seu volume de seleção para na altura do bloco
 - **Tela** (`AttitudeIndicatorScreen`, clique com a mão vazia, sneak abre o painel geral): atitude ao vivo,
   estado de cada fonte na rede (`ok`, `no_network`, `none`, `other_vessel`, `stale`) e o botão da fita. Ações
   levam o token do módulo, como no FMS, e a tela pede o estado de novo a cada meio segundo.
+- **Ponder:** com PonderJS, três cenas Experimentais abrem pelo item do módulo, pela Attitude Reference Unit, pelo Radar
+  Altimeter e pela mesa: *Setting the aircraft frame*, *Reading the artificial horizon* e *Sources, tapes and ATT flags*
+  ([ponder.md](ponder.md)). No diorama o módulo é real, mas o horizonte vem da cena (`AttitudeDisplayClient.demo`), não
+  da rede; esses feeds ficam separados dos do servidor.
 
 ## Mesas unidas (painel)
 

@@ -4,6 +4,7 @@ import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.mojang.blaze3d.vertex.VertexFormat;
+import net.createmod.catnip.render.SuperRenderTypeBuffer;
 import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderStateShard;
 import net.minecraft.client.renderer.RenderType;
@@ -44,7 +45,8 @@ final class AttitudeDisplayRenderer {
         poses.pushPose();
         poses.scale(1 / 16f, 1 / 16f, 1 / 16f);
         var pose = poses.last();
-        var buffer = buffers.getBuffer(FLAT);
+        // Ponder's buffer never shows the custom flat type (checked in the Ponder harness); a stock one does.
+        var buffer = buffers.getBuffer(buffers instanceof SuperRenderTypeBuffer ? RenderType.gui() : FLAT);
         AttitudeDisplayLayout.build((color, xy, count) -> emit(buffer, pose, wedge, color, xy, count), state);
         poses.popPose();
     }

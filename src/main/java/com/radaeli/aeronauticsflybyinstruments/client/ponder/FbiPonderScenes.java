@@ -2,7 +2,12 @@ package com.radaeli.aeronauticsflybyinstruments.client.ponder;
 
 import com.almostreliable.ponderjs.PonderItemTagEventJS;
 import com.almostreliable.ponderjs.PonderRegistryEventJS;
+import com.radaeli.aeronauticsflybyinstruments.attitude.AttitudeOrientation;
+import com.radaeli.aeronauticsflybyinstruments.attitude.AttitudeReferenceUnitBlock;
 import com.radaeli.aeronauticsflybyinstruments.block.ModBlocks;
+import com.radaeli.aeronauticsflybyinstruments.client.AttitudeDisplayClient;
+import com.radaeli.aeronauticsflybyinstruments.panel.AttitudeIndicatorFeed.Status;
+import com.radaeli.aeronauticsflybyinstruments.panel.PanelCoordinates;
 import com.radaeli.aeronauticsflybyinstruments.block.ModularTableBaseBlock;
 import com.radaeli.aeronauticsflybyinstruments.block.AvionicsComputerBlock;
 import com.radaeli.aeronauticsflybyinstruments.panel.ModularTableBlockEntity;
@@ -45,7 +50,8 @@ public final class FbiPonderScenes {
     private static final String[] SENSORS = {"radar_altimeter", "terrain_scanner", "terrain_scanner_advanced"};
     private static final String[] WIRES = {"avionics_wire", "wire_connector", "wire_support"};
     private static final String[] CABIN = {"avionics_computer", "modular_table_base", "lamp_module",
-            "lamp_module_2x1", "buzzer_module", "fms_module", "fms_navigator"};
+            "lamp_module_2x1", "buzzer_module", "fms_module", "fms_navigator", "attitude_reference_unit",
+            "attitude_indicator_module"};
 
     private FbiPonderScenes() {}
 
@@ -61,6 +67,12 @@ public final class FbiPonderScenes {
         entry(event, "panel", FbiPonderScenes::panel, "modular_table_base", "lamp_module", "lamp_module_2x1", "buzzer_module", "fms_module");
         entry(event, "alerts", FbiPonderScenes::alerts, "avionics_computer", "lamp_module", "lamp_module_2x1", "buzzer_module");
         entry(event, "fms", FbiPonderScenes::fms, "fms_module", "fms_navigator");
+        // Experimental devices: the first caption of each scene says so.
+        entry(event, "attitude_unit", FbiPonderScenes::attitudeUnit, "attitude_reference_unit");
+        entry(event, "attitude_indicator", FbiPonderScenes::attitudeIndicator,
+                "attitude_indicator_module", "attitude_reference_unit", "modular_table_base");
+        entry(event, "attitude_sources", FbiPonderScenes::attitudeSources,
+                "attitude_indicator_module", "attitude_reference_unit", "radar_altimeter");
     }
 
     public static void tags(PonderItemTagEventJS event) {
@@ -442,6 +454,133 @@ public final class FbiPonderScenes {
         say(s, "fms.keep", TABLE);
         end(s);
     }
+    // --- Attitude Reference Unit and Attitude Indicator (both Experimental) ----------------------------------
+    private static BlockState unit(Direction nose, Direction up) {
+        return AttitudeReferenceUnitBlock.withOrientation(ModBlocks.ATTITUDE_REFERENCE_UNIT.get().defaultBlockState(),
+                new AttitudeOrientation(nose, up));
+    }
+    private static void orient(SceneBuilder s, BlockPos pos, AttitudeOrientation next) {
+        s.world().modifyBlock(pos, state -> AttitudeReferenceUnitBlock.withOrientation(state, next), false);
+    }
+    /**
+     * The attitude scenes have no Avionics Computer: the unit and the table are both endpoints of the wire network,
+     * so a single wire between their connectors is the whole installation. The table stands on the ground.
+     */
+    private static final BlockPos DESK = p(5, 2, 4), UNIT = p(1, 2, 4), UNIT_NODE = p(2, 2, 4), DESK_NODE = p(4, 2, 4);
+    /** Mounts a connector on the unit and on the table and runs one wire between them (no computer). */
+    private static void unitNetwork(SceneBuilder s, SceneBuildingUtil u) {
+        node(s, u, UNIT_NODE, true, Direction.EAST);
+        node(s, u, DESK_NODE, true, Direction.WEST);
+        route(s, UNIT_NODE, DESK_NODE);
+    }
+    /** An empty table on the ground, then (optionally) the 2 x 2 indicator at the table's first cell. */
+    private static void indicatorTable(SceneBuilder s, SceneBuildingUtil u, boolean indicator) {
+        put(s, u, DESK, ModBlocks.MODULAR_TABLE_BASE.get().defaultBlockState().setValue(ModularTableBaseBlock.FACING, Direction.UP));
+        if (indicator) installIndicator(s);
+    }
+    private static void installIndicator(SceneBuilder s) {
+        s.world().modifyBlockEntity(DESK, ModularTableBlockEntity.class,
+                table -> table.placeSpanning(PanelCoordinates.ATTITUDE_INDICATOR, 0, 0, 2, 2, null, Direction.SOUTH));
+    }
+    /** What the diorama's indicator shows; it eases toward these values like a live feed and never goes stale. */
+    private static void horizon(SceneBuilder s, Status status, double pitch, double roll, double agl, boolean tape) {
+        s.addInstruction(scene -> AttitudeDisplayClient.demo(DESK, 0, 0, status, pitch, roll, agl, tape));
+    }
+    /** Moves pitch and roll linearly over the next ticks, alongside the caption that follows. */
+    private static void sweep(SceneBuilder s, int ticks, double pitch0, double pitch1, double roll0, double roll1,
+                              double agl, boolean tape) {
+        s.addInstruction(new TickingInstruction(false, ticks) {
+            @Override public void tick(PonderScene scene) {
+                double t = Math.min(1, Math.max(0, 1 - (double) remainingTicks / ticks));
+                AttitudeDisplayClient.demo(DESK, 0, 0, Status.OK, pitch0 + (pitch1 - pitch0) * t,
+                        roll0 + (roll1 - roll0) * t, agl, tape);
+                super.tick(scene);
+            }
+        });
+    }
+    private static void attitudeUnit(SceneBuilder s, SceneBuildingUtil u) {
+        begin(s);
+        BlockPos unit = p(2, 2, 4);
+        put(s, u, unit, unit(Direction.NORTH, Direction.UP));
+        say(s, "attitude_unit.mount", unit);
+        line(s, unit, unit.relative(Direction.NORTH, 3), PonderPalette.OUTPUT);
+        say(s, "attitude_unit.nose", unit, PonderPalette.OUTPUT);
+        line(s, unit.above(), unit.above(4), PonderPalette.INPUT);
+        say(s, "attitude_unit.up", unit, PonderPalette.INPUT);
+        click(s, unit, "create:wrench", false);
+        orient(s, unit, new AttitudeOrientation(Direction.NORTH, Direction.UP).withNose(Direction.WEST));
+        line(s, unit, unit.relative(Direction.WEST, 3), PonderPalette.OUTPUT);
+        say(s, "attitude_unit.wrench", unit);
+        click(s, unit, null, false);
+        orient(s, unit, new AttitudeOrientation(Direction.WEST, Direction.UP).withUp(Direction.NORTH));
+        line(s, unit, unit.relative(Direction.NORTH, 3), PonderPalette.INPUT);
+        say(s, "attitude_unit.screen", unit);
+        click(s, unit, null, false);
+        say(s, "attitude_unit.level", unit);
+        say(s, "attitude_unit.damping", unit);
+        // No Avionics Computer: a wire from the unit's connector to the table's is the whole installation.
+        BlockPos near = unit.east();
+        indicatorTable(s, u, true);
+        horizon(s, Status.OK, 6, -15, Double.NaN, false);
+        node(s, u, near, true, Direction.EAST);
+        node(s, u, DESK_NODE, true, Direction.WEST);
+        route(s, near, DESK_NODE);
+        say(s, "attitude_unit.network", DESK);
+        say(s, "attitude_unit.ground", unit, PonderPalette.RED);
+        end(s);
+    }
+    private static void attitudeIndicator(SceneBuilder s, SceneBuildingUtil u) {
+        begin(s);
+        put(s, u, UNIT, unit(Direction.NORTH, Direction.UP));
+        indicatorTable(s, u, false);
+        unitNetwork(s, u);
+        say(s, "attitude_indicator.network", DESK);
+        horizon(s, Status.NO_DATA, 0, 0, Double.NaN, false);
+        click(s, DESK, "attitude_indicator_module", false);
+        installIndicator(s);
+        say(s, "attitude_indicator.install", DESK);
+        horizon(s, Status.OK, 0, 0, Double.NaN, false);
+        say(s, "attitude_indicator.horizon", DESK);
+        sweep(s, 150, 0, 14, 0, 0, Double.NaN, false);
+        say(s, "attitude_indicator.pitch", DESK, PonderPalette.OUTPUT);
+        sweep(s, 150, 14, -10, 0, 0, Double.NaN, false);
+        say(s, "attitude_indicator.pitch_down", DESK, PonderPalette.OUTPUT);
+        sweep(s, 150, -10, 4, 0, 28, Double.NaN, false);
+        say(s, "attitude_indicator.bank", DESK, PonderPalette.OUTPUT);
+        click(s, DESK, null, false);
+        say(s, "attitude_indicator.screen", DESK);
+        say(s, "attitude_indicator.mounting", DESK);
+        end(s);
+    }
+    private static void attitudeSources(SceneBuilder s, SceneBuildingUtil u) {
+        begin(s);
+        put(s, u, UNIT, unit(Direction.NORTH, Direction.UP));
+        indicatorTable(s, u, true);
+        unitNetwork(s, u);
+        horizon(s, Status.OK, 4, -12, Double.NaN, false);
+        say(s, "attitude_sources.unit", UNIT);
+        BlockPos altimeter = p(3, 2, 6), altimeterNode = p(3, 2, 5);
+        put(s, u, altimeter, ModBlocks.RADAR_ALTIMETER.get());
+        node(s, u, altimeterNode, true, Direction.NORTH);
+        route(s, UNIT_NODE, altimeterNode);
+        horizon(s, Status.OK, 4, -12, 96, true);
+        say(s, "attitude_sources.altimeter", altimeter, PonderPalette.OUTPUT);
+        horizon(s, Status.OK, 4, -12, 31, true);
+        say(s, "attitude_sources.height", altimeter, PonderPalette.OUTPUT);
+        horizon(s, Status.OK, 4, -12, Double.NaN, true);
+        say(s, "attitude_sources.range", altimeter);
+        click(s, DESK, null, false);
+        horizon(s, Status.OK, 4, -12, 96, false);
+        say(s, "attitude_sources.tape", DESK);
+        horizon(s, Status.DEGRADED, 88, -12, 96, false);
+        say(s, "attitude_sources.degraded", DESK, PonderPalette.OUTPUT);
+        s.world().destroyBlock(UNIT);
+        horizon(s, Status.NO_DATA, 0, 0, Double.NaN, false);
+        say(s, "attitude_sources.missing", DESK, PonderPalette.RED);
+        say(s, "attitude_sources.vessel", DESK, PonderPalette.RED);
+        end(s);
+    }
+
     private static void fmsTarget(SceneBuilder s, boolean selected) {
         fmsTarget(s, selected, false);
     }

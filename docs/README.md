@@ -19,6 +19,6 @@
 - [Fase 4 — GPWS Computer e motor de alertas (arquivado)](gpws-phase-4-plan.md)
 - [PRD e roadmap](../PRD.md)
 
-- [Ponder: tutoriais e requisitos opcionais](ponder.md)
+- [Ponder: tutoriais (14 cenas, 3 de atitude Experimentais) e requisitos opcionais](ponder.md)
 - [Ponder: integração e validação de desenvolvimento](ponder-development.md)
 - [Configurações de servidor / Server configuration](configuration.md)

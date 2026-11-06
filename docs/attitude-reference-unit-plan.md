@@ -1,6 +1,6 @@
 # Plano: Attitude Reference Unit e Attitude Indicator
 
-**Estado:** fase 1 (ARU), fase 2 (display Attitude Indicator ligado à rede, com tela de configuração; sem Ponder) e fase 4 (derivados) implementadas; GPWS da fase 3 implementado. Pendentes: o slip no display, o Ponder e as saídas de redstone por faixa (resto da fase 3). O display **não** recalcula a atitude no cliente: usa a leitura do ARU enviada a 10 Hz e suavizada no cliente (ver [modular-table.md](modular-table.md)). Decisões em aberto na última seção.
+**Estado:** fase 1 (ARU), fase 2 (display Attitude Indicator ligado à rede, com tela de configuração e três cenas Ponder, ver [ponder.md](ponder.md)) e fase 4 (derivados) implementadas; GPWS da fase 3 implementado. Pendentes: o slip no display e as saídas de redstone por faixa (resto da fase 3). ARU e display seguem Experimentais, e as cenas também. O display **não** recalcula a atitude no cliente: usa a leitura do ARU enviada a 10 Hz e suavizada no cliente (ver [modular-table.md](modular-table.md)). Decisões em aberto na última seção.
 
 ## Objetivo
 
@@ -175,7 +175,8 @@ Tipo `attitude_reference_unit`:
 
 1. **ARU:** bloco com `nose`/`up` por face, modelo multipart com faces marcadas, `AttitudeMath`, canais pitch/roll/heading, tela,
    peripheral, receita, lang, docs, testes.
-2. **Attitude Indicator:** módulo, renderer, sincronização, bandeira ATT, Ponder.
+2. **Attitude Indicator:** módulo, renderer, sincronização, bandeira ATT, Ponder (`attitude_unit`,
+   `attitude_indicator`, `attitude_sources`; o horizonte do diorama vem de `AttitudeDisplayClient.demo`).
 3. **Integrações:** GPWS preferindo o ARU, redstone por faixa.
 4. **Derivados:** turn rate, vertical speed, slip; bolinha no display.
 
