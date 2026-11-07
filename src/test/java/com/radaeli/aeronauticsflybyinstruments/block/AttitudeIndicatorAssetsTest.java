@@ -162,8 +162,12 @@ class AttitudeIndicatorAssetsTest {
                         assertFalse(cube.has("rotation"), cube.get("name") + ": unrotated");
                     }
                 }
-                assertTrue(names.containsAll(java.util.List.of("housing", "housing_foot", "housing_slope", "screen",
+                assertTrue(names.containsAll(java.util.List.of("base", "housing", "housing_slope", "screen",
                         "visor")));
+                // A 2-unit plinth carries the whole wedge, the screen included.
+                var base = element(model, "base");
+                assertArrayEquals(new double[]{3, 0, 3}, vec(base.getAsJsonArray("from")));
+                assertArrayEquals(new double[]{13, 2, 13}, vec(base.getAsJsonArray("to")));
                 assertFalse(names.contains("knob"), "No controls on this module");
                 // The screen is one solid cube, so the display cannot show through a gap behind it; the renderer
                 // draws on its front (z 13), lens X 4..12 / Y 3..11.
@@ -209,9 +213,14 @@ class AttitudeIndicatorAssetsTest {
 
     @Test
     void selectionVolumeStopsAtTheBlockTopForTheTallWedge() {
-        assertEquals(1.0, PanelCoordinates.moduleTop(PanelCoordinates.ATTITUDE_INDICATOR));
-        assertEquals(PanelCoordinates.MODULE_TOP, PanelCoordinates.moduleTop("fms"));
-        assertEquals(PanelCoordinates.MODULE_TOP, PanelCoordinates.moduleTop("lamp"));
+        assertEquals(1.0, PanelCoordinates.moduleTop(PanelCoordinates.ATTITUDE_INDICATOR, net.minecraft.core.Direction.UP));
+        // On wall and ceiling tables the module is the flat plate: the ordinary volume, not one reaching out a block.
+        for (var facing : new net.minecraft.core.Direction[]{net.minecraft.core.Direction.DOWN, net.minecraft.core.Direction.NORTH,
+                net.minecraft.core.Direction.EAST}) {
+            assertEquals(PanelCoordinates.MODULE_TOP, PanelCoordinates.moduleTop(PanelCoordinates.ATTITUDE_INDICATOR, facing));
+        }
+        assertEquals(PanelCoordinates.MODULE_TOP, PanelCoordinates.moduleTop("fms", net.minecraft.core.Direction.UP));
+        assertEquals(PanelCoordinates.MODULE_TOP, PanelCoordinates.moduleTop("lamp", net.minecraft.core.Direction.UP));
     }
 
     @Test

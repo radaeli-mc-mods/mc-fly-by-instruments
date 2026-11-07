@@ -86,7 +86,7 @@ public final class TableInteraction {
             double x0 = placed.column() / 3.0 + .06, z0 = placed.row() / 3.0 + .06;
             double x1 = (placed.column() + module.width()) / 3.0 - .06;
             double z1 = (placed.row() + module.height()) / 3.0 - .06;
-            if (p.y > PanelCoordinates.SURFACE + 1e-7 && p.y <= PanelCoordinates.moduleTop(module.type()) + 1e-7
+            if (p.y > PanelCoordinates.SURFACE + 1e-7 && p.y <= PanelCoordinates.moduleTop(module.type(), facing) + 1e-7
                     && p.x >= x0 - 1e-7 && p.x <= x1 + 1e-7
                     && p.z >= z0 - 1e-7 && p.z <= z1 + 1e-7)
                 return new Target(placed.column(), placed.row(), placed, hitFace == facing);
