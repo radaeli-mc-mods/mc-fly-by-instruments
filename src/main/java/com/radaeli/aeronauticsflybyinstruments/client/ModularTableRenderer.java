@@ -200,7 +200,8 @@ public final class ModularTableRenderer implements BlockEntityRenderer<ModularTa
         var model = items.getModel(stack, table.getLevel(), null, 0);
         items.renderModelLists(model, stack, light, overlay, poses, buffers.getBuffer(Sheets.solidBlockSheet()));
         AttitudeDisplayRenderer.render(poses, buffers, wedge,
-                AttitudeDisplayClient.state(table.getLevel(), table.getBlockPos(), module.column(), module.row()));
+                AttitudeDisplayClient.state(table.getLevel(), table.getBlockPos(), module.column(), module.row()),
+                AttitudeDisplayRenderer.night(table.getLevel(), partialTick));
         poses.popPose();
     }
 

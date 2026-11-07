@@ -40,15 +40,28 @@ final class AttitudeDisplayRenderer {
     /**
      * @param poses positioned at the module origin, in blocks
      * @param wedge true for the upright wedge (floor tables), false for the flat plate (wall and ceiling tables)
+     * @param night 0 by day to 1 at night ({@link #night}): the display darkens its colours instead of its light
      */
-    static void render(PoseStack poses, MultiBufferSource buffers, boolean wedge, AttitudeDisplayState state) {
+    static void render(PoseStack poses, MultiBufferSource buffers, boolean wedge, AttitudeDisplayState state,
+                       float night) {
         poses.pushPose();
         poses.scale(1 / 16f, 1 / 16f, 1 / 16f);
         var pose = poses.last();
         // Ponder's buffer never shows the custom flat type (checked in the Ponder harness); a stock one does.
         var buffer = buffers.getBuffer(buffers instanceof SuperRenderTypeBuffer ? RenderType.gui() : FLAT);
-        AttitudeDisplayLayout.build((color, xy, count) -> emit(buffer, pose, wedge, color, xy, count), state);
+        AttitudeDisplayLayout.build((color, xy, count) -> emit(buffer, pose, wedge, color, xy, count), state, night);
         poses.popPose();
+    }
+
+    /**
+     * How much of the night palette to use: from the sky darkening (1 in full daylight, 0.2 at midnight; rain and
+     * thunder darken it too), and always night in dimensions without a sky, where a daylight screen would glare.
+     */
+    static float night(net.minecraft.world.level.Level level, float partialTick) {
+        if (level == null) return 0;
+        if (!level.dimensionType().hasSkyLight()) return 1;
+        if (!(level instanceof net.minecraft.client.multiplayer.ClientLevel client)) return 0;
+        return Math.max(0, Math.min(1, (1 - client.getSkyDarken(partialTick)) / 0.8f));
     }
 
     private static void emit(VertexConsumer buffer, PoseStack.Pose pose, boolean wedge, int color, float[] xy, int count) {

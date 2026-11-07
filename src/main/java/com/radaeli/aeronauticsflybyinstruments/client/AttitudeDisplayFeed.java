@@ -26,6 +26,8 @@ final class AttitudeDisplayFeed {
     private double pitch, roll, agl = Double.NaN;
     private float tape;
     private double sinceSample = Double.POSITIVE_INFINITY;
+    /** Clock of the fictitious speed (TEMPORARY, until there is an airspeed sensor). */
+    private double elapsed;
     private boolean live;
 
     void accept(Status next, double pitch, double roll, double agl, boolean altitudeTape) {
@@ -48,6 +50,7 @@ final class AttitudeDisplayFeed {
     /** The state to draw after {@code seconds} more have passed. */
     AttitudeDisplayState advance(double seconds) {
         sinceSample += seconds;
+        elapsed += seconds;
         if (!live || status == Status.NO_DATA || sinceSample > STALE_SECONDS) return NO_DATA;
         double blend = 1 - Math.exp(-seconds / SMOOTHING_SECONDS);
         pitch += (targetPitch - pitch) * blend;
@@ -55,8 +58,9 @@ final class AttitudeDisplayFeed {
         agl = Double.isNaN(targetAgl) || Double.isNaN(agl) ? targetAgl : agl + (targetAgl - agl) * blend;
         float step = (float) (seconds / TAPE_SECONDS);
         tape = tapeWanted ? Math.min(1, tape + step) : Math.max(0, tape - step);
-        return new AttitudeDisplayState(status, pitch, roll, agl, tape, 0f);
+        // TEMPORARY: the speed band is always on with a fictitious reading so it can be tried in the game.
+        return new AttitudeDisplayState(status, pitch, roll, agl, AttitudeDisplayMock.speed(elapsed), tape, 1f);
     }
 
-    static final AttitudeDisplayState NO_DATA = new AttitudeDisplayState(Status.NO_DATA, 0, 0, Double.NaN, 0f, 0f);
+    static final AttitudeDisplayState NO_DATA = new AttitudeDisplayState(Status.NO_DATA, 0, 0, Double.NaN, Double.NaN, 0f, 0f);
 }

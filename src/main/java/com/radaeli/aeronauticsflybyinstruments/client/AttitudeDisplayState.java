@@ -8,25 +8,27 @@ package com.radaeli.aeronauticsflybyinstruments.client;
  * @param pitchDegrees nose up positive
  * @param rollDegrees  right wing down positive (aviation convention)
  * @param aglBlocks    height above ground in blocks, NaN when the radar has no reading ("----")
- * @param altitudeTape 0..1: how much of the altitude tape is shown (0 off, 1 full); animates the reflow
- * @param speedTape    0..1: same for the speed tape, reserved for a future sensor (leaves its space, draws nothing)
+ * @param speed        airspeed in blocks per second, NaN without a reading ("---"); no sensor yet, the feed
+ *                     fills it with {@link AttitudeDisplayMock#speed} so the band can be tried in the game
+ * @param altitudeTape 0..1: how much of the altitude reading is shown (0 off, 1 full); animates the reflow
+ * @param speedTape    0..1: same for the speed reading
  */
-record AttitudeDisplayState(Status status, double pitchDegrees, double rollDegrees, double aglBlocks,
+record AttitudeDisplayState(Status status, double pitchDegrees, double rollDegrees, double aglBlocks, double speed,
                             float altitudeTape, float speedTape) {
     enum Status {
         /** Valid attitude. */
         OK,
         /** Attitude still valid but near the gimbal limit (about 90 degrees of pitch): small amber ATT flag. */
         DEGRADED,
-        /** No unit, incomplete network or unavailable: black screen with a red ATT flag. */
+        /** No unit, incomplete network or unavailable: dark screen with a red ATT flag. */
         NO_DATA
     }
 
     AttitudeDisplayState withStatus(Status next) {
-        return new AttitudeDisplayState(next, pitchDegrees, rollDegrees, aglBlocks, altitudeTape, speedTape);
+        return new AttitudeDisplayState(next, pitchDegrees, rollDegrees, aglBlocks, speed, altitudeTape, speedTape);
     }
 
-    AttitudeDisplayState withTapes(float altitude, float speed) {
-        return new AttitudeDisplayState(status, pitchDegrees, rollDegrees, aglBlocks, altitude, speed);
+    AttitudeDisplayState withTapes(float altitude, float speedAmount) {
+        return new AttitudeDisplayState(status, pitchDegrees, rollDegrees, aglBlocks, speed, altitude, speedAmount);
     }
 }
