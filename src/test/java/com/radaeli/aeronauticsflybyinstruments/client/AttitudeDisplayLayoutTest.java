@@ -33,7 +33,11 @@ class AttitudeDisplayLayoutTest {
     }
 
     private static AttitudeDisplayState state(double pitch, double roll, double agl, float altitude) {
-        return new AttitudeDisplayState(Status.OK, pitch, roll, agl, altitude, 0f);
+        return new AttitudeDisplayState(Status.OK, pitch, roll, agl, Double.NaN, altitude, 0f);
+    }
+
+    private static AttitudeDisplayState readings(double agl, double speed, float altitude, float speedTape) {
+        return new AttitudeDisplayState(Status.OK, 0, 0, agl, speed, altitude, speedTape);
     }
 
     private static double area(List<Poly> polygons, int color) {
@@ -54,17 +58,17 @@ class AttitudeDisplayLayoutTest {
 
     @Test
     void groundAreaFollowsPitchAndRoll() {
-        double width = 12 - AttitudeDisplayLayout.TAPE_WIDTH;
-        assertEquals(width * 6, area(draw(state(0, 0, 100, 1)), AttitudeDisplayLayout.GROUND), 1e-3);
+        double half = (12 - AttitudeDisplayLayout.BAND_HEIGHT) / 2;
+        assertEquals(12 * half, area(draw(state(0, 0, 100, 1)), AttitudeDisplayLayout.GROUND), 1e-3);
         // Nose up 10 degrees: the horizon sinks by 10 x the ladder scale.
-        assertEquals(width * (6 - 10 * AttitudeDisplayLayout.PITCH_UNITS_PER_DEGREE),
+        assertEquals(12 * (half - 10 * AttitudeDisplayLayout.PITCH_UNITS_PER_DEGREE),
                 area(draw(state(10, 0, 100, 1)), AttitudeDisplayLayout.GROUND), 1e-3);
-        assertEquals(width * (6 + 10 * AttitudeDisplayLayout.PITCH_UNITS_PER_DEGREE),
+        assertEquals(12 * (half + 10 * AttitudeDisplayLayout.PITCH_UNITS_PER_DEGREE),
                 area(draw(state(-10, 0, 100, 1)), AttitudeDisplayLayout.GROUND), 1e-3);
         // A vertical bank splits the view in half; the horizon passes through the middle of it.
-        assertEquals(width * 6, area(draw(state(0, 90, 100, 1)), AttitudeDisplayLayout.GROUND), 1e-3);
+        assertEquals(12 * half, area(draw(state(0, 90, 100, 1)), AttitudeDisplayLayout.GROUND), 1e-3);
         // Inverted: sky below, ground above.
-        assertEquals(width * 6, area(draw(state(0, 180, 100, 1)), AttitudeDisplayLayout.GROUND), 1e-3);
+        assertEquals(12 * half, area(draw(state(0, 180, 100, 1)), AttitudeDisplayLayout.GROUND), 1e-3);
     }
 
     @Test
@@ -98,38 +102,103 @@ class AttitudeDisplayLayoutTest {
     }
 
     @Test
-    void altitudeTapeReflowGivesTheSpaceBackToTheHorizon() {
+    void altitudeBandReflowGivesTheSpaceBackToTheHorizon() {
+        double band = AttitudeDisplayLayout.BAND_HEIGHT;
         var off = draw(state(0, 0, 100, 0));
-        assertEquals(0, area(off, AttitudeDisplayLayout.TAPE), 1e-9);
         assertEquals(144, area(off, AttitudeDisplayLayout.SKY), 1e-3);   // the sky is laid first over the whole view
+        assertEquals(0, area(off, AttitudeDisplayLayout.MUTED), 1e-9);
 
         var on = draw(state(0, 0, 100, 1));
-        assertEquals(AttitudeDisplayLayout.TAPE_WIDTH * 12, area(on, AttitudeDisplayLayout.TAPE), 1e-3);
-        assertEquals((12 - AttitudeDisplayLayout.TAPE_WIDTH) * 12, area(on, AttitudeDisplayLayout.SKY), 1e-3);
-        // The horizon never reaches under the tape.
+        assertEquals((12 - band) * 12, area(on, AttitudeDisplayLayout.SKY), 1e-3);
+        assertTrue(area(on, AttitudeDisplayLayout.MUTED) > 0, "AGL caption");
+        // The horizon never reaches into the band.
         for (var polygon : on) {
             if (polygon.color() != AttitudeDisplayLayout.SKY && polygon.color() != AttitudeDisplayLayout.GROUND) continue;
-            for (int i = 0; i < polygon.xy().length; i += 2) {
-                assertTrue(polygon.xy()[i] <= 6 - AttitudeDisplayLayout.TAPE_WIDTH + 1e-4);
-            }
+            for (int i = 1; i < polygon.xy().length; i += 2) assertTrue(polygon.xy()[i] >= -6 + band - 1e-4);
         }
-        // Mid-transition: the tape is half shown.
-        assertEquals(AttitudeDisplayLayout.TAPE_WIDTH * 6, area(draw(state(0, 0, 100, 0.5f)), AttitudeDisplayLayout.TAPE), 1e-3);
+        // Mid-transition: the band is half shown.
+        assertEquals((12 - band / 2) * 12, area(draw(state(0, 0, 100, 0.5f)), AttitudeDisplayLayout.SKY), 1e-3);
     }
 
     @Test
-    void reservedSpeedTapeOnlyTakesItsSpace() {
-        var reserved = draw(new AttitudeDisplayState(Status.OK, 0, 0, 100, 0f, 1f));
-        assertEquals((12 - AttitudeDisplayLayout.TAPE_WIDTH) * 12, area(reserved, AttitudeDisplayLayout.SKY), 1e-3);
-        assertEquals(0, area(reserved, AttitudeDisplayLayout.TAPE), 1e-9);
+    void speedAloneTakesTheBandWithItsCaption() {
+        var speed = draw(readings(100, 24, 0f, 1f));
+        assertEquals((12 - AttitudeDisplayLayout.BAND_HEIGHT) * 12, area(speed, AttitudeDisplayLayout.SKY), 1e-3);
+        assertTrue(area(speed, AttitudeDisplayLayout.MUTED) > 0, "SPD caption");
     }
 
     @Test
-    void radarWithoutReadingShowsDashesAndNoGroundBand() {
-        var unknown = draw(state(0, 0, Double.NaN, 1));
-        assertEquals(0, area(unknown, AttitudeDisplayLayout.GROUND_DARK), 1e-9);
-        // Standing on the ground the band fills the lower half of the tape.
-        assertEquals(AttitudeDisplayLayout.TAPE_WIDTH * 6, area(draw(state(0, 0, 0, 1)), AttitudeDisplayLayout.GROUND_DARK), 1e-3);
+    void bothReadingsShareTheBandWithoutCaptions() {
+        double dp = AttitudeDisplayLayout.DP, figure = AttitudeDisplayLayout.NUMBER_PIXEL, unit = AttitudeDisplayLayout.UNIT_PIXEL;
+        var both = draw(readings(Double.NaN, Double.NaN, 1f, 1f));
+        // Muted: the split rule and the units "b/s" and "b" (10 + 5 + 11 + 10 unit pixels), no captions.
+        assertEquals(dp * 5 * dp + 36 * unit * unit, area(both, AttitudeDisplayLayout.MUTED), 1e-6);
+        // Three dashes for each reading, each 5 x 1 figure pixels.
+        assertEquals(6 * 5 * figure * figure, area(both, AttitudeDisplayLayout.CREAM), 1e-6);
+        assertEquals((12 - AttitudeDisplayLayout.BAND_HEIGHT) * 12, area(both, AttitudeDisplayLayout.SKY), 1e-3);
+    }
+
+    @Test
+    void nightDarkensTheSkyAndGroundAndLightsTheMarks() {
+        var night = new ArrayList<Poly>();
+        AttitudeDisplayLayout.build((color, xy, count) ->
+                night.add(new Poly(color, java.util.Arrays.copyOf(xy, count * 2))), state(0, 0, 100, 0), 1);
+        assertEquals(0, area(night, AttitudeDisplayLayout.SKY), 1e-9);
+        assertEquals(144, area(night, AttitudeDisplayLayout.SKY_NIGHT), 1e-3);   // laid first over the whole view
+        assertEquals(72, area(night, AttitudeDisplayLayout.GROUND_NIGHT), 1e-3);
+        assertTrue(area(night, AttitudeDisplayLayout.MARK_NIGHT) > 0);
+        // Day marks are the dark lead grey; dusk is a blend of both ends.
+        assertTrue(area(draw(state(0, 0, 100, 0)), AttitudeDisplayLayout.MARK) > 0);
+        assertEquals(0x725E4D, AttitudeDisplayLayout.mix(0x000000, 0xE4BC9A, 0.5f));
+    }
+
+    @Test
+    void radarWithoutReadingShowsThreeDashes() {
+        double figure = AttitudeDisplayLayout.NUMBER_PIXEL;
+        double bandTop = -6 + AttitudeDisplayLayout.BAND_HEIGHT;
+        double cream = draw(state(0, 0, Double.NaN, 1)).stream()
+                .filter(p -> p.color() == AttitudeDisplayLayout.CREAM && maxY(p) <= bandTop + 1e-4)
+                .mapToDouble(Poly::area).sum();
+        assertEquals(3 * 5 * figure * figure, cream, 1e-6);   // three dashes, each one 5 x 1 figure pixels
+    }
+
+    @Test
+    void readingsStopAtThreeDigitsAndKeepTheirUnitInside() {
+        // 4321 blocks reads 999 (three digits); the unit after it still ends inside the band's margin.
+        var polygons = draw(readings(4321, 1234, 1f, 1f));
+        double bandTop = -6 + AttitudeDisplayLayout.BAND_HEIGHT;
+        double right = Double.NEGATIVE_INFINITY;
+        for (var polygon : polygons) {
+            if (maxY(polygon) > bandTop + 1e-4 || polygon.color() == AttitudeDisplayLayout.PANEL) continue;
+            for (int i = 0; i < polygon.xy().length; i += 2) right = Math.max(right, polygon.xy()[i]);
+        }
+        assertEquals(6 - 2 * AttitudeDisplayLayout.DP, right, 1e-4);
+        // The unit glyphs are much smaller than the figures.
+        assertTrue(AttitudeDisplayLayout.UNIT_PIXEL * AttitudeDisplayLayout.Glyphs.UNIT_HEIGHT
+                < 0.6 * AttitudeDisplayLayout.NUMBER_PIXEL * AttitudeDisplayLayout.Glyphs.HEIGHT);
+    }
+
+    private static double maxY(Poly poly) {
+        double max = Double.NEGATIVE_INFINITY;
+        for (int i = 1; i < poly.xy().length; i += 2) max = Math.max(max, poly.xy()[i]);
+        return max;
+    }
+
+    @Test
+    void marksAreAtLeastOneDisplayPixelWide() {
+        // On the horizon every mark is at least one display pixel; the band's unit glyphs go down to half of one.
+        double bandTop = -6 + AttitudeDisplayLayout.BAND_HEIGHT;
+        for (var polygon : draw(readings(128, 26, 1f, 1f))) {
+            double dp = maxY(polygon) <= bandTop + 1e-4 ? AttitudeDisplayLayout.UNIT_PIXEL : AttitudeDisplayLayout.DP;
+            int c = polygon.color();
+            if (c == AttitudeDisplayLayout.SKY || c == AttitudeDisplayLayout.GROUND || c == AttitudeDisplayLayout.PANEL) continue;
+            double x0 = Double.POSITIVE_INFINITY, x1 = Double.NEGATIVE_INFINITY, y0 = x0, y1 = x1;
+            for (int i = 0; i < polygon.xy().length; i += 2) {
+                x0 = Math.min(x0, polygon.xy()[i]); x1 = Math.max(x1, polygon.xy()[i]);
+                y0 = Math.min(y0, polygon.xy()[i + 1]); y1 = Math.max(y1, polygon.xy()[i + 1]);
+            }
+            assertTrue(Math.min(x1 - x0, y1 - y0) >= dp - 1e-4, Integer.toHexString(c));
+        }
     }
 
     @Test
@@ -139,21 +208,23 @@ class AttitudeDisplayLayoutTest {
         var none = draw(state(0, 0, 100, 1).withStatus(Status.NO_DATA));
         assertTrue(area(none, AttitudeDisplayLayout.RED) > 0);
         assertEquals(0, area(none, AttitudeDisplayLayout.SKY), 1e-9);
-        assertEquals(144, area(none, AttitudeDisplayLayout.BLACK), 1e-3);
+        assertEquals(144, area(none, AttitudeDisplayLayout.PANEL), 1e-3);
     }
 
     @Test
     void theAircraftSymbolIsBrassAndCentredOnTheHorizonView() {
-        double centre = (-6 + 6 - AttitudeDisplayLayout.TAPE_WIDTH) / 2;
         var polygons = draw(state(0, 0, 100, 1));
-        double low = Double.POSITIVE_INFINITY, high = Double.NEGATIVE_INFINITY;
+        double low = Double.POSITIVE_INFINITY, high = Double.NEGATIVE_INFINITY, top = Double.NEGATIVE_INFINITY;
         for (var polygon : polygons) {
             if (polygon.color() != AttitudeDisplayLayout.BRASS) continue;
             for (int i = 0; i < polygon.xy().length; i += 2) {
                 low = Math.min(low, polygon.xy()[i]); high = Math.max(high, polygon.xy()[i]);
+                top = Math.max(top, polygon.xy()[i + 1]);
             }
         }
-        assertEquals(centre, (low + high) / 2, 1e-4);
+        assertEquals(0, (low + high) / 2, 1e-4);
+        // The wing bars sit on the centre of the view above the band.
+        assertEquals(AttitudeDisplayLayout.BAND_HEIGHT / 2 + AttitudeDisplayLayout.DP, top, 1e-4);
     }
 
     @Test
@@ -179,6 +250,12 @@ class AttitudeDisplayLayoutTest {
             assertEquals(AttitudeDisplayLayout.Glyphs.HEIGHT, rows.length);
             for (var row : rows) assertEquals(AttitudeDisplayLayout.Glyphs.WIDTH, row.length());
         }
+        for (char c : "bs/".toCharArray()) {
+            var rows = AttitudeDisplayLayout.Glyphs.rows(c);
+            assertNotNull(rows, "" + c);
+            assertEquals(AttitudeDisplayLayout.Glyphs.UNIT_HEIGHT, rows.length);
+            for (var row : rows) assertEquals(3, row.length());
+        }
     }
 
     @Test
@@ -198,17 +275,24 @@ class AttitudeDisplayLayoutTest {
     void writesThePreviewWhenAsked() throws Exception {
         String target = System.getenv("FBI_WRITE_PREVIEW");
         if (target == null) return;
+        // Top row by day, middle row at dusk and at night with the same flight, bottom row the flags.
+        var flying = new AttitudeDisplayState(Status.OK, 10, 30, 128, 26, 1f, 1f);
         var states = new AttitudeDisplayState[]{
-                state(10, 30, 128, 0), state(10, 30, 128, 1),
-                state(-4, -12, Double.NaN, 1).withStatus(Status.DEGRADED), state(0, 0, 0, 1).withStatus(Status.NO_DATA)};
-        int scale = 32, side = 12 * scale, gap = 24;
-        var image = new BufferedImage(side * 2 + gap * 3, side * 2 + gap * 3, BufferedImage.TYPE_INT_RGB);
+                state(10, 30, 128, 0), flying, state(10, 30, 128, 1),
+                flying, flying, state(10, 30, 128, 0),
+                state(-4, -12, Double.NaN, 1).withStatus(Status.DEGRADED),
+                new AttitudeDisplayState(Status.OK, -4, -12, 64, Double.NaN, 0f, 1f).withStatus(Status.DEGRADED),
+                state(0, 0, 0, 1).withStatus(Status.NO_DATA)};
+        float[] nights = {0, 0, 0, 0.5f, 1, 1, 0, 1, 0};
+        int scale = 32, side = 12 * scale, gap = 24, columns = 3, rows = 3;
+        var image = new BufferedImage(side * columns + gap * (columns + 1), side * rows + gap * (rows + 1),
+                BufferedImage.TYPE_INT_RGB);
         var g = image.createGraphics();
         g.setColor(new Color(0x303030));
         g.fillRect(0, 0, image.getWidth(), image.getHeight());
         g.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_OFF);
         for (int i = 0; i < states.length; i++) {
-            int ox = gap + (i % 2) * (side + gap), oy = gap + (i / 2) * (side + gap);
+            int ox = gap + (i % columns) * (side + gap), oy = gap + (i / columns) * (side + gap);
             var graphics = g;
             AttitudeDisplayLayout.build((color, xy, count) -> {
                 int[] px = new int[count], py = new int[count];
@@ -218,7 +302,7 @@ class AttitudeDisplayLayoutTest {
                 }
                 graphics.setColor(new Color(color));
                 graphics.fillPolygon(px, py, count);
-            }, states[i]);
+            }, states[i], nights[i]);
         }
         g.dispose();
         var out = new File(target);

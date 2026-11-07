@@ -22,7 +22,9 @@ class AttitudeDisplayFeedTest {
         assertEquals(-30, state.rollDegrees(), 1e-9);
         assertEquals(80, state.aglBlocks(), 1e-9);
         assertEquals(1f, state.altitudeTape());
-        assertEquals(0f, state.speedTape());
+        // TEMPORARY: the speed band is always on with a fictitious reading until there is a speed sensor.
+        assertEquals(1f, state.speedTape());
+        assertFalse(Double.isNaN(state.speed()));
     }
 
     @Test
