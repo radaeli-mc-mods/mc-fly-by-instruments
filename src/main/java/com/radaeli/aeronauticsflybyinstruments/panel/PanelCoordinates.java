@@ -16,11 +16,12 @@ public final class PanelCoordinates {
     public static final double DISPLAY_HEIGHT = 12.0 / 16;
 
     /**
-     * Top of a module's selection volume. The attitude indicator wedge is taller than the block's own
-     * cell, so its volume stops at the block top: a ray cannot hit a block from outside its cell.
+     * Top of a module's selection volume on a table mounted on {@code facing}. The attitude indicator is a tall wedge
+     * only on a table facing up, so only there its volume runs to the block top (a ray cannot hit a block from
+     * outside its cell); on wall and ceiling tables it is the flat 3 px plate and keeps the ordinary volume.
      */
-    public static double moduleTop(String type) {
-        return ATTITUDE_INDICATOR.equals(type) ? 1.0 : MODULE_TOP;
+    public static double moduleTop(String type, Direction facing) {
+        return ATTITUDE_INDICATOR.equals(type) && facing == Direction.UP ? 1.0 : MODULE_TOP;
     }
 
     /**
