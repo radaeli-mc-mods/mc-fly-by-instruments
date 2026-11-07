@@ -3,7 +3,7 @@
 //   node blockbench/_docs/render-docs.mjs
 // Host blocks are stripped oak logs lying along X, for contrast with the iron and brass models (vanilla
 // textures in reference/minecraft-textures, outside git; see README.md).
-import { writeFileSync, mkdirSync } from 'node:fs';
+import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { modelQuads, logQuads, render, toPng } from '../_tools/render-scene.mjs';
 import { wireQuads } from '../_tools/wire-scene.mjs';
 
@@ -112,3 +112,41 @@ save('avionics-computer', [
 
 // --- FMS module alone (v2.1) -------------------------------------------------------------------
 save('fms-module', modelQuads({ model: 'fms_module_2x3' }), { scale: 320 });
+
+// --- Attitude Reference Unit: default placement, Nose = north and Up = up (gimbal drawn at rest) ------
+{
+  const NS = 'aeronautics_fly_by_instruments';
+  const blockstate = JSON.parse(readFileSync(new URL(
+    `../../src/main/resources/assets/${NS}/blockstates/attitude_reference_unit.json`, import.meta.url), 'utf8'));
+  /** The multipart blockstate for a Nose/Up pair, plus the gimbal the block entity renderer draws in game. */
+  const reference = (at, { nose, up }) => {
+    const quads = [];
+    for (const part of blockstate.multipart) {
+      if (part.when && (part.when.nose ?? nose) !== nose) continue;
+      if (part.when && (part.when.up ?? up) !== up) continue;
+      quads.push(...modelQuads({ model: part.apply.model.split('/').pop(), at, x: part.apply.x, y: part.apply.y }));
+    }
+    for (const gimbal of ['gimbal_ring', 'gimbal_rotor']) {
+      quads.push(...modelQuads({ model: `attitude_reference_unit_${gimbal}`, at }));
+    }
+    return quads;
+  };
+  save('attitude-reference-unit', reference([0, 0, 0], { nose: 'north', up: 'up' }), { yaw: 135, scale: 192 });
+}
+
+// --- Attitude Indicator on a floor table (wedge, 2x2) with a lamp and the buzzer ---------------------
+{
+  const at = [0, 0, 0];
+  save('attitude-indicator', [
+    ...table(at),
+    ...module('attitude_indicator_desk', at, 0, 0, 2, 2),
+    ...module('lamp_module_1x1_on', at, 2, 0),
+    ...module('buzzer_module_1x1', at, 2, 1),
+  ], { yaw: 205, scale: 256 });
+}
+
+// --- Attitude Indicator pocket gauge next to the FMS Compass, seen from above like the inventory ---
+save('attitude-indicator-item', [
+  ...modelQuads({ model: 'attitude_indicator_item', at: [0, 0, 0] }),
+  ...modelQuads({ model: 'fms_navigator', at: [1.25, 0, 0] }),
+], { yaw: 180, pitch: 55, scale: 256 });
