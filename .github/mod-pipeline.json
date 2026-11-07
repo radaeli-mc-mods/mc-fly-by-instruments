@@ -1,0 +1,37 @@
+{
+  "$schema": "https://raw.githubusercontent.com/radaeli-mc-mods/mc-ci/main/schemas/mod-pipeline.schema.json",
+  "displayName": "Aeronautics: Fly by Instruments",
+  "java": [
+    21
+  ],
+  "checks": [
+    "test"
+  ],
+  "curseforge": {
+    "projectId": "1766429",
+    "releaseType": "auto"
+  },
+  "targets": [
+    {
+      "id": "neoforge-1.21.1",
+      "task": "build",
+      "files": [
+        "build/libs/aeronautics_fly_by_instruments-*.jar"
+      ],
+      "loaders": [
+        "neoforge"
+      ],
+      "gameVersions": [
+        "1.21.1"
+      ],
+      "java": 21,
+      "dependencies": [
+        "create(required)",
+        "create-aeronautics(required)",
+        "sable(required)",
+        "computercraft(required)",
+        "r-ui-lib(required)"
+      ]
+    }
+  ]
+}
