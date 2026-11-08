@@ -44,13 +44,6 @@ repositories {
         url = 'https://maven.squiddev.cc'
         content { includeGroup 'cc.tweaked' }
     }
-    maven {
-        url = 'https://maven.ryanhcode.dev/releases'
-        content {
-            includeGroup 'dev.ryanhcode.sable'
-            includeGroup 'dev.ryanhcode.sable-companion'
-        }
-    }
     exclusiveContent {
         forRepository {
             maven {
@@ -71,12 +64,11 @@ repositories {
     }
 }
 
-// The dependency properties point at local development JARs. Missing files are
-// ignored so the empty entrypoint can still be structurally checked before the
-// external mod baselines are installed.
+// Prefer local development JARs when present and resolve published artifacts otherwise.
 def configuredFile = { String propertyName ->
     def configuredPath = project.findProperty(propertyName)
-    configuredPath ? project.file(configuredPath) : null
+    def jar = configuredPath ? project.file(configuredPath) : null
+    jar?.isFile() ? jar : null
 }
 
 def createJar = configuredFile('create_jar')
@@ -88,16 +80,27 @@ def ponderJsJar = configuredFile('ponderjs_jar')
 def kubeJsJar = configuredFile('kubejs_jar')
 
 def existingDependencyFiles = {
-    [createJar, aeronauticsJar, sableJar, computercraftJar, rUiLibJar]
-            .findAll { it != null && it.isFile() }
+    [createJar, computercraftJar, rUiLibJar].findAll { it != null }
 }
+
+def bundledModFiles = { File localJar, String artifact ->
+    if (localJar != null) {
+        return files(localJar)
+    }
+    def publishedJar = configurations.detachedConfiguration(dependencies.create(artifact))
+    publishedJar.transitive = false
+    return publishedJar
+}
+
+def aeronauticsFiles = bundledModFiles(aeronauticsJar, "maven.modrinth:oWaK0Q19:${aeronautics_version_id}")
+def sableFiles = bundledModFiles(sableJar, "maven.modrinth:sable:${sable_version_id}")
 
 def aeronauticsCompileJarsDirectory = layout.buildDirectory.dir('local-mod-dependencies/aeronautics')
 def sableCompileJarsDirectory = layout.buildDirectory.dir('local-mod-dependencies/sable')
 def createCompileJarsDirectory = layout.buildDirectory.dir('local-mod-dependencies/create')
 
 def extractCreateCompileJars = tasks.register('extractCreateCompileJars', Sync) {
-    onlyIf { createJar != null && createJar.isFile() }
+    onlyIf { createJar != null }
     from {
         createJar == null ? files() : zipTree(createJar).matching {
             include 'META-INF/jarjar/*.jar'
@@ -108,29 +111,24 @@ def extractCreateCompileJars = tasks.register('extractCreateCompileJars', Sync) 
     into(createCompileJarsDirectory)
 }
 
-def extractAeronauticsCompileJars = tasks.register('extractAeronauticsCompileJars', Sync) {
-    onlyIf { aeronauticsJar != null && aeronauticsJar.isFile() }
-    from {
-        aeronauticsJar == null ? files() : zipTree(aeronauticsJar).matching {
-            include 'META-INF/jarjar/*.jar'
+// NeoForge loads nested mod JARs at runtime. Javac needs them on its classpath.
+def extractBundledCompileJars = { String taskName, FileCollection archives, Provider<Directory> destination ->
+    tasks.register(taskName, Sync) {
+        from {
+            archives.collect { archive ->
+                zipTree(archive).matching { include 'META-INF/jarjar/*.jar' }
+            }
         }
+        eachFile { path = name }
+        includeEmptyDirs = false
+        into(destination)
     }
-    eachFile { path = name }
-    includeEmptyDirs = false
-    into(aeronauticsCompileJarsDirectory)
 }
 
-def extractSableCompileJars = tasks.register('extractSableCompileJars', Sync) {
-    onlyIf { sableJar != null && sableJar.isFile() }
-    from {
-        sableJar == null ? files() : zipTree(sableJar).matching {
-            include 'META-INF/jarjar/*.jar'
-        }
-    }
-    eachFile { path = name }
-    includeEmptyDirs = false
-    into(sableCompileJarsDirectory)
-}
+def extractAeronauticsCompileJars = extractBundledCompileJars(
+        'extractAeronauticsCompileJars', aeronauticsFiles, aeronauticsCompileJarsDirectory)
+def extractSableCompileJars = extractBundledCompileJars(
+        'extractSableCompileJars', sableFiles, sableCompileJarsDirectory)
 
 configurations {
     localRuntime
@@ -139,17 +137,18 @@ configurations {
 
 dependencies {
     // Optional client tutorial integration; never bundle these libraries.
-    compileOnly files([ponderJsJar, kubeJsJar].findAll { it != null && it.isFile() })
+    compileOnly(ponderJsJar == null ? "curse.maven:ponder-622888:${ponderjs_file_id}" : files(ponderJsJar))
+    compileOnly(kubeJsJar == null ? "maven.modrinth:kubejs:${kubejs_version_id}" : files(kubeJsJar))
     if (providers.gradleProperty('ponderTutorials').isPresent()) {
         localRuntime files([ponderJsJar, kubeJsJar, configuredFile('rhino_jar')]
-                .findAll { it != null && it.isFile() })
+                .findAll { it != null })
     } else if (providers.gradleProperty('ponderKubeOnly').isPresent()) {
-        localRuntime files([kubeJsJar, configuredFile('rhino_jar')].findAll { it != null && it.isFile() })
+        localRuntime files([kubeJsJar, configuredFile('rhino_jar')].findAll { it != null })
     }
     testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.4'
     compileOnly files(existingDependencyFiles)
-    if (createJar == null || !createJar.isFile()) {
+    if (createJar == null) {
         compileOnly("com.simibubi.create:create-${minecraft_version}:${create_maven_version}:slim") {
             transitive = false
         }
@@ -159,35 +158,27 @@ dependencies {
         localRuntime("com.simibubi.create:create-${minecraft_version}:${create_maven_version}") {
             transitive = false
         }
+    } else {
+        compileOnly files { fileTree(createCompileJarsDirectory.get().asFile) { include '*.jar' } }
     }
-    if (aeronauticsJar == null || !aeronauticsJar.isFile()) {
-        compileOnly("maven.modrinth:oWaK0Q19:${aeronautics_compile_version}")
-        localRuntime("maven.modrinth:oWaK0Q19:${aeronautics_compile_version}")
-    }
-    if (sableJar == null || !sableJar.isFile()) {
-        compileOnly("dev.ryanhcode.sable:sable-common-${minecraft_version}:${sable_compile_version}") {
-            transitive = false
-        }
-        localRuntime("maven.modrinth:sable:${sable_runtime_version}")
-    }
-    if (computercraftJar == null || !computercraftJar.isFile()) {
+    compileOnly files(aeronauticsFiles, sableFiles)
+    if (computercraftJar == null) {
         compileOnly("cc.tweaked:cc-tweaked-${minecraft_version}-common-api:${computercraft_api_version}")
         compileOnly("cc.tweaked:cc-tweaked-${minecraft_version}-core-api:${computercraft_api_version}")
         compileOnly("cc.tweaked:cc-tweaked-${minecraft_version}-forge-api:${computercraft_api_version}")
         localRuntime("maven.modrinth:cc-tweaked:${computercraft_runtime_version}")
     }
-    if (rUiLibJar == null || !rUiLibJar.isFile()) {
+    if (rUiLibJar == null) {
         def rUiLibArtifact = "curse.maven:r-ui-lib-1731287:${r_ui_lib_file_id}"
         compileOnly(rUiLibArtifact)
         localRuntime(rUiLibArtifact)
     }
-    compileOnly files { fileTree(createCompileJarsDirectory.get().asFile) { include '*.jar' } }
     compileOnly files { fileTree(aeronauticsCompileJarsDirectory.get().asFile) { include '*.jar' } }
     compileOnly files { fileTree(sableCompileJarsDirectory.get().asFile) { include '*.jar' } }
 
     // These are development-only runtime inputs. The addon JAR never bundles
     // Create, Aeronautics, Sable, CC:Tweaked, or R-Ui Lib.
-    localRuntime files(existingDependencyFiles)
+    localRuntime files(existingDependencyFiles, aeronauticsFiles, sableFiles)
 }
 
 neoForge {
