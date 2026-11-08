@@ -38,6 +38,37 @@ def prepareTableGameTests = tasks.register('prepareTableGameTests', Copy) {
 
 repositories {
     mavenCentral()
+    maven { url = 'https://maven.createmod.net' }
+    maven { url = 'https://maven.ithundxr.dev/snapshots' }
+    maven {
+        url = 'https://maven.squiddev.cc'
+        content { includeGroup 'cc.tweaked' }
+    }
+    maven {
+        url = 'https://maven.ryanhcode.dev/releases'
+        content {
+            includeGroup 'dev.ryanhcode.sable'
+            includeGroup 'dev.ryanhcode.sable-companion'
+        }
+    }
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = 'Modrinth'
+                url = 'https://api.modrinth.com/maven'
+            }
+        }
+        filter { includeGroup 'maven.modrinth' }
+    }
+    exclusiveContent {
+        forRepository {
+            maven {
+                name = 'CurseMaven'
+                url = 'https://cursemaven.com'
+            }
+        }
+        filter { includeGroup 'curse.maven' }
+    }
 }
 
 // The dependency properties point at local development JARs. Missing files are
@@ -103,6 +134,7 @@ def extractSableCompileJars = tasks.register('extractSableCompileJars', Sync) {
 
 configurations {
     localRuntime
+    testCompileOnly.extendsFrom compileOnly
 }
 
 dependencies {
@@ -116,10 +148,39 @@ dependencies {
     }
     testImplementation 'org.junit.jupiter:junit-jupiter:5.11.4'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.4'
-    testCompileOnly files(existingDependencyFiles)
-    testImplementation files(computercraftJar)
-    testImplementation files(rUiLibJar)
     compileOnly files(existingDependencyFiles)
+    if (createJar == null || !createJar.isFile()) {
+        compileOnly("com.simibubi.create:create-${minecraft_version}:${create_maven_version}:slim") {
+            transitive = false
+        }
+        compileOnly("net.createmod.ponder:ponder-neoforge:${ponder_version}+mc${minecraft_version}")
+        compileOnly("dev.engine-room.flywheel:flywheel-neoforge-api-${minecraft_version}:${flywheel_version}")
+        compileOnly("com.tterrag.registrate:Registrate:${registrate_version}")
+        localRuntime("com.simibubi.create:create-${minecraft_version}:${create_maven_version}") {
+            transitive = false
+        }
+    }
+    if (aeronauticsJar == null || !aeronauticsJar.isFile()) {
+        compileOnly("maven.modrinth:oWaK0Q19:${aeronautics_compile_version}")
+        localRuntime("maven.modrinth:oWaK0Q19:${aeronautics_compile_version}")
+    }
+    if (sableJar == null || !sableJar.isFile()) {
+        compileOnly("dev.ryanhcode.sable:sable-common-${minecraft_version}:${sable_compile_version}") {
+            transitive = false
+        }
+        localRuntime("maven.modrinth:sable:${sable_runtime_version}")
+    }
+    if (computercraftJar == null || !computercraftJar.isFile()) {
+        compileOnly("cc.tweaked:cc-tweaked-${minecraft_version}-common-api:${computercraft_api_version}")
+        compileOnly("cc.tweaked:cc-tweaked-${minecraft_version}-core-api:${computercraft_api_version}")
+        compileOnly("cc.tweaked:cc-tweaked-${minecraft_version}-forge-api:${computercraft_api_version}")
+        localRuntime("maven.modrinth:cc-tweaked:${computercraft_runtime_version}")
+    }
+    if (rUiLibJar == null || !rUiLibJar.isFile()) {
+        def rUiLibArtifact = "curse.maven:r-ui-lib-1731287:${r_ui_lib_file_id}"
+        compileOnly(rUiLibArtifact)
+        localRuntime(rUiLibArtifact)
+    }
     compileOnly files { fileTree(createCompileJarsDirectory.get().asFile) { include '*.jar' } }
     compileOnly files { fileTree(aeronauticsCompileJarsDirectory.get().asFile) { include '*.jar' } }
     compileOnly files { fileTree(sableCompileJarsDirectory.get().asFile) { include '*.jar' } }
