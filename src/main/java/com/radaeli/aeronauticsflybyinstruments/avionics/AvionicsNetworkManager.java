@@ -53,9 +53,7 @@ public final class AvionicsNetworkManager {
         for (NetworkDevice device : topology.devices()) {
             BlockPos position = origin.offset(device.x(), device.y(), device.z());
             if (!level.hasChunkAt(position)) continue;
-            var blockEntity = level.getBlockEntity(position);
-            if (!(blockEntity instanceof AvionicsSignalProvider provider)) continue;
-            for (AvionicsDataChannel<?> signal : provider.avionicsSignals()) {
+            for (AvionicsDataChannel<?> signal : AvionicsEndpoints.signalsOf(level, level.getBlockEntity(position))) {
                 result.add(new ConnectedSignal(device, signal));
             }
         }
@@ -146,7 +144,7 @@ public final class AvionicsNetworkManager {
         }
         @Override public String endpointType(BlockPos pos) {
             if (!isLoaded(pos)) return null;
-            return level.getBlockEntity(pos) instanceof AvionicsEndpoint endpoint ? endpoint.avionicsType() : null;
+            return AvionicsEndpoints.typeOf(level.getBlockEntity(pos));
         }
     }
 }

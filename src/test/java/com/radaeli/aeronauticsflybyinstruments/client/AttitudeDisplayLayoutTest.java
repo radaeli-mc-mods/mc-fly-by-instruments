@@ -308,4 +308,13 @@ class AttitudeDisplayLayoutTest {
         var out = new File(target);
         assertTrue(ImageIO.write(image, "png", out), out.getAbsolutePath());
     }
+
+    @Test
+    void speedKeepsItsSignSoBackwardsIsNotZero() {
+        assertEquals("12", AttitudeDisplayLayout.speedFigures(12.4));
+        assertEquals("-12", AttitudeDisplayLayout.speedFigures(-12.4));
+        assertEquals("0", AttitudeDisplayLayout.speedFigures(-0.4));
+        assertEquals("-999", AttitudeDisplayLayout.speedFigures(-5000));
+        assertEquals("---", AttitudeDisplayLayout.speedFigures(Double.NaN));
+    }
 }

@@ -1,5 +1,9 @@
 # Plano: módulo Attitude Indicator (horizonte artificial 3×3)
 
+> **Atualização (velocidade):** a fita de velocidade deixou de ser reservada. Ela lê o Velocity Sensor
+> (Simulated) na rede; ver [velocity-sensor-plan.md](velocity-sensor-plan.md). As menções "reservada" abaixo
+> valem só para o estado anterior.
+>
 > **Revisão 2026-11-05 (v2 visual):** o footprint passou a **2×2** (carcaça 10×10, altura 12, lente 8×8,
 > atlas 32×32) e a cunha foi refeita sem frestas: tela em um cubo sólido com moldura pintada e tampo de 4 de
 > espessura recuado 1. As seções abaixo descrevem a v1 3×3 e valem pelo resto (render, dados, interação);

@@ -559,7 +559,7 @@
   "gui.aeronautics_fly_by_instruments.attitude_indicator.pitch": "Pitch",
   "gui.aeronautics_fly_by_instruments.attitude_indicator.roll": "Roll",
   "gui.aeronautics_fly_by_instruments.attitude_indicator.sources": "Sources",
-  "gui.aeronautics_fly_by_instruments.attitude_indicator.info_sources": "The display reads the nearest Attitude Reference Unit and the lowest Radar Altimeter on the table's cable network. Both must be on the same aircraft as the table.",
+  "gui.aeronautics_fly_by_instruments.attitude_indicator.info_sources": "The display reads the nearest Attitude Reference Unit, the lowest Radar Altimeter and the nearest Velocity Sensor on the table's cable network. All of them must be on the same aircraft as the table.",
   "gui.aeronautics_fly_by_instruments.attitude_indicator.unit": "Reference unit",
   "gui.aeronautics_fly_by_instruments.attitude_indicator.altimeter": "Radar altimeter",
   "gui.aeronautics_fly_by_instruments.attitude_indicator.link.ok": "Connected",
@@ -574,8 +574,9 @@
   "gui.aeronautics_fly_by_instruments.attitude_indicator.altitude_tape": "Altitude tape",
   "gui.aeronautics_fly_by_instruments.attitude_indicator.altitude_tape_note": "Height above ground in blocks (AGL). Shown only while a Radar Altimeter is on the network.",
   "gui.aeronautics_fly_by_instruments.attitude_indicator.speed_tape": "Speed tape",
-  "gui.aeronautics_fly_by_instruments.attitude_indicator.speed_tape_note": "Reserved for a future speed sensor.",
+  "gui.aeronautics_fly_by_instruments.attitude_indicator.speed_tape_note": "Speed along the sensor's face, in blocks per second. Point the Velocity Sensor at the nose. Shown only while a Velocity Sensor is on the network.",
   "gui.aeronautics_fly_by_instruments.attitude_indicator.on": "On",
   "gui.aeronautics_fly_by_instruments.attitude_indicator.off": "Off",
-  "gui.aeronautics_fly_by_instruments.attitude_indicator.soon": "soon"
+  "gui.aeronautics_fly_by_instruments.attitude_indicator.velocity": "Velocity sensor",
+  "gui.aeronautics_fly_by_instruments.attitude_indicator.speed_value": "%s b/s"
 }

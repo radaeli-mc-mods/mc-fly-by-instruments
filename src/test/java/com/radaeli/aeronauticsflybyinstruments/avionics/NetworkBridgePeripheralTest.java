@@ -46,4 +46,38 @@ class NetworkBridgePeripheralTest {
         assertEquals(1, events.size());
         peripheral.detach(computer);
     }
+
+    @Test
+    void signalsOfTheWholeNetworkAreEmptyWithoutALevelOrAConnectedNetwork() throws Exception {
+        var bridge = new NetworkBridgeBlockEntity(BlockPos.ZERO, ModBlocks.NETWORK_BRIDGE.get().defaultBlockState());
+        assertTrue(bridge.peripheral().getSignals().isEmpty());
+        assertNotNull(NetworkBridgePeripheral.class.getMethod("getSignals")
+                .getAnnotation(dan200.computercraft.api.lua.LuaFunction.class));
+    }
+
+    @Test
+    void aSignalNamesItsDeviceAndItsReadingForLua() {
+        var channel = new AvionicsDataChannel<>("velocity.axial",
+                SensorReading.valid(-2.5, "blocks/s", 40L));
+        var signal = new AvionicsNetworkManager.ConnectedSignal(new NetworkDevice("velocity_sensor", 3, -1, 2), channel);
+        var described = NetworkBridgePeripheral.describeSignal(signal);
+        assertEquals("velocity.axial", described.get("name"));
+        assertEquals("velocity_sensor", described.get("type"));
+        assertEquals(3, described.get("x"));
+        assertEquals(-1, described.get("y"));
+        assertEquals(2, described.get("z"));
+        assertEquals("valid", described.get("status"));
+        assertEquals(-2.5, described.get("value"));
+        assertEquals("blocks/s", described.get("unit"));
+        assertEquals(40L, described.get("gameTime"));
+    }
+
+    @Test
+    void anUnavailableSignalHasNoValue() {
+        var channel = new AvionicsDataChannel<>("velocity.axial", SensorReading.<Double>unavailable("blocks/s", 9L));
+        var described = NetworkBridgePeripheral.describeSignal(
+                new AvionicsNetworkManager.ConnectedSignal(new NetworkDevice("velocity_sensor", 0, 0, 1), channel));
+        assertEquals("unavailable", described.get("status"));
+        assertFalse(described.containsKey("value"));
+    }
 }

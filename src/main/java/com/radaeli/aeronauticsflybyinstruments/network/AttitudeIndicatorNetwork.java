@@ -46,7 +46,8 @@ public final class AttitudeIndicatorNetwork {
         var sample = table.attitudeSample(column, row);
         PacketDistributor.sendToPlayer(player, new AttitudeIndicatorScreenPayload(table.getBlockPos(), column, row,
                 token, sample.status().id(), sample.attitude().id(), sample.altimeter().id(), sample.pitch(),
-                sample.roll(), sample.agl(), data.altitudeTape()));
+                sample.roll(), sample.agl(), data.altitudeTape(), sample.velocity().id(), sample.speed(),
+                data.speedTape()));
     }
 
     private static void handle(AttitudeIndicatorActionPayload payload, Player player) {
@@ -61,6 +62,7 @@ public final class AttitudeIndicatorNetwork {
                 || table.attitudeIndicatorAt(payload.column(), payload.row()).isEmpty()) return;
         switch (payload.action()) {
             case "altitude_tape" -> table.setAttitudeAltitudeTape(payload.column(), payload.row(), payload.value());
+            case "speed_tape" -> table.setAttitudeSpeedTape(payload.column(), payload.row(), payload.value());
             case "refresh" -> { }
             default -> { return; }
         }

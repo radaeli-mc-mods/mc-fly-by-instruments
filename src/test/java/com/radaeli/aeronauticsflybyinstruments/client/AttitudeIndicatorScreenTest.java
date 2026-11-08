@@ -16,7 +16,7 @@ class AttitudeIndicatorScreenTest {
 
     private static AttitudeIndicatorScreenPayload payload(boolean tape) {
         return new AttitudeIndicatorScreenPayload(new BlockPos(3, 64, -2), 1, 2, TOKEN, "ok", "ok", "ok",
-                5, -12, 40, tape);
+                5, -12, 40, tape, "ok", 24, true);
     }
 
     @Test
@@ -44,9 +44,9 @@ class AttitudeIndicatorScreenTest {
         var screen = new AttitudeIndicatorScreen(payload(true), ignored -> { });
         assertTrue(screen.isFor(payload(false)));
         assertFalse(screen.isFor(new AttitudeIndicatorScreenPayload(new BlockPos(3, 64, -2), 0, 2, TOKEN, "ok", "ok",
-                "ok", 0, 0, 0, true)));
+                "ok", 0, 0, 0, true, "ok", 0, true)));
         assertFalse(screen.isFor(new AttitudeIndicatorScreenPayload(new BlockPos(4, 64, -2), 1, 2, TOKEN, "ok", "ok",
-                "ok", 0, 0, 0, true)));
+                "ok", 0, 0, 0, true, "ok", 0, true)));
     }
 
     @Test

@@ -1,6 +1,6 @@
 package com.radaeli.aeronauticsflybyinstruments.network;
 
-import com.radaeli.aeronauticsflybyinstruments.avionics.AvionicsEndpoint;
+import com.radaeli.aeronauticsflybyinstruments.avionics.AvionicsEndpoints;
 import com.radaeli.aeronauticsflybyinstruments.avionics.AvionicsNetworkManager;
 import com.radaeli.aeronauticsflybyinstruments.wire.WireMaintenance;
 import com.radaeli.aeronauticsflybyinstruments.wire.WireNodeBlock;
@@ -82,6 +82,6 @@ public final class WireNetwork {
     /** Whether a connector's host is a device (for the Wiring View markers). */
     public static boolean hostIsDevice(net.minecraft.world.level.Level level, WireNodeBlockEntity node) {
         var host = WireNodeBlock.host(node.getBlockState(), node.getBlockPos());
-        return level.isLoaded(host) && level.getBlockEntity(host) instanceof AvionicsEndpoint;
+        return level.isLoaded(host) && AvionicsEndpoints.typeOf(level.getBlockEntity(host)) != null;
     }
 }

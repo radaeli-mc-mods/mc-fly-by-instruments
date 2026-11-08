@@ -371,13 +371,29 @@ public final class ModularTableBlockEntity extends BlockEntity implements Avioni
     }
 
     public boolean setAttitudeAltitudeTape(int column, int row, boolean shown) {
+        return changeAttitudeModule(column, row, data -> {
+            if (data.altitudeTape() == shown) return false;
+            data.setAltitudeTape(shown);
+            return true;
+        });
+    }
+
+    public boolean setAttitudeSpeedTape(int column, int row, boolean shown) {
+        return changeAttitudeModule(column, row, data -> {
+            if (data.speedTape() == shown) return false;
+            data.setSpeedTape(shown);
+            return true;
+        });
+    }
+
+    /** Applies a setting to the module at this origin cell; {@code change} says whether anything changed. */
+    private boolean changeAttitudeModule(int column, int row, java.util.function.Predicate<AttitudeIndicatorData> change) {
         var module = grid.at(column, row).filter(found -> found.type().equals(PanelCoordinates.ATTITUDE_INDICATOR));
         if (module.isEmpty()) return false;
         var found = module.orElseThrow();
         var data = attitudeModules.computeIfAbsent(cellKey(found.column(), found.row()),
                 ignored -> new AttitudeIndicatorData());
-        if (data.altitudeTape() == shown) return true;
-        data.setAltitudeTape(shown);
+        if (!change.test(data)) return true;
         setChanged();
         syncClient();
         // The displays redraw at once instead of waiting for the next sample.
@@ -391,7 +407,7 @@ public final class ModularTableBlockEntity extends BlockEntity implements Avioni
         if (data.isEmpty() || !(level instanceof ServerLevel serverLevel)) return AttitudeIndicatorFeed.Sample.DISCONNECTED;
         var source = connectedSource(serverLevel, TablePanel.of(this));
         return AttitudeIndicatorSampler.sample(serverLevel, this, source.position(), source.topology(),
-                data.get().altitudeTape(), serverLevel.getGameTime());
+                data.get().altitudeTape(), data.get().speedTape(), serverLevel.getGameTime());
     }
 
     /** Samples every Attitude Indicator of this table and tells the players watching it what changed. */
@@ -407,9 +423,9 @@ public final class ModularTableBlockEntity extends BlockEntity implements Avioni
         var source = connectedSource(serverLevel, TablePanel.of(this));
         for (var module : indicators) {
             int key = cellKey(module.column(), module.row());
-            boolean tape = attitudeModules.computeIfAbsent(key, ignored -> new AttitudeIndicatorData()).altitudeTape();
+            var settings = attitudeModules.computeIfAbsent(key, ignored -> new AttitudeIndicatorData());
             var sample = AttitudeIndicatorSampler.sample(serverLevel, this, source.position(), source.topology(),
-                    tape, now);
+                    settings.altitudeTape(), settings.speedTape(), now);
             var last = attitudeSent.get(key);
             if (last != null && !sample.differsFrom(last.sample()) && now - last.gameTime() < ATTITUDE_HEARTBEAT_TICKS) {
                 continue;

@@ -2,8 +2,7 @@ package com.radaeli.aeronauticsflybyinstruments.client;
 
 /**
  * Sample values for the preview images and layout tests: a slow, gentle flight pattern so pitch, bank and the
- * readings all move. The game does not use it for attitude (the table draws the feed of
- * {@link AttitudeDisplayClient}); it does use {@link #speed} until there is an airspeed sensor.
+ * readings all move. The game does not use it: the table draws the feed of {@link AttitudeDisplayClient}.
  */
 final class AttitudeDisplayMock {
     private AttitudeDisplayMock() {}
@@ -15,7 +14,7 @@ final class AttitudeDisplayMock {
         return new AttitudeDisplayState(AttitudeDisplayState.Status.OK, pitch, roll, agl, speed(seconds), 1f, 1f);
     }
 
-    /** Fictitious airspeed in blocks per second (TEMPORARY: stands in for a speed sensor while the band is tried). */
+    /** Fictitious airspeed in blocks per second, for previews and layout tests. */
     static double speed(double seconds) {
         return 24 + 6 * Math.sin(seconds * 0.25) + 2 * Math.sin(seconds * 0.9);
     }

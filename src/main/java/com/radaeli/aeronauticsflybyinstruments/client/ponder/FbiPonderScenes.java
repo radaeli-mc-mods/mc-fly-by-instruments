@@ -482,9 +482,12 @@ public final class FbiPonderScenes {
         s.world().modifyBlockEntity(DESK, ModularTableBlockEntity.class,
                 table -> table.placeSpanning(PanelCoordinates.ATTITUDE_INDICATOR, 0, 0, 2, 2, null, Direction.SOUTH));
     }
+    /** Speed the diorama's speed tape shows, in blocks per second (no velocity sensor in the diorama). */
+    private static final double DEMO_SPEED = 24;
     /** What the diorama's indicator shows; it eases toward these values like a live feed and never goes stale. */
     private static void horizon(SceneBuilder s, Status status, double pitch, double roll, double agl, boolean tape) {
-        s.addInstruction(scene -> AttitudeDisplayClient.demo(DESK, 0, 0, status, pitch, roll, agl, tape));
+        s.addInstruction(scene -> AttitudeDisplayClient.demo(DESK, 0, 0, status, pitch, roll, agl, tape,
+                DEMO_SPEED, true));
     }
     /** Moves pitch and roll linearly over the next ticks, alongside the caption that follows. */
     private static void sweep(SceneBuilder s, int ticks, double pitch0, double pitch1, double roll0, double roll1,
@@ -493,7 +496,7 @@ public final class FbiPonderScenes {
             @Override public void tick(PonderScene scene) {
                 double t = Math.min(1, Math.max(0, 1 - (double) remainingTicks / ticks));
                 AttitudeDisplayClient.demo(DESK, 0, 0, Status.OK, pitch0 + (pitch1 - pitch0) * t,
-                        roll0 + (roll1 - roll0) * t, agl, tape);
+                        roll0 + (roll1 - roll0) * t, agl, tape, DEMO_SPEED, true);
                 super.tick(scene);
             }
         });

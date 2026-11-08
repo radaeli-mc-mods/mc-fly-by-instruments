@@ -120,7 +120,7 @@ continua sendo a ferramenta de topologia do cabo.
 | Método | Resultado/efeito |
 |---|---|
 | `getStatus()` | `state` (`normal`, `caution`, `warning`, `inop`, `test`), `alert` (canal), `testing`, `sensitivity`, `flightPhase`, rede (`networkStatus`, `networkComplete`, `endpointCount`), `sensorCount`, e `clearance`, `verticalSpeed` e `bankAngle` com status/unidade/tempo. |
-| `getSensors()` | Lista de `{type, role, x, y, z, status, unit, value?, issue?}`; coordenadas relativas ao computador. |
+| `getSensors()` | Lista de `{type, role, x, y, z, status, unit, value?, issue?}`; coordenadas relativas ao computador. Um Velocity Sensor aparece com papel `auxiliary`, em `blocks/s`, e não entra no GPWS. |
 | `getAlerts()` | Tabela por canal com `state` (`inactive`, `active`, `unavailable`, `inhibited`), `severity`, `gameTime` e `reason` quando INOP. |
 | `getConfiguration()` | `{sensitivity, inhibited}`. |
 | `test()` | Roda o autoteste; `false` se já está em teste. |

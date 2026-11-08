@@ -12,8 +12,8 @@ import net.minecraft.resources.ResourceLocation;
 import java.util.UUID;
 
 /**
- * One change from the Attitude Indicator screen. {@code action} is {@code altitude_tape} (with {@code value}) or
- * {@code refresh}. The token is the one the screen payload carried: it proves the screen was opened on this module
+ * One change from the Attitude Indicator screen. {@code action} is {@code altitude_tape} or {@code speed_tape} (with
+ * {@code value}) or {@code refresh}. The token is the one the screen payload carried: it proves the screen was opened on this module
  * installation and not on a module that was removed and replaced since.
  */
 public record AttitudeIndicatorActionPayload(BlockPos position, int column, int row, UUID interactionToken,

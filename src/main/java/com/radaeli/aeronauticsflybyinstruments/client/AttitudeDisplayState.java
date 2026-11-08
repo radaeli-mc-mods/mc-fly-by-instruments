@@ -2,14 +2,14 @@ package com.radaeli.aeronauticsflybyinstruments.client;
 
 /**
  * What the Attitude Indicator display shows at one instant. In the game it comes from the server's feed (the
- * Attitude Reference Unit and the Radar Altimeter on the table's network) through {@link AttitudeDisplayFeed};
+ * Attitude Reference Unit, the Radar Altimeter and the Velocity Sensor on the table's network) through
+ * {@link AttitudeDisplayFeed};
  * previews and tests use {@link AttitudeDisplayMock}. The layout does not know the difference.
  *
  * @param pitchDegrees nose up positive
  * @param rollDegrees  right wing down positive (aviation convention)
  * @param aglBlocks    height above ground in blocks, NaN when the radar has no reading ("----")
- * @param speed        airspeed in blocks per second, NaN without a reading ("---"); no sensor yet, the feed
- *                     fills it with {@link AttitudeDisplayMock#speed} so the band can be tried in the game
+ * @param speed        speed along the velocity sensor's face in blocks per second, NaN without a reading ("---")
  * @param altitudeTape 0..1: how much of the altitude reading is shown (0 off, 1 full); animates the reflow
  * @param speedTape    0..1: same for the speed reading
  */
