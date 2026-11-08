@@ -21,45 +21,48 @@ final class AttitudeDisplayFeed {
     static final double STALE_SECONDS = 3;
 
     private Status status = Status.NO_DATA;
-    private double targetPitch, targetRoll, targetAgl = Double.NaN;
-    private boolean tapeWanted;
-    private double pitch, roll, agl = Double.NaN;
-    private float tape;
+    private double targetPitch, targetRoll, targetAgl = Double.NaN, targetSpeed = Double.NaN;
+    private boolean altitudeWanted, speedWanted;
+    private double pitch, roll, agl = Double.NaN, speed = Double.NaN;
+    private float altitudeTape, speedTape;
     private double sinceSample = Double.POSITIVE_INFINITY;
-    /** Clock of the fictitious speed (TEMPORARY, until there is an airspeed sensor). */
-    private double elapsed;
     private boolean live;
 
-    void accept(Status next, double pitch, double roll, double agl, boolean altitudeTape) {
+    void accept(Status next, double pitch, double roll, double agl, boolean altitudeTape, double speed,
+                boolean speedTape) {
         boolean snap = !live || status == Status.NO_DATA || sinceSample > STALE_SECONDS;
         status = next;
         targetPitch = pitch;
         targetRoll = roll;
         targetAgl = agl;
-        tapeWanted = altitudeTape;
+        targetSpeed = speed;
+        altitudeWanted = altitudeTape;
+        speedWanted = speedTape;
         sinceSample = 0;
         live = true;
         if (snap) {
             this.pitch = pitch;
             this.roll = roll;
             this.agl = agl;
-            tape = altitudeTape ? 1 : 0;
+            this.speed = speed;
+            this.altitudeTape = altitudeTape ? 1 : 0;
+            this.speedTape = speedTape ? 1 : 0;
         }
     }
 
     /** The state to draw after {@code seconds} more have passed. */
     AttitudeDisplayState advance(double seconds) {
         sinceSample += seconds;
-        elapsed += seconds;
         if (!live || status == Status.NO_DATA || sinceSample > STALE_SECONDS) return NO_DATA;
         double blend = 1 - Math.exp(-seconds / SMOOTHING_SECONDS);
         pitch += (targetPitch - pitch) * blend;
         roll = AttitudeMath.wrapDegrees(roll + AttitudeMath.shortestDelta(roll, targetRoll) * blend);
         agl = Double.isNaN(targetAgl) || Double.isNaN(agl) ? targetAgl : agl + (targetAgl - agl) * blend;
+        speed = Double.isNaN(targetSpeed) || Double.isNaN(speed) ? targetSpeed : speed + (targetSpeed - speed) * blend;
         float step = (float) (seconds / TAPE_SECONDS);
-        tape = tapeWanted ? Math.min(1, tape + step) : Math.max(0, tape - step);
-        // TEMPORARY: the speed band is always on with a fictitious reading so it can be tried in the game.
-        return new AttitudeDisplayState(status, pitch, roll, agl, AttitudeDisplayMock.speed(elapsed), tape, 1f);
+        altitudeTape = altitudeWanted ? Math.min(1, altitudeTape + step) : Math.max(0, altitudeTape - step);
+        speedTape = speedWanted ? Math.min(1, speedTape + step) : Math.max(0, speedTape - step);
+        return new AttitudeDisplayState(status, pitch, roll, agl, speed, altitudeTape, speedTape);
     }
 
     static final AttitudeDisplayState NO_DATA = new AttitudeDisplayState(Status.NO_DATA, 0, 0, Double.NaN, Double.NaN, 0f, 0f);

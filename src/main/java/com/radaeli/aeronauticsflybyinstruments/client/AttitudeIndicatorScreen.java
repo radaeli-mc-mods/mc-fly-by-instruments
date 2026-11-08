@@ -52,6 +52,8 @@ public final class AttitudeIndicatorScreen extends HudScreen {
 
     void toggleAltitudeTape() { send("altitude_tape", !payload.altitudeTape()); }
 
+    void toggleSpeedTape() { send("speed_tape", !payload.speedTape()); }
+
     @Override
     protected HudPanel build() {
         var palette = HudPanel.palette();
@@ -79,13 +81,19 @@ public final class AttitudeIndicatorScreen extends HudScreen {
         // The altimeter is optional: its absence is only worth a warning while the tape asks for it.
         panel.row(tr(KEY + "altimeter"), altimeter,
                 linkColor(payload.altimeter(), payload.altitudeTape()), null);
+        boolean velocityOk = payload.velocity().equals("ok");
+        String velocity = velocityOk
+                ? tr(KEY + "speed_value", String.format(Locale.ROOT, "%.1f", payload.speed()))
+                : tr(KEY + "link." + payload.velocity());
+        panel.row(tr(KEY + "velocity"), velocity, linkColor(payload.velocity(), payload.speedTape()), null);
 
         panel.section(tr(KEY + "tapes"), tr(KEY + "info_tapes"));
         boolean tape = payload.altitudeTape();
         panel.choice(tr(KEY + "altitude_tape"), tr(tape ? KEY + "on" : KEY + "off"), tape, true,
                 this::toggleAltitudeTape).tooltip(tr(KEY + "altitude_tape_note"));
-        panel.choice(tr(KEY + "speed_tape"), tr(KEY + "soon"), false, false, null)
-                .tooltip(tr(KEY + "speed_tape_note"));
+        boolean speed = payload.speedTape();
+        panel.choice(tr(KEY + "speed_tape"), tr(speed ? KEY + "on" : KEY + "off"), speed, true,
+                this::toggleSpeedTape).tooltip(tr(KEY + "speed_tape_note"));
         return panel;
     }
 

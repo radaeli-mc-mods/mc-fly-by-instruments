@@ -5,6 +5,21 @@ All notable changes to Aeronautics: Fly by Instruments are documented in this fi
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.0-beta.2] - 2026-11-07
+
+### Added
+
+- Added a temporary simulated speed readout to the Attitude Indicator.
+
+### Changed
+
+- Redesigned the Attitude Indicator display with day and night colors, simpler pitch and bank markings, and a larger altitude readout.
+- Updated the Attitude Indicator housing with painted iron and polished brass trim.
+
+### Fixed
+
+- Fixed the Attitude Indicator's selection box extending too far from wall and ceiling tables.
+
 ## [0.4.0-beta.1] - 2026-11-06
 
 ### Added

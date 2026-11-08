@@ -23,6 +23,7 @@ The `avionics_network_bridge` peripheral provides:
 | --- | --- |
 | `getNetworkStatus()` | `{status, connected, complete, endpointCount, wireCount}` |
 | `getConnectedDevices()` | List of `{type, x, y, z}` relative to the bridge |
+| `getSignals()` | List of `{name, type, x, y, z, status, value?, unit, gameTime}` for every channel published by the complete network; empty otherwise |
 
 Possible statuses are `disconnected`, `connected`, `incomplete`, and
 `limit_exceeded`. `complete` is false for the last two states. Counts are the
@@ -36,9 +37,10 @@ bridge in its current level/sublevel and are not internal graph identifiers.
 The `avionics_network_changed` event is queued on computers attached to the
 bridge after the server confirms a changed snapshot. Its arguments are the
 attachment name and the same status table returned by `getNetworkStatus()`.
-The bridge exposes topology only. For every sensor reading at once, with roles
-and the GPWS alerts, use the [Avionics Computer](avionics-computer.md)
-(`avionics_computer`); each sensor also keeps its own peripheral.
+The bridge also exposes the channels the endpoints publish (`getSignals()`, below).
+For every sensor reading at once, with roles and the GPWS alerts, use the
+[Avionics Computer](avionics-computer.md) (`avionics_computer`); each sensor also
+keeps its own peripheral.
 
 ```lua
 local bridge = assert(peripheral.find("avionics_network_bridge"), "Bridge não encontrada")
@@ -54,6 +56,16 @@ while true do
     print(name, updated.status, updated.endpointCount, updated.wireCount)
 end
 ```
+
+Channels are named after the value they carry (for example `velocity.axial`, in `blocks/s`, signed along the
+sensor's face). Status is `valid`, `unavailable` or `failed`; `value` is present only when valid.
+
+## Endpoints from other mods
+
+Some blocks come from other mods and cannot implement our interfaces. `AvionicsEndpoints` adapts them, one class at a
+time, without changing the other mod: today the Simulated **Velocity Sensor** (`velocity_sensor`, channel
+`velocity.axial`, see [velocity-sensor-plan.md](velocity-sensor-plan.md)). A wire connector mounts on any face, so such
+a block joins the network the same way as ours.
 
 ## Limits and persistence
 

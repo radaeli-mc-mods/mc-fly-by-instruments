@@ -558,7 +558,7 @@
   "gui.aeronautics_fly_by_instruments.attitude_indicator.pitch": "Arfagem",
   "gui.aeronautics_fly_by_instruments.attitude_indicator.roll": "Rolagem",
   "gui.aeronautics_fly_by_instruments.attitude_indicator.sources": "Fontes",
-  "gui.aeronautics_fly_by_instruments.attitude_indicator.info_sources": "O display lê a Unidade de Referência de Atitude mais próxima e o Radar Altimeter mais baixo da rede de cabos da mesa. Os dois precisam estar na mesma aeronave da mesa.",
+  "gui.aeronautics_fly_by_instruments.attitude_indicator.info_sources": "O display lê a Unidade de Referência de Atitude mais próxima, o Radar Altimeter mais baixo e o Velocity Sensor mais próximo na rede de cabos da mesa. Todos precisam estar na mesma aeronave da mesa.",
   "gui.aeronautics_fly_by_instruments.attitude_indicator.unit": "Unidade de referência",
   "gui.aeronautics_fly_by_instruments.attitude_indicator.altimeter": "Radar altimeter",
   "gui.aeronautics_fly_by_instruments.attitude_indicator.link.ok": "Conectada",
@@ -573,8 +573,9 @@
   "gui.aeronautics_fly_by_instruments.attitude_indicator.altitude_tape": "Fita de altitude",
   "gui.aeronautics_fly_by_instruments.attitude_indicator.altitude_tape_note": "Altura sobre o solo em blocos (AGL). Só aparece com um Radar Altimeter na rede.",
   "gui.aeronautics_fly_by_instruments.attitude_indicator.speed_tape": "Fita de velocidade",
-  "gui.aeronautics_fly_by_instruments.attitude_indicator.speed_tape_note": "Reservada para um futuro sensor de velocidade.",
+  "gui.aeronautics_fly_by_instruments.attitude_indicator.speed_tape_note": "Velocidade ao longo da face do sensor, em blocos por segundo. Aponte o Velocity Sensor para o nariz. Só aparece com um Velocity Sensor na rede.",
   "gui.aeronautics_fly_by_instruments.attitude_indicator.on": "Ligada",
   "gui.aeronautics_fly_by_instruments.attitude_indicator.off": "Desligada",
-  "gui.aeronautics_fly_by_instruments.attitude_indicator.soon": "em breve"
+  "gui.aeronautics_fly_by_instruments.attitude_indicator.velocity": "Velocity sensor",
+  "gui.aeronautics_fly_by_instruments.attitude_indicator.speed_value": "%s b/s"
 }

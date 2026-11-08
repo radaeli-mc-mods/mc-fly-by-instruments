@@ -13,14 +13,17 @@ import java.util.OptionalDouble;
  *
  * <p>The attitude comes from the nearest Attitude Reference Unit that is on the same aircraft as the table and
  * has a fresh reading. The height comes from the Radar Altimeter with the lowest clearance, the same rule the
- * Avionics Computer uses for its primary altimeter. Without a usable unit the display is {@link Status#NO_DATA}
- * (the red ATT flag); without a usable altimeter only its tape suffers ("----").
+ * Avionics Computer uses for its primary altimeter. The speed comes from the nearest Velocity Sensor on the same
+ * aircraft with a valid reading. Without a usable unit the display is {@link Status#NO_DATA} (the red ATT flag);
+ * without a usable altimeter or sensor only its tape suffers ("----" or "---").
  */
 public final class AttitudeIndicatorFeed {
     /** Roll and pitch change that makes a new sample worth sending to the clients, in degrees. */
     static final double ANGLE_STEP = 0.25;
     /** Height change that makes a new sample worth sending, in blocks. */
     static final double HEIGHT_STEP = 0.5;
+    /** Speed change that makes a new sample worth sending, in blocks per second. */
+    static final double SPEED_STEP = 0.5;
 
     private AttitudeIndicatorFeed() {}
 
@@ -65,27 +68,49 @@ public final class AttitudeIndicatorFeed {
     }
 
     /**
-     * One resolved sample. {@code agl} is NaN without a height; {@code altitudeTape} is whether the tape is shown
-     * (switched on in the module and an altimeter is on the network).
+     * A Velocity Sensor seen on the network: the signed speed along its face in blocks per second, when it has a
+     * valid reading. {@code distanceSquared} is from the cable source.
+     */
+    public record SpeedSource(long distanceSquared, boolean sameVessel, boolean fresh, OptionalDouble speed) {
+        boolean usable() { return sameVessel && fresh && speed.isPresent(); }
+    }
+
+    /**
+     * One resolved sample. {@code agl} is NaN without a height and {@code speed} NaN without a speed;
+     * {@code altitudeTape} and {@code speedTape} are whether each tape is shown (switched on in the module and its
+     * source is on the network).
      */
     public record Sample(Status status, Link attitude, Link altimeter, double pitch, double roll, double agl,
-                         boolean altitudeTape) {
+                         boolean altitudeTape, Link velocity, double speed, boolean speedTape) {
         public static final Sample DISCONNECTED = new Sample(Status.NO_DATA, Link.NO_NETWORK, Link.NO_NETWORK,
-                0, 0, Double.NaN, false);
+                0, 0, Double.NaN, false, Link.NO_NETWORK, Double.NaN, false);
+
+        public Sample(Status status, Link attitude, Link altimeter, double pitch, double roll, double agl,
+                      boolean altitudeTape) {
+            this(status, attitude, altimeter, pitch, roll, agl, altitudeTape, Link.NONE, Double.NaN, false);
+        }
 
         /** Whether {@code other} differs enough from this sample to be worth a packet. */
         public boolean differsFrom(Sample other) {
             if (other == null || status != other.status || attitude != other.attitude
-                    || altimeter != other.altimeter || altitudeTape != other.altitudeTape) return true;
+                    || altimeter != other.altimeter || altitudeTape != other.altitudeTape
+                    || velocity != other.velocity || speedTape != other.speedTape) return true;
             if (Math.abs(pitch - other.pitch) >= ANGLE_STEP
                     || Math.abs(AttitudeMath.shortestDelta(roll, other.roll)) >= ANGLE_STEP) return true;
             if (Double.isNaN(agl) != Double.isNaN(other.agl)) return true;
-            return !Double.isNaN(agl) && Math.abs(agl - other.agl) >= HEIGHT_STEP;
+            if (!Double.isNaN(agl) && Math.abs(agl - other.agl) >= HEIGHT_STEP) return true;
+            if (Double.isNaN(speed) != Double.isNaN(other.speed)) return true;
+            return !Double.isNaN(speed) && Math.abs(speed - other.speed) >= SPEED_STEP;
         }
     }
 
     public static Sample resolve(boolean connected, List<AttitudeSource> units, List<AltimeterSource> altimeters,
                                  boolean tapeEnabled) {
+        return resolve(connected, units, altimeters, List.of(), tapeEnabled, false);
+    }
+
+    public static Sample resolve(boolean connected, List<AttitudeSource> units, List<AltimeterSource> altimeters,
+                                 List<SpeedSource> speeds, boolean tapeEnabled, boolean speedTapeEnabled) {
         if (!connected) return Sample.DISCONNECTED;
 
         AttitudeSource unit = null;
@@ -112,10 +137,25 @@ public final class AttitudeIndicatorFeed {
         boolean tape = tapeEnabled && !altimeters.isEmpty();
         double agl = tape && lowest != null ? lowest : Double.NaN;
 
-        if (unit == null) return new Sample(Status.NO_DATA, attitude, altimeter, 0, 0, Double.NaN, tape);
+        SpeedSource speedSource = null;
+        boolean speedOnThisVessel = false;
+        for (SpeedSource candidate : speeds) {
+            speedOnThisVessel |= candidate.sameVessel();
+            if (candidate.usable() && (speedSource == null || candidate.distanceSquared() < speedSource.distanceSquared())) {
+                speedSource = candidate;
+            }
+        }
+        Link velocity = speedSource != null ? Link.OK : link(speeds.isEmpty(), speedOnThisVessel);
+        boolean speedTape = speedTapeEnabled && !speeds.isEmpty();
+        double speed = speedSource != null ? speedSource.speed().getAsDouble() : Double.NaN;
+
+        if (unit == null) {
+            return new Sample(Status.NO_DATA, attitude, altimeter, 0, 0, Double.NaN, tape, velocity, speed, speedTape);
+        }
         AttitudeReading reading = unit.reading();
         Status status = reading.status() == AttitudeReading.Status.DEGRADED ? Status.DEGRADED : Status.OK;
-        return new Sample(status, Link.OK, altimeter, reading.pitch(), reading.roll(), agl, tape);
+        return new Sample(status, Link.OK, altimeter, reading.pitch(), reading.roll(), agl, tape, velocity, speed,
+                speedTape);
     }
 
     private static Link link(boolean none, boolean onThisVessel) {

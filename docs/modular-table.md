@@ -157,7 +157,7 @@ uma placa reta. Seu volume de seleção para na altura do bloco
   ficar 3 s sem notícia.
 - **Configuração por módulo** (`AttitudeIndicatorData`, no NBT do módulo como `AttitudeData`): fita de altitude
   ligada/desligada (padrão ligada). A fita só aparece com a opção ligada **e** um Radar Altimeter na rede. A fita
-  de velocidade está reservada para um sensor futuro e aparece na tela como "em breve".
+  de velocidade segue a mesma regra com um Velocity Sensor na rede (ver [velocity-sensor-plan.md](velocity-sensor-plan.md)).
 - **Tela** (`AttitudeIndicatorScreen`, clique com a mão vazia, sneak abre o painel geral): atitude ao vivo,
   estado de cada fonte na rede (`ok`, `no_network`, `none`, `other_vessel`, `stale`) e o botão da fita. Ações
   levam o token do módulo, como no FMS, e a tela pede o estado de novo a cada meio segundo.

@@ -169,7 +169,7 @@ final class AttitudeDisplayLayout {
      */
     private static void band(Canvas out, AttitudeDisplayState state) {
         float speed = state.speedTape(), altitude = state.altitudeTape();
-        String spd = figures(state.speed()), agl = figures(state.aglBlocks());
+        String spd = speedFigures(state.speed()), agl = figures(state.aglBlocks());
         if (speed > 0 && altitude > 0) {
             reading(slot(out, speed), spd, "b/s", -HALF + 2 * DP, slotY(speed), -1);
             reading(slot(out, altitude), agl, "b", HALF - 2 * DP, slotY(altitude), 1);
@@ -185,6 +185,14 @@ final class AttitudeDisplayLayout {
     /** Up to three digits, dashes without a reading. */
     private static String figures(double value) {
         return Double.isNaN(value) ? "---" : Integer.toString((int) Math.max(0, Math.min(999, Math.round(value))));
+    }
+
+    /**
+     * Speed along the sensor's face, signed: a minus sign when the aircraft moves against the way the sensor faces.
+     * The Velocity Sensor's own readout shows the size only, so this is the one place the direction is shown.
+     */
+    static String speedFigures(double value) {
+        return Double.isNaN(value) ? "---" : Integer.toString((int) Math.max(-999, Math.min(999, Math.round(value))));
     }
 
     private static void labelled(Canvas out, String caption, String figures, String unit, float amount) {

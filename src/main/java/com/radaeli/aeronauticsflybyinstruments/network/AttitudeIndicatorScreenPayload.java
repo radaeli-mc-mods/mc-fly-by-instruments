@@ -21,10 +21,14 @@ import java.util.UUID;
  * @param altimeter the same for the Radar Altimeter
  * @param agl      height above ground in blocks, NaN without a reading
  * @param altitudeTape the module's setting (the tape also needs an altimeter on the network)
+ * @param velocity the same for the Velocity Sensor
+ * @param speed    speed along the sensor's face in blocks per second, NaN without a reading
+ * @param speedTape the module's setting (the tape also needs a velocity sensor on the network)
  */
 public record AttitudeIndicatorScreenPayload(BlockPos position, int column, int row, UUID interactionToken,
                                              String status, String attitude, String altimeter, double pitch,
-                                             double roll, double agl, boolean altitudeTape)
+                                             double roll, double agl, boolean altitudeTape, String velocity,
+                                             double speed, boolean speedTape)
         implements CustomPacketPayload {
     public static final Type<AttitudeIndicatorScreenPayload> TYPE = new Type<>(ResourceLocation.fromNamespaceAndPath(
             AeronauticsFlyByInstruments.MOD_ID, "attitude_indicator_screen"));
@@ -41,13 +45,18 @@ public record AttitudeIndicatorScreenPayload(BlockPos position, int column, int 
                 ByteBufCodecs.DOUBLE.encode(buf, payload.roll);
                 ByteBufCodecs.DOUBLE.encode(buf, payload.agl);
                 ByteBufCodecs.BOOL.encode(buf, payload.altitudeTape);
+                ByteBufCodecs.STRING_UTF8.encode(buf, payload.velocity);
+                ByteBufCodecs.DOUBLE.encode(buf, payload.speed);
+                ByteBufCodecs.BOOL.encode(buf, payload.speedTape);
             },
             buf -> new AttitudeIndicatorScreenPayload(BlockPos.STREAM_CODEC.decode(buf),
                     ByteBufCodecs.VAR_INT.decode(buf), ByteBufCodecs.VAR_INT.decode(buf),
                     UUIDUtil.STREAM_CODEC.decode(buf), ByteBufCodecs.STRING_UTF8.decode(buf),
                     ByteBufCodecs.STRING_UTF8.decode(buf), ByteBufCodecs.STRING_UTF8.decode(buf),
                     ByteBufCodecs.DOUBLE.decode(buf), ByteBufCodecs.DOUBLE.decode(buf),
-                    ByteBufCodecs.DOUBLE.decode(buf), ByteBufCodecs.BOOL.decode(buf)));
+                    ByteBufCodecs.DOUBLE.decode(buf), ByteBufCodecs.BOOL.decode(buf),
+                    ByteBufCodecs.STRING_UTF8.decode(buf), ByteBufCodecs.DOUBLE.decode(buf),
+                    ByteBufCodecs.BOOL.decode(buf)));
 
     public AttitudeIndicatorScreenPayload {
         position = position.immutable();

@@ -35,8 +35,8 @@ public final class AttitudeDisplayClient {
     private static final class Demo {
         final Entry entry = new Entry();
         AttitudeIndicatorFeed.Status status = AttitudeIndicatorFeed.Status.NO_DATA;
-        double pitch, roll, agl = Double.NaN;
-        boolean altitudeTape;
+        double pitch, roll, agl = Double.NaN, speed = Double.NaN;
+        boolean altitudeTape, speedTape;
     }
 
     private AttitudeDisplayClient() {}
@@ -48,7 +48,7 @@ public final class AttitudeDisplayClient {
                 ignored -> new Entry());
         entry.touched = now;
         entry.feed.accept(status(payload.status()), payload.pitch(), payload.roll(), payload.agl(),
-                payload.altitudeTape());
+                payload.altitudeTape(), payload.speed(), payload.speedTape());
     }
 
     /**
@@ -56,13 +56,15 @@ public final class AttitudeDisplayClient {
      * it likes; the display eases toward the values like a live feed.
      */
     public static void demo(BlockPos table, int column, int row, AttitudeIndicatorFeed.Status status, double pitch,
-                            double roll, double agl, boolean altitudeTape) {
+                            double roll, double agl, boolean altitudeTape, double speed, boolean speedTape) {
         Demo demo = DEMOS.computeIfAbsent(new Key(table.asLong(), column, row), ignored -> new Demo());
         demo.status = status;
         demo.pitch = pitch;
         demo.roll = roll;
         demo.agl = agl;
         demo.altitudeTape = altitudeTape;
+        demo.speed = speed;
+        demo.speedTape = speedTape;
     }
 
     /** The state to draw for the module at this origin cell of the table, or the ATT flag without a feed. */
@@ -73,7 +75,8 @@ public final class AttitudeDisplayClient {
         long now = System.nanoTime();
         double seconds = demo.entry.touched == 0 ? 0 : Math.min(0.25, (now - demo.entry.touched) / 1.0e9);
         demo.entry.touched = now;
-        demo.entry.feed.accept(status(demo.status.ordinal()), demo.pitch, demo.roll, demo.agl, demo.altitudeTape);
+        demo.entry.feed.accept(status(demo.status.ordinal()), demo.pitch, demo.roll, demo.agl, demo.altitudeTape,
+                demo.speed, demo.speedTape);
         return demo.entry.feed.advance(seconds);
     }
 

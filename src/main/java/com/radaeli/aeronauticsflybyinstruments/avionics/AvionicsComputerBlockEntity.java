@@ -15,6 +15,7 @@ import com.radaeli.aeronauticsflybyinstruments.sensor.TerrainScanSnapshot;
 import com.radaeli.aeronauticsflybyinstruments.sensor.TerrainScannerBlockEntity;
 import dev.ryanhcode.sable.Sable;
 import dev.ryanhcode.sable.sublevel.SubLevel;
+import dev.simulated_team.simulated.content.blocks.velocity_sensor.VelocitySensorBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -233,6 +234,11 @@ public final class AvionicsComputerBlockEntity extends BlockEntity implements Av
         Vec3 forward = nose.map(direction -> worldDirection(this, direction)).orElse(null);
 
         for (NetworkDevice device : network.devices()) {
+            // Listed with its reading; it never feeds the GPWS, which only uses the altimeters and scanners.
+            if (device.type().equals(VelocitySensorEndpoint.TYPE)) {
+                found.add(velocitySensor(device, now, host));
+                continue;
+            }
             boolean altimeter = device.type().equals("radar_altimeter");
             boolean scanner = isScanner(device.type());
             if (!altimeter && !scanner) continue;
@@ -394,6 +400,28 @@ public final class AvionicsComputerBlockEntity extends BlockEntity implements Av
         return scanners.stream().min(java.util.Comparator.comparingInt(terrain -> terrain.side().ordinal()))
                 .flatMap(terrain -> terrain.side().nose(
                         terrain.getBlockState().getValue(AbstractTerrainScannerBlock.FACING)));
+    }
+
+    /** A velocity sensor's signed speed along its face, or why there is none. Role is always {@code auxiliary}. */
+    private AvionicsSensor velocitySensor(NetworkDevice device, long now, SubLevel host) {
+        String unit = VelocitySensorEndpoint.UNIT;
+        BlockPos sourcePos = worldPosition.offset(device.x(), device.y(), device.z());
+        if (!level.hasChunkAt(sourcePos)) {
+            return sensor(device, "auxiliary", AvionicsSensor.UNLOADED, OptionalDouble.empty(), unit,
+                    AvionicsSensor.ISSUE_NONE);
+        }
+        if (!(level.getBlockEntity(sourcePos) instanceof VelocitySensorBlockEntity sensor)
+                || containingSubLevel(sensor) != host) {
+            return sensor(device, "auxiliary", AvionicsSensor.OTHER_SUBLEVEL, OptionalDouble.empty(), unit,
+                    AvionicsSensor.ISSUE_NONE);
+        }
+        SensorReading<Double> reading = VelocitySensorEndpoint.reading(sensor, now);
+        if (reading.status() == ReadingStatus.VALID) {
+            return sensor(device, "auxiliary", AvionicsSensor.OK, OptionalDouble.of(reading.value().orElseThrow()),
+                    unit, AvionicsSensor.ISSUE_NONE);
+        }
+        String status = reading.status() == ReadingStatus.FAILED ? AvionicsSensor.FAILED : AvionicsSensor.STALE;
+        return sensor(device, "auxiliary", status, OptionalDouble.empty(), unit, AvionicsSensor.ISSUE_NONE);
     }
 
     private static AvionicsSensor sensor(NetworkDevice device, String role, String status, OptionalDouble value,

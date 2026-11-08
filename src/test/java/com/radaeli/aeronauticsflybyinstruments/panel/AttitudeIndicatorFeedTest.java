@@ -3,6 +3,7 @@ package com.radaeli.aeronauticsflybyinstruments.panel;
 import com.radaeli.aeronauticsflybyinstruments.attitude.AttitudeReading;
 import com.radaeli.aeronauticsflybyinstruments.panel.AttitudeIndicatorFeed.AltimeterSource;
 import com.radaeli.aeronauticsflybyinstruments.panel.AttitudeIndicatorFeed.AttitudeSource;
+import com.radaeli.aeronauticsflybyinstruments.panel.AttitudeIndicatorFeed.SpeedSource;
 import com.radaeli.aeronauticsflybyinstruments.panel.AttitudeIndicatorFeed.Link;
 import com.radaeli.aeronauticsflybyinstruments.panel.AttitudeIndicatorFeed.Status;
 import org.junit.jupiter.api.Test;
@@ -135,5 +136,70 @@ class AttitudeIndicatorFeedTest {
     void wireOrderIsStable() {
         assertEquals(List.of(Status.OK, Status.DEGRADED, Status.NO_DATA), List.of(Status.values()));
         assertEquals(Link.NO_NETWORK, Link.of(99));
+    }
+
+    private static SpeedSource speed(long distance, boolean sameVessel, boolean fresh, Double value) {
+        return new SpeedSource(distance, sameVessel, fresh,
+                value == null ? OptionalDouble.empty() : OptionalDouble.of(value));
+    }
+
+    @Test
+    void theNearestUsableVelocitySensorOnThisAircraftGivesTheSpeed() {
+        var sample = AttitudeIndicatorFeed.resolve(true, List.of(unit(1, true, true, 0, 0)), List.of(),
+                List.of(speed(9, true, true, 12.0), speed(4, true, true, -3.5), speed(1, true, true, null)),
+                true, true);
+        assertEquals(Link.OK, sample.velocity());
+        assertEquals(-3.5, sample.speed(), 1e-9, "the nearest sensor with a reading wins, signed");
+        assertTrue(sample.speedTape());
+    }
+
+    @Test
+    void velocitySensorsOnAnotherAircraftOrWithoutFreshReadingsAreNamed() {
+        var otherVessel = AttitudeIndicatorFeed.resolve(true, List.of(unit(1, true, true, 0, 0)), List.of(),
+                List.of(speed(1, false, true, 20.0)), true, true);
+        assertEquals(Link.OTHER_VESSEL, otherVessel.velocity());
+        assertTrue(Double.isNaN(otherVessel.speed()));
+        assertTrue(otherVessel.speedTape(), "the tape stays on while a sensor is on the network");
+
+        var stale = AttitudeIndicatorFeed.resolve(true, List.of(unit(1, true, true, 0, 0)), List.of(),
+                List.of(speed(1, true, false, 20.0)), true, true);
+        assertEquals(Link.STALE, stale.velocity());
+
+        var none = AttitudeIndicatorFeed.resolve(true, List.of(unit(1, true, true, 0, 0)), List.of(),
+                List.of(), true, true);
+        assertEquals(Link.NONE, none.velocity());
+        assertFalse(none.speedTape(), "no sensor, no tape");
+    }
+
+    @Test
+    void theSpeedTapeNeedsItsSettingAndAnyVelocitySensor() {
+        var units = List.of(unit(1, true, true, 0, 0));
+        var off = AttitudeIndicatorFeed.resolve(true, units, List.of(), List.of(speed(1, true, true, 20.0)), true, false);
+        assertFalse(off.speedTape());
+        assertEquals(20, off.speed(), 1e-9, "the reading is still resolved; only the tape is off");
+    }
+
+    @Test
+    void theSpeedAloneDoesNotCountAsAnAttitudeSource() {
+        var sample = AttitudeIndicatorFeed.resolve(true, List.of(), List.of(), List.of(speed(1, true, true, 20.0)),
+                true, true);
+        assertEquals(Status.NO_DATA, sample.status());
+        assertEquals(Link.NONE, sample.attitude());
+        assertEquals(Link.OK, sample.velocity());
+    }
+
+    @Test
+    void aSpeedStepIsWorthASampleButANaNIsNot() {
+        var base = new AttitudeIndicatorFeed.Sample(Status.OK, Link.OK, Link.OK, 10, 20, 100, true, Link.OK, 20, true);
+        assertFalse(base.differsFrom(new AttitudeIndicatorFeed.Sample(Status.OK, Link.OK, Link.OK, 10, 20, 100, true,
+                Link.OK, 20.2, true)));
+        assertTrue(base.differsFrom(new AttitudeIndicatorFeed.Sample(Status.OK, Link.OK, Link.OK, 10, 20, 100, true,
+                Link.OK, 21, true)));
+        assertTrue(base.differsFrom(new AttitudeIndicatorFeed.Sample(Status.OK, Link.OK, Link.OK, 10, 20, 100, true,
+                Link.OK, Double.NaN, true)));
+        assertTrue(base.differsFrom(new AttitudeIndicatorFeed.Sample(Status.OK, Link.OK, Link.OK, 10, 20, 100, true,
+                Link.STALE, 20, true)));
+        assertTrue(base.differsFrom(new AttitudeIndicatorFeed.Sample(Status.OK, Link.OK, Link.OK, 10, 20, 100, true,
+                Link.OK, 20, false)));
     }
 }
