@@ -2,26 +2,16 @@
   "type": "minecraft:crafting_shaped",
   "category": "misc",
   "pattern": [
-    "SGS",
-    "TCT",
-    " B "
+    "ITI",
+    "PYP",
+    "IGI"
   ],
   "key": {
-    "S": {
-      "item": "create:iron_sheet"
-    },
-    "G": {
-      "item": "create:precision_mechanism"
-    },
-    "T": {
-      "item": "create:electron_tube"
-    },
-    "C": {
-      "item": "create:brass_casing"
-    },
-    "B": {
-      "item": "create:brass_sheet"
-    }
+    "I": { "item": "minecraft:iron_bars" },
+    "T": { "item": "create:electron_tube" },
+    "P": { "item": "create:precision_mechanism" },
+    "Y": { "item": "simulated:gyroscopic_mechanism" },
+    "G": { "item": "minecraft:glass" }
   },
   "result": {
     "id": "aeronautics_fly_by_instruments:attitude_reference_unit",

@@ -126,7 +126,7 @@ dentro da tela (perfil em `preview-side.png`): é o que impede frestas.
   (AGL), com interpolação por `ClientSubLevel.renderPose` e o alinhamento de ~1 s ao ligar.
 - Configuração (fita de altitude liga/desliga, velocidade "em breve") e rotação (`yaw`) da cunha: hoje a cunha
   olha sempre para o lado +Z do painel.
-- Receita. O item é Experimental, só no criativo. Ponder: cenas `attitude_indicator` e `attitude_sources` em
+- Receita em `data/.../recipe/attitude_indicator_module.json`. Ponder: cenas `attitude_indicator` e `attitude_sources` em
   `FbiPonderScenes` (usam o módulo real do jogo; reconfira o diorama se a geometria mudar).
 - Velocidade: sem sensor. A faixa mostra um valor fictício (ver *O display*); tirar os pontos `TEMPORARY` quando
   houver fonte real.

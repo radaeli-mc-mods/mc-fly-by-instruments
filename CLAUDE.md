@@ -32,7 +32,8 @@ modelo** de qualquer bloco, item ou módulo do mod:
 
 Radar Altimeter, Terrain Scanner e Advanced Terrain Scanner são entregues
 (saída de redstone + CC:Tweaked). A suíte aviônica (Computer, Mesa, Lamp 1x1/2x1,
-Buzzer, FMS, FMS Compass, Wire, Wire Connector, Wire Support) tem receita mas
+Buzzer, FMS, FMS Compass, Wire, Wire Connector, Wire Support, Attitude Reference
+Unit, Attitude Indicator) tem receita mas
 não possui marca Experimental no nome. Network Bridge segue Experimental e sem receita.
 
 ## Build

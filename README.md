@@ -2,25 +2,28 @@
 
 <p align="center" style="text-align: center;">An addon for <b>Create Aeronautics</b></p>
 
-<p align="center" style="background-color: #F4ECD0; text-align: center;"><img src="https://raw.githubusercontent.com/radaelilucca/mc-fly-by-instruments/main/docs/gallery/section-titles/what_it_is.png" alt="WHAT IT IS?" width="267"></p>
+<p align="center" style="background-color: #F4ECD0; text-align: center;"><img src="https://raw.githubusercontent.com/radaeli-mc-mods/mc-fly-by-instruments/main/docs/gallery/section-titles/what_it_is.png" alt="WHAT IT IS?" width="267"></p>
 
-Flying a Create Aeronautics ship is great until a mountain shows up out of the fog,
+Flying a Create Aeronautics airship is great until a mountain shows up out of the fog,
 or you try to land and have no idea how far the ground still is. **Fly by Instruments**
-adds avionics: sensor blocks you mount on your craft that measure the world around it
-and turn what they see into **redstone signals** and **CC:Tweaked data**.
+turns your airship into a real cockpit: **radar altimeters** and **terrain scanners**
+that measure the world around it, and **ground proximity warnings (GPWS)** that go off
+before you crash.
 
-Wire them into a lamp, a bell, a Create contraption or your own flight computer, and
-your ship can warn you, or react on its own, before you hit something.
+Every sensor turns what it sees into **redstone signals** and **CC: Tweaked data**. Wire
+them into a lamp, a bell, a Create contraption or your own flight computer, and your
+airship can warn you, or react on its own, before you hit something.
 
-Every sensor works **on a moving ship** as well as on the ground. It turns and tilts with
-your ship, never mistakes your own hull for an obstacle, and spots terrain, buildings
-and other ships alike.
+Every sensor works **on a moving airship** as well as on the ground. It turns and tilts
+with your airship, never mistakes your own hull for an obstacle, and spots terrain,
+buildings and other ships alike.
 
-Want a real cockpit? The **avionics suite** adds an **Avionics Computer** that
-turns your sensors into a ground proximity warning system, a **Modular Table** for warning
-lamps, buzzers and a flight management system, and **wires** to tie it all together.
+Want the full cockpit? The **avionics suite** adds an **Avionics Computer** that raises
+those warnings, a **Modular Table** for warning lamps, buzzers and a flight management
+system, and **wires** to tie it all together. An **artificial horizon**, the Attitude
+Indicator, shows your pitch and bank right on that panel.
 
-<p align="center" style="background-color: #F4ECD0; text-align: center;"><img src="https://raw.githubusercontent.com/radaelilucca/mc-fly-by-instruments/main/docs/gallery/section-titles/what_can_it_do.png" alt="WHAT CAN IT DO?" width="375"></p>
+<p align="center" style="background-color: #F4ECD0; text-align: center;"><img src="https://raw.githubusercontent.com/radaeli-mc-mods/mc-fly-by-instruments/main/docs/gallery/section-titles/what_can_it_do.png" alt="WHAT CAN IT DO?" width="375"></p>
 
 Three sensor blocks, each with a different job and each recognizable at a glance.
 
@@ -67,7 +70,7 @@ on everything in front of the ship.
 
 The avionics suite is craftable. The Network Bridge remains Experimental and creative-only.
 
-<p align="center" style="text-align: center;"><img src="https://raw.githubusercontent.com/radaelilucca/mc-fly-by-instruments/main/docs/gallery/renders/avionics-computer.png" alt="Avionics Computer" width="300"></p>
+<p align="center" style="text-align: center;"><img src="https://raw.githubusercontent.com/radaeli-mc-mods/mc-fly-by-instruments/main/docs/gallery/renders/avionics-computer.png" alt="Avionics Computer" width="300"></p>
 
 #### Avionics Computer
 
@@ -81,7 +84,7 @@ watches them all, then warns you before you fly into trouble.
 - A small screen on the front blinks amber or red with the alert. Press its button for a
   self-test.
 
-<p align="center" style="text-align: center;"><img src="https://raw.githubusercontent.com/radaelilucca/mc-fly-by-instruments/main/docs/gallery/renders/modular-table.png" alt="Modular Table with modules" width="300"></p>
+<p align="center" style="text-align: center;"><img src="https://raw.githubusercontent.com/radaeli-mc-mods/mc-fly-by-instruments/main/docs/gallery/renders/modular-table.png" alt="Modular Table with modules" width="300"></p>
 
 #### Modular Table
 
@@ -94,7 +97,7 @@ watches them all, then warns you before you fly into trouble.
 - Tables placed side by side join into one big panel. A table mounted straight on the
   Avionics Computer is connected to it with no wire at all.
 
-<p align="center" style="text-align: center;"><img src="https://raw.githubusercontent.com/radaelilucca/mc-fly-by-instruments/main/docs/gallery/renders/avionics-wire.png" alt="Avionics Wire between an Avionics Computer and a Terrain Scanner" width="400"></p>
+<p align="center" style="text-align: center;"><img src="https://raw.githubusercontent.com/radaeli-mc-mods/mc-fly-by-instruments/main/docs/gallery/renders/avionics-wire.png" alt="Avionics Wire between an Avionics Computer and a Terrain Scanner" width="400"></p>
 
 #### Avionics Wire
 
@@ -106,11 +109,39 @@ watches them all, then warns you before you fly into trouble.
 - Press **V** for the **Wiring View**: every wire shows through the hull, coloured by
   whether its network is working.
 
+<p align="center" style="text-align: center;"><img src="https://raw.githubusercontent.com/radaeli-mc-mods/mc-fly-by-instruments/main/docs/gallery/renders/attitude-reference-unit.png" alt="Attitude Reference Unit" width="200"></p>
+
+#### Attitude Reference Unit
+
+**Knows which way is up.** It reads your airship's **pitch**, **roll** and **heading** from
+the airship itself, not from a swinging weight.
+
+- When placed, its **Nose** faces where you look and its **Up** faces the sky. Hit a face
+  with a wrench to make it the Nose.
+- Its screen sets the **level calibration** (up to 15°) and the **damping**.
+- It's also a CC: Tweaked peripheral: `getAttitude()`, `calibrateLevel()` and
+  `setOrientation()`.
+
+<p align="center" style="text-align: center;"><img src="https://raw.githubusercontent.com/radaeli-mc-mods/mc-fly-by-instruments/main/docs/gallery/renders/attitude-indicator.png" alt="Attitude Indicator on a Modular Table" width="300"></p>
+
+#### Attitude Indicator
+
+**An artificial horizon for your cockpit panel.** It shows the attitude of the nearest
+Attitude Reference Unit and the height from your Radar Altimeter, both on the same wire
+network and the same airship.
+
+- Takes **2 × 2** cells of a Modular Table, also across joined tables. On a floor table it
+  sits in a slanted housing; on a wall or ceiling table it's a flat plate.
+- Click it with an empty hand to see the live attitude, the **sources** it reads and the
+  **altitude tape**.
+- No Attitude Reference Unit on the network? The display goes black with a red **ATT**
+  flag.
+
 ---
 
-<p align="center" style="background-color: #F4ECD0; text-align: center;"><img src="https://raw.githubusercontent.com/radaelilucca/mc-fly-by-instruments/main/docs/gallery/section-titles/how-do-i-use-it.png" alt="HOW DO I USE IT?" width="371"></p>
+<p align="center" style="background-color: #F4ECD0; text-align: center;"><img src="https://raw.githubusercontent.com/radaeli-mc-mods/mc-fly-by-instruments/main/docs/gallery/section-titles/how-do-i-use-it.png" alt="HOW DO I USE IT?" width="371"></p>
 
-With PonderJS, KubeJS and Rhino installed on your client, hold **W** over a supported item for an animated tutorial. The fourteen [Ponder tutorials](https://mods.radaeli.dev/en/mods/fly-by-instruments/player/ponder) cover sensors, wiring, cockpit panels, FMS navigation and the Experimental Attitude Reference Unit and Attitude Indicator in English and Brazilian Portuguese.
+With PonderJS, KubeJS and Rhino installed on your client, hold **W** over a supported item for an animated tutorial. The fourteen [Ponder tutorials](https://mods.radaeli.dev/en/mods/fly-by-instruments/player/ponder) cover sensors, wiring, cockpit panels, FMS navigation and the Attitude Reference Unit and Attitude Indicator in English and Brazilian Portuguese.
 
 **Right-click a sensor** to open its output screen.
 
@@ -146,9 +177,9 @@ so very long ranges near the edge of the loaded world may read less than you exp
 
 ---
 
-<p align="center" style="background-color: #F4ECD0; text-align: center;"><img src="https://raw.githubusercontent.com/radaelilucca/mc-fly-by-instruments/main/docs/gallery/section-titles/cc.png" alt="WHAT ABOUT COMPUTERS?" width="593"></p>
+<p align="center" style="background-color: #F4ECD0; text-align: center;"><img src="https://raw.githubusercontent.com/radaeli-mc-mods/mc-fly-by-instruments/main/docs/gallery/section-titles/cc.png" alt="WHAT ABOUT COMPUTERS?" width="593"></p>
 
-Every sensor is a **CC:Tweaked peripheral** of its own. Put a computer next to it, or
+Every sensor is a **CC: Tweaked peripheral** of its own. Put a computer next to it, or
 connect it with a wired modem, and read the raw data:
 
 | Peripheral | Readings | Events |
@@ -173,15 +204,15 @@ while true do
 end
 ```
 
-Full API reference: [Radar Altimeter](https://github.com/radaelilucca/mc-fly-by-instruments/blob/main/docs/radar-altimeter.md) ·
-[Terrain Scanners](https://github.com/radaelilucca/mc-fly-by-instruments/blob/main/docs/terrain-scanner.md) ·
+Full API reference: [Radar Altimeter](https://github.com/radaeli-mc-mods/mc-fly-by-instruments/blob/main/docs/radar-altimeter.md) ·
+[Terrain Scanners](https://github.com/radaeli-mc-mods/mc-fly-by-instruments/blob/main/docs/terrain-scanner.md) ·
 [Computer Craft API and Lua examples](https://mods.radaeli.dev/en/mods/fly-by-instruments/player/computer-craft).
 
 Browse the [online guide](https://mods.radaeli.dev/en/mods/fly-by-instruments/) for the sensors, the [Avionics Computer](https://mods.radaeli.dev/en/mods/fly-by-instruments/player/avionics-computer), the [Modular Table](https://mods.radaeli.dev/en/mods/fly-by-instruments/player/modular-table) and the [Avionics Wire](https://mods.radaeli.dev/en/mods/fly-by-instruments/player/avionics-network).
 
 ---
 
-<p align="center" style="background-color: #F4ECD0; text-align: center;"><img src="https://raw.githubusercontent.com/radaelilucca/mc-fly-by-instruments/main/docs/gallery/section-titles/can_i_config.png" alt="CAN I CONFIGURE IT?" width="479"></p>
+<p align="center" style="background-color: #F4ECD0; text-align: center;"><img src="https://raw.githubusercontent.com/radaeli-mc-mods/mc-fly-by-instruments/main/docs/gallery/section-titles/can_i_config.png" alt="CAN I CONFIGURE IT?" width="479"></p>
 
 Yes. These server config options apply to every sensor in the world:
 
@@ -205,13 +236,13 @@ For the avionics suite:
 
 ---
 
-<p align="center" style="background-color: #F4ECD0; text-align: center;"><img src="https://raw.githubusercontent.com/radaelilucca/mc-fly-by-instruments/main/docs/gallery/section-titles/requirements.png" alt="REQUIREMENTS" width="355"></p>
+<p align="center" style="background-color: #F4ECD0; text-align: center;"><img src="https://raw.githubusercontent.com/radaeli-mc-mods/mc-fly-by-instruments/main/docs/gallery/section-titles/requirements.png" alt="REQUIREMENTS" width="355"></p>
 
 - **Minecraft 1.21.1** with **NeoForge 21.1.236** or newer
 - **Create** 6.0.10+
 - **Create Aeronautics** 1.3+ (bundled)
 - **Sable** 2.0.5
-- **CC:Tweaked** 1.120.0+
+- **CC: Tweaked** 1.120.0+
 - **R-UI Lib** 0.8.0+
 
 ---
@@ -220,19 +251,19 @@ The **Avionics Network Bridge** remains **Experimental** and creative-only. See 
 
 ---
 
-<p align="center" style="background-color: #F4ECD0; text-align: center;"><img src="https://raw.githubusercontent.com/radaelilucca/mc-fly-by-instruments/main/docs/gallery/section-titles/found_a_bug.png" alt="FOUND A BUG?" width="317"></p>
+<p align="center" style="background-color: #F4ECD0; text-align: center;"><img src="https://raw.githubusercontent.com/radaeli-mc-mods/mc-fly-by-instruments/main/docs/gallery/section-titles/found_a_bug.png" alt="FOUND A BUG?" width="317"></p>
 
-Open an issue on [GitHub](https://github.com/radaelilucca/mc-fly-by-instruments/issues).
+Open an issue on [GitHub](https://github.com/radaeli-mc-mods/mc-fly-by-instruments/issues).
 Your Minecraft version, the mod versions and a description of what happened help a lot.
 A screenshot of your redstone setup helps even more.
 
 ---
 
-<p align="center" style="background-color: #F4ECD0; text-align: center;"><img src="https://raw.githubusercontent.com/radaelilucca/mc-fly-by-instruments/main/docs/gallery/section-titles/can_i_use.png" alt="CAN I USE THIS IN A MODPACK?" width="679"></p>
+<p align="center" style="background-color: #F4ECD0; text-align: center;"><img src="https://raw.githubusercontent.com/radaeli-mc-mods/mc-fly-by-instruments/main/docs/gallery/section-titles/can_i_use.png" alt="CAN I USE THIS IN A MODPACK?" width="679"></p>
 
 **Yes, go ahead!** Fly by Instruments is released under the **MIT License**. A link back
 to this page is appreciated.
 
 ---
 
-*Getting started: [player guide](https://mods.radaeli.dev/en/mods/fly-by-instruments/player/). References: [Computer Craft API and examples](https://mods.radaeli.dev/en/mods/fly-by-instruments/player/computer-craft) · [sensors](https://mods.radaeli.dev/en/mods/fly-by-instruments/player/sensors) · [all guides](https://mods.radaeli.dev/en/mods/fly-by-instruments/). Development setup: [source guide](https://github.com/radaelilucca/mc-fly-by-instruments/blob/main/docs/development.md). What changed in each version: [CHANGELOG](https://github.com/radaelilucca/mc-fly-by-instruments/blob/main/CHANGELOG.md).*
+*Getting started: [player guide](https://mods.radaeli.dev/en/mods/fly-by-instruments/player/). References: [Computer Craft API and examples](https://mods.radaeli.dev/en/mods/fly-by-instruments/player/computer-craft) · [sensors](https://mods.radaeli.dev/en/mods/fly-by-instruments/player/sensors) · [all guides](https://mods.radaeli.dev/en/mods/fly-by-instruments/). Development setup: [source guide](https://github.com/radaeli-mc-mods/mc-fly-by-instruments/blob/main/docs/development.md). What changed in each version: [CHANGELOG](https://github.com/radaeli-mc-mods/mc-fly-by-instruments/blob/main/CHANGELOG.md).*
