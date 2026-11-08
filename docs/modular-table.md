@@ -137,7 +137,7 @@ de latão na parte de cima e, embaixo, dois knobs de latão e duas teclas. Com u
 sem destino, fica escura.
 Fonte editável: [Blockbench FMS 2×3](../blockbench/fms-module-2x3/README.md).
 
-O `attitude_indicator` (item `attitude_indicator_module`, Experimental, só criativo) ocupa **2×2**
+O `attitude_indicator` (item `attitude_indicator_module`, com receita) ocupa **2×2**
 células, numa mesa ou atravessando mesas unidas. Em mesa de chão (`FACING == UP`) o modelo é uma
 cunha de 12 de altura com a tela de pé voltada para +Z (o topo da tela encosta no topo do bloco); em parede e teto,
 uma placa reta. Seu volume de seleção para na altura do bloco
@@ -161,7 +161,7 @@ uma placa reta. Seu volume de seleção para na altura do bloco
 - **Tela** (`AttitudeIndicatorScreen`, clique com a mão vazia, sneak abre o painel geral): atitude ao vivo,
   estado de cada fonte na rede (`ok`, `no_network`, `none`, `other_vessel`, `stale`) e o botão da fita. Ações
   levam o token do módulo, como no FMS, e a tela pede o estado de novo a cada meio segundo.
-- **Ponder:** com PonderJS, três cenas Experimentais abrem pelo item do módulo, pela Attitude Reference Unit, pelo Radar
+- **Ponder:** com PonderJS, três cenas abrem pelo item do módulo, pela Attitude Reference Unit, pelo Radar
   Altimeter e pela mesa: *Setting the aircraft frame*, *Reading the artificial horizon* e *Sources, tapes and ATT flags*
   ([ponder.md](ponder.md)). No diorama o módulo é real, mas o horizonte vem da cena (`AttitudeDisplayClient.demo`), não
   da rede; esses feeds ficam separados dos do servidor.

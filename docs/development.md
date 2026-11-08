@@ -34,7 +34,8 @@ VS Code tasks for both commands are in `.vscode/tasks.json`.
 The three sensors (`radar_altimeter`, `terrain_scanner` and
 `terrain_scanner_advanced`) are the delivered content. The avionics suite
 (Avionics Computer, Modular Table Base, Lamp 1x1/2x1, Buzzer, FMS, FMS Compass,
-Avionics Wire, Wire Connector and Wire Support) has recipes and no Experimental
+Avionics Wire, Wire Connector, Wire Support, Attitude Reference Unit and
+Attitude Indicator) has recipes and no Experimental
 mark in its names. The Network Bridge remains **Experimental**, has no recipe
 and is only available from the creative tab or `/give`.
 

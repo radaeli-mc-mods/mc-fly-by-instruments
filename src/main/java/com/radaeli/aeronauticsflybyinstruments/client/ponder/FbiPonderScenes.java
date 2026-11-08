@@ -67,7 +67,7 @@ public final class FbiPonderScenes {
         entry(event, "panel", FbiPonderScenes::panel, "modular_table_base", "lamp_module", "lamp_module_2x1", "buzzer_module", "fms_module");
         entry(event, "alerts", FbiPonderScenes::alerts, "avionics_computer", "lamp_module", "lamp_module_2x1", "buzzer_module");
         entry(event, "fms", FbiPonderScenes::fms, "fms_module", "fms_navigator");
-        // Experimental devices: the first caption of each scene says so.
+        // Attitude Reference Unit and Attitude Indicator.
         entry(event, "attitude_unit", FbiPonderScenes::attitudeUnit, "attitude_reference_unit");
         entry(event, "attitude_indicator", FbiPonderScenes::attitudeIndicator,
                 "attitude_indicator_module", "attitude_reference_unit", "modular_table_base");
@@ -454,7 +454,7 @@ public final class FbiPonderScenes {
         say(s, "fms.keep", TABLE);
         end(s);
     }
-    // --- Attitude Reference Unit and Attitude Indicator (both Experimental) ----------------------------------
+    // --- Attitude Reference Unit and Attitude Indicator --------------------------------------------------------
     private static BlockState unit(Direction nose, Direction up) {
         return AttitudeReferenceUnitBlock.withOrientation(ModBlocks.ATTITUDE_REFERENCE_UNIT.get().defaultBlockState(),
                 new AttitudeOrientation(nose, up));

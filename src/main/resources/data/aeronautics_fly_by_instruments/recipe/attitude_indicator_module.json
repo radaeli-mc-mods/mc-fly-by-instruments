@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "pattern": [
+    "BPB",
+    "TGT",
+    "BDB"
+  ],
+  "key": {
+    "B": { "item": "create:brass_sheet" },
+    "P": { "item": "create:precision_mechanism" },
+    "T": { "item": "create:electron_tube" },
+    "G": { "item": "minecraft:black_stained_glass" },
+    "D": { "item": "create:display_board" }
+  },
+  "result": {
+    "id": "aeronautics_fly_by_instruments:attitude_indicator_module",
+    "count": 1
+  }
+}

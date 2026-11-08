@@ -5,6 +5,17 @@ All notable changes to Aeronautics: Fly by Instruments are documented in this fi
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- Added a crafting recipe for the Attitude Indicator.
+
+### Changed
+
+- Changed the Attitude Reference Unit recipe to use iron bars, an electron tube, precision mechanisms, a gyroscopic mechanism and glass.
+- Removed the Experimental label from the Attitude Reference Unit and the Attitude Indicator.
+
 ## [0.4.0-beta.2] - 2026-11-07
 
 ### Added
