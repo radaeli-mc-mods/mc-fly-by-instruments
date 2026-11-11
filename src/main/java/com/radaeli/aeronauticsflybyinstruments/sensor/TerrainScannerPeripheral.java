@@ -1,5 +1,6 @@
 package com.radaeli.aeronauticsflybyinstruments.sensor;
 
+import com.radaeli.aeronauticsflybyinstruments.integration.PeripheralEvents;
 import dan200.computercraft.api.lua.LuaFunction;
 import dan200.computercraft.api.peripheral.IComputerAccess;
 import dan200.computercraft.api.peripheral.IPeripheral;
@@ -13,7 +14,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /** CC:Tweaked read-only peripheral shared by the fixed and configurable scanner variants. */
-public class TerrainScannerPeripheral implements IPeripheral {
+public class TerrainScannerPeripheral implements IPeripheral, PeripheralEvents.Terrain {
     public static final String SCAN_EVENT = "terrain_scanner_scan_changed";
     private final TerrainScannerBlockEntity scanner;
     private final String type;
@@ -77,11 +78,11 @@ public class TerrainScannerPeripheral implements IPeripheral {
         publishEvent(SCAN_EVENT, value);
     }
 
-    void publishOutputConfiguration() {
+    public void publishOutputConfiguration() {
         publishEvent(RadarAltimeterPeripheral.OUTPUT_CONFIG_EVENT,
                 SensorOutputLua.configuration(scanner.outputConfig()));
     }
-    void publishOutputs() {
+    public void publishOutputs() {
         publishEvent(RadarAltimeterPeripheral.OUTPUT_EVENT, SensorOutputLua.outputs(scanner.outputLevels()));
     }
 
@@ -109,12 +110,5 @@ public class TerrainScannerPeripheral implements IPeripheral {
         result.put("unit", "blocks");
         result.put("gameTime", snapshot.gameTime());
         return Map.copyOf(result);
-    }
-
-    static boolean meaningfullyChanged(TerrainScanSnapshot previous, TerrainScanSnapshot updated) {
-        return previous.status() != updated.status()
-                || previous.sampledRays() != updated.sampledRays()
-                || previous.totalRays() != updated.totalRays()
-                || !previous.contacts().equals(updated.contacts());
     }
 }

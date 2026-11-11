@@ -29,7 +29,7 @@
         "create(required)",
         "create-aeronautics(required)",
         "sable(required)",
-        "computercraft(required)",
+        "computercraft(optional)",
         "r-ui-lib(required)"
       ]
     }

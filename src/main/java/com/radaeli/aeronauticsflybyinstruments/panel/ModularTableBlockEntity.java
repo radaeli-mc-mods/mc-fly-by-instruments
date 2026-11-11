@@ -1,9 +1,10 @@
 package com.radaeli.aeronauticsflybyinstruments.panel;
 
+import com.radaeli.aeronauticsflybyinstruments.integration.PeripheralBinding;
+import com.radaeli.aeronauticsflybyinstruments.integration.PeripheralEvents;
 import com.radaeli.aeronauticsflybyinstruments.block.ModBlocks;
 import com.radaeli.aeronauticsflybyinstruments.block.ModularTableBaseBlock;
 import com.radaeli.aeronauticsflybyinstruments.avionics.AvionicsEndpoint;
-import com.radaeli.aeronauticsflybyinstruments.integration.TablePeripheral;
 import com.radaeli.aeronauticsflybyinstruments.config.ModConfig;
 import com.radaeli.aeronauticsflybyinstruments.fms.FmsLocation;
 import com.radaeli.aeronauticsflybyinstruments.fms.FmsModuleData;
@@ -59,7 +60,8 @@ public final class ModularTableBlockEntity extends BlockEntity implements Avioni
     private boolean muted;
     private long testPanelUntil;
     private Map<String, Integer> activeSoundAlerts = Map.of();
-    private final TablePeripheral peripheral = new TablePeripheral(this);
+    private final PeripheralBinding<PeripheralEvents.Table> peripheral =
+            new PeripheralBinding<>(new PeripheralEvents.Table() {});
     /** Joined-panel cache, owned by TablePanel.of. */
     TablePanel panel;
     int panelVersion = -1;
@@ -70,7 +72,7 @@ public final class ModularTableBlockEntity extends BlockEntity implements Avioni
     }
 
     public PanelGrid grid() { return grid; }
-    public TablePeripheral peripheral() { return peripheral; }
+    public PeripheralBinding<PeripheralEvents.Table> peripheral() { return peripheral; }
     @Override public String avionicsType() { return "modular_table"; }
     public boolean configureModule(int column, int row, String channel, double threshold) {
         if (channel == null || channel.isBlank() || channel.length() > 64 || !Double.isFinite(threshold)) return false;
@@ -88,8 +90,8 @@ public final class ModularTableBlockEntity extends BlockEntity implements Avioni
         setChanged();
         if (level != null && !level.isClientSide) {
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
-            peripheral.testSignalChanged(channel, value);
-            if (!previousOutputs.equals(outputLevels())) peripheral.alertOutputsChanged();
+            peripheral.events().testSignalChanged(channel, value);
+            if (!previousOutputs.equals(outputLevels())) peripheral.events().alertOutputsChanged();
         }
         return true;
     }
@@ -208,7 +210,7 @@ public final class ModularTableBlockEntity extends BlockEntity implements Avioni
         muted = value;
         if (level != null && !level.isClientSide) {
             syncClient();
-            peripheral.panelStateChanged("mute", muted);
+            peripheral.events().panelStateChanged("mute", muted);
         }
     }
 
@@ -216,8 +218,8 @@ public final class ModularTableBlockEntity extends BlockEntity implements Avioni
         if (level == null || level.isClientSide) return;
         testPanelUntil = level.getGameTime() + 60;
         syncClient();
-        peripheral.panelStateChanged("test", true);
-        peripheral.alertOutputsChanged();
+        peripheral.events().panelStateChanged("test", true);
+        peripheral.events().alertOutputsChanged();
     }
 
     /** Plays one immediate test beep from a specific buzzer without activating the whole panel. */
@@ -537,7 +539,7 @@ public final class ModularTableBlockEntity extends BlockEntity implements Avioni
         boolean selected = waypoint != null && fmsAt(column, row)
                 .flatMap(found -> found.data().selectedWaypointId())
                 .filter(waypoint.id()::equals).isPresent();
-        peripheral.fmsWaypointChanged(action, module, waypoint, selected);
+        peripheral.events().fmsWaypointChanged(action, module, waypoint, selected);
     }
 
     public FmsSignalSnapshot fmsSignals(int column, int row) {
@@ -679,7 +681,7 @@ public final class ModularTableBlockEntity extends BlockEntity implements Avioni
         }
         if (changed) {
             syncClient();
-            peripheral.alertOutputsChanged();
+            peripheral.events().alertOutputsChanged();
         }
     }
 
@@ -698,8 +700,8 @@ public final class ModularTableBlockEntity extends BlockEntity implements Avioni
         if (now >= testPanelUntil && testPanelUntil != 0) {
             testPanelUntil = 0;
             syncClient();
-            peripheral.panelStateChanged("test", false);
-            peripheral.alertOutputsChanged();
+            peripheral.events().panelStateChanged("test", false);
+            peripheral.events().alertOutputsChanged();
         }
     }
 
@@ -712,7 +714,7 @@ public final class ModularTableBlockEntity extends BlockEntity implements Avioni
             FmsSignalSnapshot updated = FmsSignalLogic.sample(module.data(), dimension, position, now);
             FmsSignalSnapshot previous = fmsSignals.put(module.data().id(), updated);
             if (publish && !FmsSignalLogic.sameValues(previous, updated)) {
-                peripheral.fmsSignalChanged(module, previous, updated);
+                peripheral.events().fmsSignalChanged(module, previous, updated);
             }
         }
         if (publish) {
@@ -782,8 +784,8 @@ public final class ModularTableBlockEntity extends BlockEntity implements Avioni
         setChanged();
         if (level != null && !level.isClientSide) {
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
-            peripheral.moduleChanged(action, module);
-            if (isLampModule(module) || module.type().equals("buzzer")) peripheral.alertOutputsChanged();
+            peripheral.events().moduleChanged(action, module);
+            if (isLampModule(module) || module.type().equals("buzzer")) peripheral.events().alertOutputsChanged();
         }
     }
 

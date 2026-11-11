@@ -1,5 +1,7 @@
 package com.radaeli.aeronauticsflybyinstruments.attitude;
 
+import com.radaeli.aeronauticsflybyinstruments.integration.PeripheralBinding;
+import com.radaeli.aeronauticsflybyinstruments.integration.PeripheralEvents;
 import com.radaeli.aeronauticsflybyinstruments.avionics.AvionicsDataChannel;
 import com.radaeli.aeronauticsflybyinstruments.avionics.AvionicsEndpoint;
 import com.radaeli.aeronauticsflybyinstruments.avionics.AvionicsSignalProvider;
@@ -41,7 +43,8 @@ public final class AttitudeReferenceUnitBlockEntity extends BlockEntity implemen
     /** Faster than this (blocks per second) the sublevel jumped instead of moving. */
     private static final double MAX_SPEED = 400.0;
 
-    private final AttitudeReferencePeripheral peripheral = new AttitudeReferencePeripheral(this);
+    private final PeripheralBinding<PeripheralEvents.Attitude> peripheral =
+            new PeripheralBinding<>(new PeripheralEvents.Attitude() {});
     private AttitudeReading reading = AttitudeReading.unavailable(0L);
     private double pitchOffset;
     private double rollOffset;
@@ -67,7 +70,7 @@ public final class AttitudeReferenceUnitBlockEntity extends BlockEntity implemen
         super(ModBlocks.ATTITUDE_REFERENCE_UNIT_ENTITY.get(), pos, state);
     }
 
-    public AttitudeReferencePeripheral peripheral() {
+    public PeripheralBinding<PeripheralEvents.Attitude> peripheral() {
         return peripheral;
     }
 
@@ -180,7 +183,7 @@ public final class AttitudeReferenceUnitBlockEntity extends BlockEntity implemen
                 turnRate, verticalSpeed, slip, gameTime);
         AttitudeReading previous = reading;
         reading = updated;
-        if (changed(previous, updated)) peripheral.publishReading(updated);
+        if (changed(previous, updated)) peripheral.events().publishReading(updated);
     }
 
     private static boolean changed(AttitudeReading previous, AttitudeReading updated) {

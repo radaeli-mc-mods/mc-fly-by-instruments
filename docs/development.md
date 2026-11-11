@@ -8,8 +8,8 @@
 - Create 6.0.10+
 - Create Aeronautics bundled 1.3+
 - Sable 2.0.5
-- CC:Tweaked 1.120.0+
-- R-UI Lib 0.9.0+
+- CC:Tweaked 1.120.0+ (compile-time API; optional at runtime)
+- R-UI Lib 0.10.0+
 
 The Gradle properties default to the Create, Create Aeronautics, and Sable JARs
 used by the sibling `sable-horses` workspace. The CC:Tweaked 1.120.0 JAR is
@@ -27,7 +27,32 @@ and are not bundled into the addon JAR. Their nested JARs are extracted to
 .\gradlew.bat runClient
 ```
 
-VS Code tasks for both commands are in `.vscode/tasks.json`.
+VS Code tasks for both commands are in `.vscode/tasks.json`, alongside
+`Run NeoForge Client (without CC:Tweaked)` for the optional dependency check.
+
+## Optional CC:Tweaked integration
+
+CC:Tweaked is optional for players. Sensors, redstone outputs, the avionics network,
+GPWS, and cockpit instruments work without it. When installed, CC:Tweaked adds
+peripherals and Lua events. Its supported minimum remains 1.120.0.
+
+The entrypoint registers `ComputerCraftIntegration` only when `computercraft` is
+loaded. Block entities use CC-independent event interfaces and create a cached
+peripheral only when its capability is queried. Keep CC API types and Lua conversion
+code inside the integration and peripheral classes.
+
+Use the development flag below to omit CC:Tweaked from the runtime dependencies
+while retaining its API for compilation. Remove any manually installed CC:Tweaked
+JAR from the selected development instance's `mods` directory as well.
+
+```powershell
+.\gradlew.bat -PwithoutComputerCraft test
+.\gradlew.bat -PwithoutComputerCraft -PtableGameTests runGameTestServer
+.\gradlew.bat -PwithoutComputerCraft runClient
+```
+
+With this flag, `test` runs the dedicated absence regression test. Run the ordinary
+`.\gradlew.bat test build` command separately to check the full suite with CC:Tweaked.
 
 ## Release scope
 

@@ -75,12 +75,16 @@ def createJar = configuredFile('create_jar')
 def aeronauticsJar = configuredFile('aeronautics_jar')
 def sableJar = configuredFile('sable_jar')
 def computercraftJar = configuredFile('computercraft_jar')
+def withoutComputerCraft = providers.gradleProperty('withoutComputerCraft').isPresent()
 def rUiLibJar = configuredFile('r_ui_lib_jar')
 def ponderJsJar = configuredFile('ponderjs_jar')
 def kubeJsJar = configuredFile('kubejs_jar')
 
 def existingDependencyFiles = {
     [createJar, computercraftJar, rUiLibJar].findAll { it != null }
+}
+def existingRuntimeDependencyFiles = {
+    [createJar, withoutComputerCraft ? null : computercraftJar, rUiLibJar].findAll { it != null }
 }
 
 def bundledModFiles = { File localJar, String artifact ->
@@ -166,7 +170,9 @@ dependencies {
         compileOnly("cc.tweaked:cc-tweaked-${minecraft_version}-common-api:${computercraft_api_version}")
         compileOnly("cc.tweaked:cc-tweaked-${minecraft_version}-core-api:${computercraft_api_version}")
         compileOnly("cc.tweaked:cc-tweaked-${minecraft_version}-forge-api:${computercraft_api_version}")
-        localRuntime("maven.modrinth:cc-tweaked:${computercraft_runtime_version}")
+        if (!withoutComputerCraft) {
+            localRuntime("maven.modrinth:cc-tweaked:${computercraft_runtime_version}")
+        }
     }
     if (rUiLibJar == null) {
         def rUiLibArtifact = "curse.maven:r-ui-lib-1731287:${r_ui_lib_file_id}"
@@ -178,7 +184,7 @@ dependencies {
 
     // These are development-only runtime inputs. The addon JAR never bundles
     // Create, Aeronautics, Sable, CC:Tweaked, or R-Ui Lib.
-    localRuntime files(existingDependencyFiles, aeronauticsFiles, sableFiles)
+    localRuntime files(existingRuntimeDependencyFiles, aeronauticsFiles, sableFiles)
 }
 
 neoForge {
@@ -283,6 +289,11 @@ tasks.withType(JavaCompile).configureEach {
 
 tasks.withType(Test).configureEach {
     useJUnitPlatform()
+    systemProperty 'flybyinstruments.test.withoutComputerCraft', withoutComputerCraft.toString()
+    if (withoutComputerCraft) {
+        // NeoForge discovers test classes before JUnit conditions and Gradle name filters run.
+        include '**/WithoutComputerCraftTest.class'
+    }
 }
 
 

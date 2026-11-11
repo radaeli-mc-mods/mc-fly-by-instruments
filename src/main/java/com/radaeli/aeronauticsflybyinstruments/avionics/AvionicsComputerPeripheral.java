@@ -1,5 +1,6 @@
 package com.radaeli.aeronauticsflybyinstruments.avionics;
 
+import com.radaeli.aeronauticsflybyinstruments.integration.PeripheralEvents;
 import dan200.computercraft.api.lua.LuaFunction;
 import dan200.computercraft.api.peripheral.IComputerAccess;
 import dan200.computercraft.api.peripheral.IPeripheral;
@@ -17,7 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * functions and the few player controls. Individual sensors keep their own peripherals for custom
  * flows built around a single sensor.
  */
-public final class AvionicsComputerPeripheral implements IPeripheral {
+public final class AvionicsComputerPeripheral implements IPeripheral, PeripheralEvents.Computer {
     public static final String TYPE = "avionics_computer";
     public static final String ALERT_EVENT = "avionics_alert_changed";
     public static final String SENSORS_EVENT = "avionics_sensors_changed";
@@ -128,7 +129,7 @@ public final class AvionicsComputerPeripheral implements IPeripheral {
     }
 
     public static boolean alertStateChanged(AlertReading previous, AlertReading updated) {
-        return previous == null || previous.state() != updated.state() || previous.severity() != updated.severity();
+        return AlertReading.stateChanged(previous, updated);
     }
 
     private static <E extends Enum<E>> java.util.Optional<E> parse(Class<E> type, String value) {

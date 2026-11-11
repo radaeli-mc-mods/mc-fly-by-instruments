@@ -1,5 +1,6 @@
 package com.radaeli.aeronauticsflybyinstruments.sensor;
 
+import com.radaeli.aeronauticsflybyinstruments.integration.ComputerCraftIntegration;
 import com.radaeli.aeronauticsflybyinstruments.avionics.ReadingStatus;
 import com.radaeli.aeronauticsflybyinstruments.block.ModBlocks;
 import dan200.computercraft.api.peripheral.IComputerAccess;
@@ -18,8 +19,8 @@ class TerrainScannerPeripheralTest {
         var simple = scanner(false);
         var advanced = scanner(true);
 
-        assertEquals("terrain_scanner", simple.peripheral().getType());
-        assertEquals("terrain_scanner_advanced", advanced.peripheral().getType());
+        assertEquals("terrain_scanner", ComputerCraftIntegration.peripheral(simple).getType());
+        assertEquals("terrain_scanner_advanced", ComputerCraftIntegration.peripheral(advanced).getType());
         assertNotNull(TerrainScannerPeripheral.class.getMethod("getScan")
                 .getAnnotation(dan200.computercraft.api.lua.LuaFunction.class));
         assertNotNull(AdvancedTerrainScannerPeripheral.class.getMethod("getConfiguration")
@@ -53,7 +54,7 @@ class TerrainScannerPeripheralTest {
         var scanner = scanner(false);
         var events = new ArrayList<Object[]>();
         var computer = computer(events);
-        scanner.peripheral().attach(computer);
+        ComputerCraftIntegration.peripheral(scanner).attach(computer);
 
         var first = new TerrainScanSnapshot(ReadingStatus.VALID,
                 List.of(new TerrainScanContact(1, 10.0, 0, 0, 1)), 9, 9, 10);
@@ -71,7 +72,7 @@ class TerrainScannerPeripheralTest {
         assertEquals(2, named(events, TerrainScannerPeripheral.SCAN_EVENT).size());
         assertEquals(1, named(events, RadarAltimeterPeripheral.OUTPUT_EVENT).size(),
                 "Unchanged redstone power must not emit another output event");
-        scanner.peripheral().detach(computer);
+        ComputerCraftIntegration.peripheral(scanner).detach(computer);
     }
 
     @Test

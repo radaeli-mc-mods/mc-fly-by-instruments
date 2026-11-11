@@ -1,5 +1,7 @@
 package com.radaeli.aeronauticsflybyinstruments.sensor;
 
+import com.radaeli.aeronauticsflybyinstruments.integration.PeripheralBinding;
+import com.radaeli.aeronauticsflybyinstruments.integration.PeripheralEvents;
 import com.mojang.logging.LogUtils;
 import com.radaeli.aeronauticsflybyinstruments.avionics.AvionicsEndpoint;
 import com.radaeli.aeronauticsflybyinstruments.avionics.ReadingStatus;
@@ -20,7 +22,8 @@ import org.slf4j.Logger;
 /** Periodically samples clearance beneath its lower face and exposes the reading to CC:Tweaked. */
 public final class RadarAltimeterBlockEntity extends BlockEntity implements AvionicsEndpoint {
     private static final Logger LOGGER = LogUtils.getLogger();
-    private final RadarAltimeterPeripheral peripheral = new RadarAltimeterPeripheral(this);
+    private final PeripheralBinding<PeripheralEvents.Radar> peripheral =
+            new PeripheralBinding<>(new PeripheralEvents.Radar() {});
     private SensorReading<Double> reading = SensorReading.unavailable("blocks", 0L);
     private boolean loggedScanFailure;
     private final SensorOutputController outputs = new SensorOutputController(this, true, false,
@@ -30,7 +33,7 @@ public final class RadarAltimeterBlockEntity extends BlockEntity implements Avio
         super(ModBlocks.RADAR_ALTIMETER_ENTITY.get(), pos, state);
     }
 
-    public RadarAltimeterPeripheral peripheral() {
+    public PeripheralBinding<PeripheralEvents.Radar> peripheral() {
         return peripheral;
     }
 
@@ -43,7 +46,7 @@ public final class RadarAltimeterBlockEntity extends BlockEntity implements Avio
     public Map<SensorOutputConfig.Channel, Integer> outputLevels() { return outputs.outputs(); }
     public boolean applyOutputConfig(SensorOutputConfig config) {
         boolean changed = outputs.apply(config, ModConfig.RADAR_ALTIMETER_MAX_RANGE.get());
-        if (changed) { recalculateOutput(); peripheral.publishOutputConfiguration(); }
+        if (changed) { recalculateOutput(); peripheral.events().publishOutputConfiguration(); }
         return changed;
     }
     public boolean validOutputConfig(SensorOutputConfig config) {
@@ -51,17 +54,17 @@ public final class RadarAltimeterBlockEntity extends BlockEntity implements Avio
     }
     boolean setOutputRange(SensorOutputConfig.Channel channel, int min, int max) {
         boolean changed = outputs.setRange(channel, min, max, ModConfig.RADAR_ALTIMETER_MAX_RANGE.get());
-        if (changed) { recalculateOutput(); peripheral.publishOutputConfiguration(); }
+        if (changed) { recalculateOutput(); peripheral.events().publishOutputConfiguration(); }
         return changed;
     }
     boolean setOutputMode(String mode) {
         boolean changed = outputs.setMode(mode, ModConfig.RADAR_ALTIMETER_MAX_RANGE.get());
-        if (changed) { recalculateOutput(); peripheral.publishOutputConfiguration(); }
+        if (changed) { recalculateOutput(); peripheral.events().publishOutputConfiguration(); }
         return changed;
     }
     boolean setLinkFrequencies(SensorOutputConfig.Channel channel, ItemStack first, ItemStack second) {
         boolean changed = outputs.setFrequencies(channel, first, second, ModConfig.RADAR_ALTIMETER_MAX_RANGE.get());
-        if (changed) { recalculateOutput(); peripheral.publishOutputConfiguration(); }
+        if (changed) { recalculateOutput(); peripheral.events().publishOutputConfiguration(); }
         return changed;
     }
 
@@ -95,13 +98,13 @@ public final class RadarAltimeterBlockEntity extends BlockEntity implements Avio
         SensorReading<Double> previous = reading;
         reading = updated;
         if (outputs.acceptAltitude(new SensorOutputLogic.SensorReadingView(updated.status(),
-                updated.value().orElse(null)))) peripheral.publishOutputs();
-        if (changed(previous, updated)) peripheral.publishReading(updated);
+                updated.value().orElse(null)))) peripheral.events().publishOutputs();
+        if (changed(previous, updated)) peripheral.events().publishReading(updated);
     }
 
     private void recalculateOutput() {
         if (outputs.acceptAltitude(new SensorOutputLogic.SensorReadingView(reading.status(), reading.value().orElse(null)))) {
-            peripheral.publishOutputs();
+            peripheral.events().publishOutputs();
         }
     }
 

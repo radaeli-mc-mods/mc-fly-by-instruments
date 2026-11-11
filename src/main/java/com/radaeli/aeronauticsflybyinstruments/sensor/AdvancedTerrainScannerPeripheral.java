@@ -24,7 +24,7 @@ public final class AdvancedTerrainScannerPeripheral extends TerrainScannerPeriph
         return scanner.setOpeningAngle(degrees);
     }
 
-    void publishConfiguration(int degrees) {
+    public void publishConfiguration(int degrees) {
         Map<String, Object> value = Map.of("openingAngle", degrees);
         publishEvent(CONFIG_EVENT, value);
     }
