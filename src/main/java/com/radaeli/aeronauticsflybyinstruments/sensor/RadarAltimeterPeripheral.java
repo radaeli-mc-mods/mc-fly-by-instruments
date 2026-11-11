@@ -1,5 +1,6 @@
 package com.radaeli.aeronauticsflybyinstruments.sensor;
 
+import com.radaeli.aeronauticsflybyinstruments.integration.PeripheralEvents;
 import com.radaeli.aeronauticsflybyinstruments.avionics.SensorReading;
 import dan200.computercraft.api.lua.LuaFunction;
 import dan200.computercraft.api.peripheral.IComputerAccess;
@@ -11,7 +12,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /** Independent CC:Tweaked peripheral for one Radar Altimeter block. */
-public final class RadarAltimeterPeripheral implements IPeripheral {
+public final class RadarAltimeterPeripheral implements IPeripheral, PeripheralEvents.Radar {
     public static final String EVENT_NAME = "radar_altimeter_reading_changed";
     public static final String OUTPUT_CONFIG_EVENT = "sensor_output_configuration_changed";
     public static final String OUTPUT_EVENT = "sensor_outputs_changed";
@@ -80,11 +81,11 @@ public final class RadarAltimeterPeripheral implements IPeripheral {
         }
     }
 
-    void publishOutputConfiguration() {
+    public void publishOutputConfiguration() {
         Map<String, Object> value = SensorOutputLua.configuration(sensor.outputConfig());
         publishEvent(OUTPUT_CONFIG_EVENT, value);
     }
-    void publishOutputs() { publishEvent(OUTPUT_EVENT, SensorOutputLua.outputs(sensor.outputLevels())); }
+    public void publishOutputs() { publishEvent(OUTPUT_EVENT, SensorOutputLua.outputs(sensor.outputLevels())); }
     private void publishEvent(String event, Map<String, Object> value) {
         for (IComputerAccess computer : computers) computer.queueEvent(event, computer.getAttachmentName(), value);
     }

@@ -63,7 +63,7 @@ side="BOTH"
 
 [[dependencies.${mod_id}]]
 modId="computercraft"
-type="required"
+type="optional"
 versionRange="${computercraft_version_range}"
 ordering="AFTER"
 side="BOTH"

@@ -1,5 +1,6 @@
 package com.radaeli.aeronauticsflybyinstruments.sensor;
 
+import com.radaeli.aeronauticsflybyinstruments.integration.ComputerCraftIntegration;
 import com.radaeli.aeronauticsflybyinstruments.block.ModBlocks;
 import com.radaeli.aeronauticsflybyinstruments.avionics.SensorReading;
 import dan200.computercraft.api.peripheral.IComputerAccess;
@@ -14,7 +15,7 @@ class RadarAltimeterPeripheralTest {
     @Test
     void exposesTypedReadingAndLuaAnnotation() throws Exception {
         var sensor = sensor();
-        var peripheral = sensor.peripheral();
+        var peripheral = ComputerCraftIntegration.peripheral(sensor);
         assertEquals("radar_altimeter", peripheral.getType());
         assertEquals(Map.of("status", "unavailable", "unit", "blocks", "gameTime", 0L),
                 peripheral.getReading());
@@ -34,7 +35,7 @@ class RadarAltimeterPeripheralTest {
                     case "equals" -> proxy == arguments[0];
                     default -> null;
                 });
-        sensor.peripheral().attach(computer);
+        ComputerCraftIntegration.peripheral(sensor).attach(computer);
 
         // Default altitude range is 0-32 blocks: 12.5 -> 6, 11.0 -> 5, unavailable -> 0.
         sensor.acceptReading(SensorReading.valid(12.5, "blocks", 5));
@@ -59,7 +60,7 @@ class RadarAltimeterPeripheralTest {
         outputs = named(events, RadarAltimeterPeripheral.OUTPUT_EVENT);
         assertEquals(3, outputs.size());
         assertEquals(Map.of("altitude", 0), ((Object[]) outputs.getLast()[1])[1]);
-        sensor.peripheral().detach(computer);
+        ComputerCraftIntegration.peripheral(sensor).detach(computer);
     }
 
     private static java.util.List<Object[]> named(java.util.List<Object[]> events, String name) {

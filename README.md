@@ -179,7 +179,7 @@ so very long ranges near the edge of the loaded world may read less than you exp
 
 <p align="center" style="background-color: #F4ECD0; text-align: center;"><img src="https://raw.githubusercontent.com/radaeli-mc-mods/mc-fly-by-instruments/main/docs/gallery/section-titles/cc.png" alt="WHAT ABOUT COMPUTERS?" width="593"></p>
 
-Every sensor is a **CC: Tweaked peripheral** of its own. Put a computer next to it, or
+With **CC: Tweaked** installed, every sensor is a peripheral of its own. Put a computer next to it, or
 connect it with a wired modem, and read the raw data:
 
 | Peripheral | Readings | Events |
@@ -242,8 +242,8 @@ For the avionics suite:
 - **Create** 6.0.10+
 - **Create Aeronautics** 1.3+ (bundled)
 - **Sable** 2.0.5
-- **CC: Tweaked** 1.120.0+
-- **R-UI Lib** 0.8.0+
+- **CC: Tweaked** 1.120.0+ (optional, for computers and Lua automation)
+- **R-UI Lib** 0.10.0+
 
 ---
 

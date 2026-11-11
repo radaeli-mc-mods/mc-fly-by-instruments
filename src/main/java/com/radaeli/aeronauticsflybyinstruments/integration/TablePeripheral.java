@@ -17,7 +17,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /** Lua coordinates are 1-based. Modules are installed physically, not created through Lua. */
-public final class TablePeripheral implements IPeripheral {
+public final class TablePeripheral implements IPeripheral, PeripheralEvents.Table {
     private final ModularTableBlockEntity table;
     private final Set<IComputerAccess> computers = ConcurrentHashMap.newKeySet();
 

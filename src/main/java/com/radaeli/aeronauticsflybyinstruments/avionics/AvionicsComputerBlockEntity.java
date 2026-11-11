@@ -1,5 +1,7 @@
 package com.radaeli.aeronauticsflybyinstruments.avionics;
 
+import com.radaeli.aeronauticsflybyinstruments.integration.PeripheralBinding;
+import com.radaeli.aeronauticsflybyinstruments.integration.PeripheralEvents;
 import com.mojang.logging.LogUtils;
 import com.radaeli.aeronauticsflybyinstruments.attitude.AttitudeReading;
 import com.radaeli.aeronauticsflybyinstruments.attitude.AttitudeReferenceUnitBlockEntity;
@@ -49,7 +51,8 @@ public final class AvionicsComputerBlockEntity extends BlockEntity implements Av
 
     private GpwsConfiguration configuration = new GpwsConfiguration();
     private final GpwsEngine engine = new GpwsEngine();
-    private final AvionicsComputerPeripheral peripheral = new AvionicsComputerPeripheral(this);
+    private final PeripheralBinding<PeripheralEvents.Computer> peripheral =
+            new PeripheralBinding<>(new PeripheralEvents.Computer() {});
     private GpwsSample latestSample = emptySample(0, NetworkStatus.DISCONNECTED);
     private GpwsEngine.Evaluation latestEvaluation = initialEvaluation();
     private List<AvionicsSensor> sensors = List.of();
@@ -63,7 +66,7 @@ public final class AvionicsComputerBlockEntity extends BlockEntity implements Av
     }
 
     @Override public String avionicsType() { return "avionics_computer"; }
-    public AvionicsComputerPeripheral peripheral() { return peripheral; }
+    public PeripheralBinding<PeripheralEvents.Computer> peripheral() { return peripheral; }
     public GpwsConfiguration configuration() { return configuration; }
     public GpwsEngine.Evaluation evaluation() { return latestEvaluation; }
     public GpwsSample latestSample() { return latestSample; }
@@ -141,7 +144,7 @@ public final class AvionicsComputerBlockEntity extends BlockEntity implements Av
         if (computer.testUntil != 0 && level.getGameTime() >= computer.testUntil) {
             computer.testUntil = 0;
             computer.evaluate();
-            computer.peripheral.publishStatusChanged();
+            computer.peripheral.events().publishStatusChanged();
         } else {
             int interval = ModConfig.SENSOR_SCAN_INTERVAL_TICKS.get();
             long offset = Math.floorMod(pos.asLong(), (long) interval);
@@ -159,7 +162,7 @@ public final class AvionicsComputerBlockEntity extends BlockEntity implements Av
         if (level == null || level.isClientSide || testing()) return false;
         testUntil = level.getGameTime() + TEST_TICKS;
         evaluate();
-        peripheral.publishStatusChanged();
+        peripheral.events().publishStatusChanged();
         return true;
     }
 
@@ -185,8 +188,8 @@ public final class AvionicsComputerBlockEntity extends BlockEntity implements Av
             }
         }
         publishEvaluationChanges(previousEvaluation, latestEvaluation);
-        if (sensorsChanged(previousSensors, sensors)) peripheral.publishSensorsChanged();
-        if (!previousStatus.equals(status())) peripheral.publishStatusChanged();
+        if (sensorsChanged(previousSensors, sensors)) peripheral.events().publishSensorsChanged();
+        if (!previousStatus.equals(status())) peripheral.events().publishStatusChanged();
     }
 
     static boolean sensorsChanged(List<AvionicsSensor> previous, List<AvionicsSensor> updated) {
@@ -202,9 +205,9 @@ public final class AvionicsComputerBlockEntity extends BlockEntity implements Av
         for (AlertChannel channel : AlertChannel.values()) {
             AlertReading oldReading = previous.alerts().get(channel);
             AlertReading newReading = updated.alerts().get(channel);
-            if (AvionicsComputerPeripheral.alertStateChanged(oldReading, newReading)) changed.put(channel, newReading);
+            if (AlertReading.stateChanged(oldReading, newReading)) changed.put(channel, newReading);
         }
-        if (!changed.isEmpty()) peripheral.publishAlertsChanged(changed, updated.reasons());
+        if (!changed.isEmpty()) peripheral.events().publishAlertsChanged(changed, updated.reasons());
     }
 
     private GpwsSample gatherSample(List<AvionicsSensor> found) {
@@ -483,7 +486,7 @@ public final class AvionicsComputerBlockEntity extends BlockEntity implements Av
 
     private void configurationChanged() {
         setChanged();
-        peripheral.publishConfigurationChanged();
+        peripheral.events().publishConfigurationChanged();
     }
 
     @Override

@@ -3,6 +3,7 @@ package com.radaeli.aeronauticsflybyinstruments.avionics;
 import com.radaeli.aeronauticsflybyinstruments.block.ModBlocks;
 import com.radaeli.aeronauticsflybyinstruments.block.ModularTableBaseBlock;
 import com.radaeli.aeronauticsflybyinstruments.config.ModConfig;
+import com.radaeli.aeronauticsflybyinstruments.integration.PeripheralEvents;
 import com.radaeli.aeronauticsflybyinstruments.wire.WireNodeBlock;
 import com.radaeli.aeronauticsflybyinstruments.wire.WireNodeBlockEntity;
 import net.minecraft.core.BlockPos;
@@ -20,7 +21,7 @@ import java.util.List;
 public final class AvionicsNetworkManager {
     private static final Map<Level, Map<BlockPos, NetworkSnapshot>> CACHE = new WeakHashMap<>();
     private static final Map<Level, Map<BlockPos, NetworkSnapshot>> CONNECTOR_CACHE = new WeakHashMap<>();
-    private static final Map<Level, Set<NetworkBridgePeripheral>> ATTACHED_PERIPHERALS = new WeakHashMap<>();
+    private static final Map<Level, Set<PeripheralEvents.Bridge>> ATTACHED_PERIPHERALS = new WeakHashMap<>();
     private static final Set<Level> DIRTY_LEVELS = new HashSet<>();
 
     private AvionicsNetworkManager() {}
@@ -62,17 +63,17 @@ public final class AvionicsNetworkManager {
 
     public record ConnectedSignal(NetworkDevice device, AvionicsDataChannel<?> channel) {}
 
-    public static void register(NetworkBridgePeripheral peripheral, Level level) {
+    public static void register(PeripheralEvents.Bridge peripheral, Level level) {
         if (level == null || level.isClientSide) return;
         synchronized (ATTACHED_PERIPHERALS) {
             ATTACHED_PERIPHERALS.computeIfAbsent(level, ignored -> new HashSet<>()).add(peripheral);
         }
     }
 
-    public static void unregister(NetworkBridgePeripheral peripheral, Level level) {
+    public static void unregister(PeripheralEvents.Bridge peripheral, Level level) {
         if (level == null || level.isClientSide) return;
         synchronized (ATTACHED_PERIPHERALS) {
-            Set<NetworkBridgePeripheral> set = ATTACHED_PERIPHERALS.get(level);
+            Set<PeripheralEvents.Bridge> set = ATTACHED_PERIPHERALS.get(level);
             if (set != null) {
                 set.remove(peripheral);
                 if (set.isEmpty()) ATTACHED_PERIPHERALS.remove(level);
@@ -108,11 +109,11 @@ public final class AvionicsNetworkManager {
                 CACHE.remove(level);
                 CONNECTOR_CACHE.remove(level);
             }
-            Set<NetworkBridgePeripheral> peripherals;
+            Set<PeripheralEvents.Bridge> peripherals;
             synchronized (ATTACHED_PERIPHERALS) {
                 peripherals = new HashSet<>(ATTACHED_PERIPHERALS.getOrDefault(level, Set.of()));
             }
-            peripherals.forEach(NetworkBridgePeripheral::refreshNetworkAndNotify);
+            peripherals.forEach(PeripheralEvents.Bridge::refreshNetworkAndNotify);
         }
     }
 

@@ -1,5 +1,7 @@
 package com.radaeli.aeronauticsflybyinstruments.sensor;
 
+import com.radaeli.aeronauticsflybyinstruments.integration.PeripheralBinding;
+import com.radaeli.aeronauticsflybyinstruments.integration.PeripheralEvents;
 import com.mojang.logging.LogUtils;
 import com.radaeli.aeronauticsflybyinstruments.avionics.AvionicsEndpoint;
 import com.radaeli.aeronauticsflybyinstruments.avionics.ReadingStatus;
@@ -26,8 +28,8 @@ public final class TerrainScannerBlockEntity extends BlockEntity implements Avio
     private ScannerSide side = ScannerSide.UNSET;
     private TerrainScanSnapshot reading = TerrainScanSnapshot.unavailable(0, 0L);
     private boolean loggedScanFailure;
-    private final TerrainScannerPeripheral simplePeripheral = new TerrainScannerPeripheral(this, "terrain_scanner");
-    private final AdvancedTerrainScannerPeripheral advancedPeripheral = new AdvancedTerrainScannerPeripheral(this);
+    private final PeripheralBinding<PeripheralEvents.Terrain> peripheral =
+            new PeripheralBinding<>(new PeripheralEvents.Terrain() {});
     private final SensorOutputController outputs;
 
     public TerrainScannerBlockEntity(BlockPos pos, BlockState state) {
@@ -55,7 +57,7 @@ public final class TerrainScannerBlockEntity extends BlockEntity implements Avio
     public java.util.Map<SensorOutputConfig.Channel, Integer> outputLevels() { return outputs.outputs(); }
     public boolean applyOutputConfig(SensorOutputConfig config) {
         boolean changed = outputs.apply(config, ModConfig.TERRAIN_SCANNER_MAX_RANGE.get());
-        if (changed) { recalculateOutputs(); peripheral().publishOutputConfiguration(); }
+        if (changed) { recalculateOutputs(); peripheral.events().publishOutputConfiguration(); }
         return changed;
     }
     public boolean validOutputConfig(SensorOutputConfig config) {
@@ -63,22 +65,22 @@ public final class TerrainScannerBlockEntity extends BlockEntity implements Avio
     }
     boolean setOutputRange(SensorOutputConfig.Channel channel, int min, int max) {
         boolean changed = outputs.setRange(channel, min, max, ModConfig.TERRAIN_SCANNER_MAX_RANGE.get());
-        if (changed) { recalculateOutputs(); peripheral().publishOutputConfiguration(); }
+        if (changed) { recalculateOutputs(); peripheral.events().publishOutputConfiguration(); }
         return changed;
     }
     boolean setOutputMode(String mode) {
         boolean changed = outputs.setMode(mode, ModConfig.TERRAIN_SCANNER_MAX_RANGE.get());
-        if (changed) { recalculateOutputs(); peripheral().publishOutputConfiguration(); }
+        if (changed) { recalculateOutputs(); peripheral.events().publishOutputConfiguration(); }
         return changed;
     }
     boolean setLinkFrequencies(SensorOutputConfig.Channel channel, ItemStack first, ItemStack second) {
         boolean changed = outputs.setFrequencies(channel, first, second, ModConfig.TERRAIN_SCANNER_MAX_RANGE.get());
-        if (changed) { recalculateOutputs(); peripheral().publishOutputConfiguration(); }
+        if (changed) { recalculateOutputs(); peripheral.events().publishOutputConfiguration(); }
         return changed;
     }
 
-    public TerrainScannerPeripheral peripheral() {
-        return advanced() ? advancedPeripheral : simplePeripheral;
+    public PeripheralBinding<PeripheralEvents.Terrain> peripheral() {
+        return peripheral;
     }
 
     @Override public String avionicsType() {
@@ -89,11 +91,11 @@ public final class TerrainScannerBlockEntity extends BlockEntity implements Avio
         if (!advanced() || degrees < TerrainScanGeometry.MIN_APERTURE_DEGREES
                 || degrees > TerrainScanGeometry.MAX_APERTURE_DEGREES || degrees == openingAngle) return false;
         openingAngle = degrees;
-        if (outputs.acceptTerrain(reading, openingAngle)) advancedPeripheral.publishOutputs();
+        if (outputs.acceptTerrain(reading, openingAngle)) peripheral.events().publishOutputs();
         setChanged();
         if (level != null && !level.isClientSide) {
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
-            advancedPeripheral.publishConfiguration(degrees);
+            peripheral.events().publishConfiguration(degrees);
         }
         return true;
     }
@@ -125,14 +127,14 @@ public final class TerrainScannerBlockEntity extends BlockEntity implements Avio
     void acceptReading(TerrainScanSnapshot updated) {
         TerrainScanSnapshot previous = reading;
         reading = updated;
-        if (TerrainScannerPeripheral.meaningfullyChanged(previous, updated)) {
-            peripheral().publishScan(updated);
+        if (TerrainScanSnapshot.meaningfullyChanged(previous, updated)) {
+            peripheral.events().publishScan(updated);
         }
-        if (outputs.acceptTerrain(updated, openingAngle)) peripheral().publishOutputs();
+        if (outputs.acceptTerrain(updated, openingAngle)) peripheral.events().publishOutputs();
     }
 
     private void recalculateOutputs() {
-        if (outputs.acceptTerrain(reading, openingAngle)) peripheral().publishOutputs();
+        if (outputs.acceptTerrain(reading, openingAngle)) peripheral.events().publishOutputs();
     }
 
     @Override

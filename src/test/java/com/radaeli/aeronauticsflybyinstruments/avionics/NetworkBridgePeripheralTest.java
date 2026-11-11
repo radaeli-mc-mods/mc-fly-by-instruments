@@ -1,5 +1,6 @@
 package com.radaeli.aeronauticsflybyinstruments.avionics;
 
+import com.radaeli.aeronauticsflybyinstruments.integration.ComputerCraftIntegration;
 import com.radaeli.aeronauticsflybyinstruments.block.ModBlocks;
 import dan200.computercraft.api.peripheral.IComputerAccess;
 import net.minecraft.core.BlockPos;
@@ -12,7 +13,7 @@ class NetworkBridgePeripheralTest {
     @Test
     void bridgeOwnsTheNetworkApiAndComputerCraftMethods() throws Exception {
         var bridge = new NetworkBridgeBlockEntity(BlockPos.ZERO, ModBlocks.NETWORK_BRIDGE.get().defaultBlockState());
-        var peripheral = bridge.peripheral();
+        var peripheral = ComputerCraftIntegration.peripheral(bridge);
         assertEquals("avionics_network_bridge", peripheral.getType());
         assertEquals("disconnected", peripheral.getNetworkStatus().get("status"));
         assertTrue(peripheral.getConnectedDevices().isEmpty());
@@ -25,7 +26,7 @@ class NetworkBridgePeripheralTest {
     @Test
     void notifiesAttachedComputersWithChangedNetworkSnapshot() {
         var bridge = new NetworkBridgeBlockEntity(BlockPos.ZERO, ModBlocks.NETWORK_BRIDGE.get().defaultBlockState());
-        var peripheral = bridge.peripheral();
+        var peripheral = ComputerCraftIntegration.peripheral(bridge);
         var events = new ArrayList<Object[]>();
         var computer = (IComputerAccess) Proxy.newProxyInstance(IComputerAccess.class.getClassLoader(),
                 new Class<?>[]{IComputerAccess.class}, (proxy, method, arguments) -> switch (method.getName()) {
@@ -50,7 +51,7 @@ class NetworkBridgePeripheralTest {
     @Test
     void signalsOfTheWholeNetworkAreEmptyWithoutALevelOrAConnectedNetwork() throws Exception {
         var bridge = new NetworkBridgeBlockEntity(BlockPos.ZERO, ModBlocks.NETWORK_BRIDGE.get().defaultBlockState());
-        assertTrue(bridge.peripheral().getSignals().isEmpty());
+        assertTrue(ComputerCraftIntegration.peripheral(bridge).getSignals().isEmpty());
         assertNotNull(NetworkBridgePeripheral.class.getMethod("getSignals")
                 .getAnnotation(dan200.computercraft.api.lua.LuaFunction.class));
     }

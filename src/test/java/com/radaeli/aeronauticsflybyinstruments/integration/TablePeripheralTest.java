@@ -25,7 +25,7 @@ class TablePeripheralTest {
     void buzzerIsVisibleThroughTheTableApiButCannotActivateLampOrSignalControls() throws LuaException {
         var table = table();
         assertTrue(table.placeBuzzer(2, 1));
-        var peripheral = table.peripheral();
+        var peripheral = ComputerCraftIntegration.peripheral(table);
         var slot = peripheral.getSlot(3, 2);
         assertEquals("buzzer", slot.get("type"));
         assertEquals(1, slot.get("width"));
@@ -40,7 +40,7 @@ class TablePeripheralTest {
     @Test
     void exposesOneBasedSlotsAndFootprintQueries() throws LuaException {
         var table = table();
-        var peripheral = table.peripheral();
+        var peripheral = ComputerCraftIntegration.peripheral(table);
         assertEquals("modular_table", peripheral.getType());
         assertEquals(Map.of("columns", 3, "rows", 3), peripheral.getGridSize());
         assertEquals(false, peripheral.getSlot(1, 1).get("occupied"));
@@ -75,7 +75,7 @@ class TablePeripheralTest {
 
     @Test
     void tablePeripheralDoesNotExposeNetworkTopology() throws Exception {
-        var peripheral = table().peripheral();
+        var peripheral = ComputerCraftIntegration.peripheral(table());
         assertThrows(NoSuchMethodException.class, () -> TablePeripheral.class.getMethod("getNetworkStatus"));
         assertThrows(NoSuchMethodException.class, () -> TablePeripheral.class.getMethod("getConnectedDevices"));
         assertNotNull(TablePeripheral.class.getMethod("getGridSize")
@@ -85,7 +85,7 @@ class TablePeripheralTest {
     @Test
     void lampIntensityTestApiValidatesAndClearsTransientOverrides() throws Exception {
         var table = table();
-        var peripheral = table.peripheral();
+        var peripheral = ComputerCraftIntegration.peripheral(table);
         table.placeLamp(0, 0);
         assertTrue(peripheral.setLampTestIntensity(1, 1, 8));
         assertEquals(8, table.lampRenderIntensity(table.grid().at(0, 0).orElseThrow()));
@@ -104,7 +104,7 @@ class TablePeripheralTest {
     @Test
     void longLampHasIndependentSignalAndVisualTestControlsAcrossItsFootprint() throws LuaException {
         var table = table();
-        var peripheral = table.peripheral();
+        var peripheral = ComputerCraftIntegration.peripheral(table);
         assertTrue(table.placeLamp2x1(0, 0, false));
         assertTrue(peripheral.configureModule(1, 1, "warning", 2));
         assertTrue(peripheral.setTestSignal("warning", 2));
@@ -122,7 +122,7 @@ class TablePeripheralTest {
         var data = new FmsModuleData(java.util.UUID.randomUUID(), java.util.List.of(waypoint), waypoint.id());
         var table = table();
         assertTrue(table.placeFmsModule(0, 0, data));
-        var peripheral = table.peripheral();
+        var peripheral = ComputerCraftIntegration.peripheral(table);
 
         var waypoints = peripheral.getFmsWaypoints(1, 1);
         assertEquals(1, waypoints.size());
@@ -172,7 +172,7 @@ class TablePeripheralTest {
                     case "equals" -> proxy == arguments[0];
                     default -> null;
                 });
-        var peripheral = table.peripheral();
+        var peripheral = ComputerCraftIntegration.peripheral(table);
         peripheral.attach(computer);
         peripheral.fmsWaypointChanged("selected", table.grid().modules().getFirst(), waypoint, true);
         assertEquals("modular_table_fms_waypoint_changed", events.getFirst()[0]);
@@ -190,7 +190,7 @@ class TablePeripheralTest {
     @Test
     void publishesAttachmentActionAndModuleAndStopsAfterDetach() {
         var table = table();
-        var peripheral = table.peripheral();
+        var peripheral = ComputerCraftIntegration.peripheral(table);
         var events = new ArrayList<Object[]>();
         var computer = (IComputerAccess) Proxy.newProxyInstance(IComputerAccess.class.getClassLoader(),
                 new Class<?>[]{IComputerAccess.class}, (proxy, method, arguments) -> switch (method.getName()) {

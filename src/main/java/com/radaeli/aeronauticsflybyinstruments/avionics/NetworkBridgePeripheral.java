@@ -1,5 +1,6 @@
 package com.radaeli.aeronauticsflybyinstruments.avionics;
 
+import com.radaeli.aeronauticsflybyinstruments.integration.PeripheralEvents;
 import dan200.computercraft.api.lua.LuaFunction;
 import dan200.computercraft.api.peripheral.IComputerAccess;
 import dan200.computercraft.api.peripheral.IPeripheral;
@@ -16,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * CC:Tweaked gateway to the network as a whole: its topology and every channel the endpoints publish (for example
  * the velocity sensor's speed). Single-device flows keep the endpoints' own peripherals.
  */
-public final class NetworkBridgePeripheral implements IPeripheral {
+public final class NetworkBridgePeripheral implements IPeripheral, PeripheralEvents.Bridge {
     private final NetworkBridgeBlockEntity bridge;
     private final Set<IComputerAccess> computers = ConcurrentHashMap.newKeySet();
     private volatile NetworkSnapshot lastSnapshot;
@@ -81,7 +82,7 @@ public final class NetworkBridgePeripheral implements IPeripheral {
         publishIfChanged(snapshot());
     }
 
-    void publishIfChanged(NetworkSnapshot updated) {
+    public void publishIfChanged(NetworkSnapshot updated) {
         NetworkSnapshot previous = lastSnapshot;
         lastSnapshot = updated;
         if (previous == null || previous.equals(updated)) return;

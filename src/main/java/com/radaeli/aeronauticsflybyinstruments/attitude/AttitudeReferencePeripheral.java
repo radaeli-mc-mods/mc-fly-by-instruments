@@ -1,5 +1,6 @@
 package com.radaeli.aeronauticsflybyinstruments.attitude;
 
+import com.radaeli.aeronauticsflybyinstruments.integration.PeripheralEvents;
 import dan200.computercraft.api.lua.LuaException;
 import dan200.computercraft.api.lua.LuaFunction;
 import dan200.computercraft.api.peripheral.IComputerAccess;
@@ -12,7 +13,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /** CC:Tweaked peripheral for one Attitude Reference Unit. */
-public final class AttitudeReferencePeripheral implements IPeripheral {
+public final class AttitudeReferencePeripheral implements IPeripheral, PeripheralEvents.Attitude {
     public static final String EVENT_NAME = "attitude_reading_changed";
     private final AttitudeReferenceUnitBlockEntity unit;
     private final Set<IComputerAccess> computers = ConcurrentHashMap.newKeySet();

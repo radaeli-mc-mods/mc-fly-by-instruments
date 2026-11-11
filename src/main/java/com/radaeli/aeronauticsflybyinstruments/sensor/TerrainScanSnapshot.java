@@ -33,4 +33,11 @@ public record TerrainScanSnapshot(ReadingStatus status, List<TerrainScanContact>
     public static TerrainScanSnapshot failed(int totalRays, long gameTime) {
         return new TerrainScanSnapshot(ReadingStatus.FAILED, List.of(), 0, totalRays, gameTime);
     }
+
+    public static boolean meaningfullyChanged(TerrainScanSnapshot previous, TerrainScanSnapshot updated) {
+        return previous.status() != updated.status()
+                || previous.sampledRays() != updated.sampledRays()
+                || previous.totalRays() != updated.totalRays()
+                || !previous.contacts().equals(updated.contacts());
+    }
 }
