@@ -197,6 +197,20 @@ class GpwsEngineTest {
     }
 
     @Test
+    void pullUpUsesAltimeterFallbackWhenInstalledScannerHasNoFrontCoverage() {
+        var engine = new GpwsEngine();
+        var configuration = new GpwsConfiguration();
+        engine.evaluate(sample(0, 40, 0, 1, true, false, List.of()), configuration, false, INTERVAL);
+        engine.evaluate(sample(5, 40, 5, 1, true, false, List.of()), configuration, false, INTERVAL);
+        var clear = engine.evaluate(sample(10, 40, 10, 1, true, false, List.of()), configuration, false, INTERVAL);
+        assertEquals(AlertState.INACTIVE, clear.alerts().get(AlertChannel.PULL_UP).state());
+        assertFalse(clear.reasons().containsKey(AlertChannel.PULL_UP));
+        engine.evaluate(sample(15, 18, 15, 1, false, false, List.of()), configuration, false, INTERVAL);
+        var danger = engine.evaluate(sample(20, 16, 20, 1, false, false, List.of()), configuration, false, INTERVAL);
+        assertEquals(AlertState.ACTIVE, danger.alerts().get(AlertChannel.PULL_UP).state());
+    }
+
+    @Test
     void dontSinkWarnsAfterFourBlocksOfRecentTakeoffOrClimbLoss() {
         GpwsEngine engine = new GpwsEngine();
         GpwsConfiguration configuration = new GpwsConfiguration();

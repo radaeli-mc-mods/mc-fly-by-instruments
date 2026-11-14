@@ -37,7 +37,11 @@ public record GpwsSample(long gameTime, NetworkStatus networkStatus, int endpoin
         terrainContacts = List.copyOf(terrainContacts);
     }
 
-    public record TerrainContact(double distance, double angleFromForwardDegrees) {
+    public record TerrainContact(double distance, double angleFromForwardDegrees, boolean threatensFlightPath) {
+        public TerrainContact(double distance, double angleFromForwardDegrees) {
+            this(distance, angleFromForwardDegrees, true);
+        }
+
         public TerrainContact {
             if (!Double.isFinite(distance) || distance < 0 || !Double.isFinite(angleFromForwardDegrees)
                     || angleFromForwardDegrees < 0 || angleFromForwardDegrees > 180) {
