@@ -3,7 +3,9 @@ package com.radaeli.aeronauticsflybyinstruments.sensor;
 import com.radaeli.aeronauticsflybyinstruments.integration.PeripheralBinding;
 import com.radaeli.aeronauticsflybyinstruments.integration.PeripheralEvents;
 import com.mojang.logging.LogUtils;
-import com.radaeli.aeronauticsflybyinstruments.avionics.AvionicsEndpoint;
+import com.radaeli.aeronauticsflybyinstruments.avionics.AvionicsSensorEndpoint;
+import com.radaeli.aeronauticsflybyinstruments.avionics.SensorAvailability;
+import com.radaeli.aeronauticsflybyinstruments.avionics.SensorHeartbeat;
 import com.radaeli.aeronauticsflybyinstruments.avionics.ReadingStatus;
 import com.radaeli.aeronauticsflybyinstruments.avionics.ScannerSide;
 import com.radaeli.aeronauticsflybyinstruments.block.ModBlocks;
@@ -21,13 +23,14 @@ import net.minecraft.nbt.Tag;
 import org.slf4j.Logger;
 
 /** Persisted settings, sampled scan snapshot, and independent CC peripherals for both scanner variants. */
-public final class TerrainScannerBlockEntity extends BlockEntity implements AvionicsEndpoint {
+public final class TerrainScannerBlockEntity extends BlockEntity implements AvionicsSensorEndpoint {
     private static final Logger LOGGER = LogUtils.getLogger();
     private int openingAngle = TerrainScanGeometry.DEFAULT_ADVANCED_APERTURE_DEGREES;
     /** Side of the aircraft this scanner looks at, chosen by the player; the computer reads it. */
     private ScannerSide side = ScannerSide.UNSET;
     private TerrainScanSnapshot reading = TerrainScanSnapshot.unavailable(0, 0L);
     private boolean loggedScanFailure;
+    private final SensorHeartbeat heartbeat = new SensorHeartbeat();
     private final PeripheralBinding<PeripheralEvents.Terrain> peripheral =
             new PeripheralBinding<>(new PeripheralEvents.Terrain() {});
     private final SensorOutputController outputs;
@@ -39,6 +42,7 @@ public final class TerrainScannerBlockEntity extends BlockEntity implements Avio
     }
 
     public TerrainScanSnapshot reading() { return reading; }
+    @Override public SensorAvailability sensorAvailability() { return heartbeat.snapshot(); }
     public int openingAngle() { return openingAngle; }
     public ScannerSide side() { return side; }
 
@@ -102,6 +106,7 @@ public final class TerrainScannerBlockEntity extends BlockEntity implements Avio
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, TerrainScannerBlockEntity scanner) {
         if (level.isClientSide) return;
+        scanner.heartbeat.tick(level.getGameTime());
         int interval = ModConfig.SENSOR_SCAN_INTERVAL_TICKS.get();
         long offset = Math.floorMod(pos.asLong(), (long) interval);
         if (Math.floorMod(level.getGameTime(), interval) != offset) return;
@@ -127,6 +132,7 @@ public final class TerrainScannerBlockEntity extends BlockEntity implements Avio
     void acceptReading(TerrainScanSnapshot updated) {
         TerrainScanSnapshot previous = reading;
         reading = updated;
+        heartbeat.sampled(updated.status(), updated.gameTime());
         if (TerrainScanSnapshot.meaningfullyChanged(previous, updated)) {
             peripheral.events().publishScan(updated);
         }
@@ -177,6 +183,6 @@ public final class TerrainScannerBlockEntity extends BlockEntity implements Avio
     }
 
     @Override public void onLoad() { super.onLoad(); outputs.onLoad(); }
-    public void onChunkUnloaded() { outputs.onChunkUnloaded(); }
-    @Override public void setRemoved() { outputs.onRemoved(); super.setRemoved(); }
+    public void onChunkUnloaded() { heartbeat.invalidate(); outputs.onChunkUnloaded(); }
+    @Override public void setRemoved() { heartbeat.invalidate(); outputs.onRemoved(); super.setRemoved(); }
 }

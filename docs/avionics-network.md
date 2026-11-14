@@ -60,6 +60,27 @@ end
 Channels are named after the value they carry (for example `velocity.axial`, in `blocks/s`, signed along the
 sensor's face). Status is `valid`, `unavailable` or `failed`; `value` is present only when valid.
 
+### Sensor availability
+
+Every Radar Altimeter, Terrain Scanner (both variants), Attitude Reference Unit
+and Simulated Velocity Sensor publishes a separate `sensor.available` channel.
+It has a boolean `value`, unit `boolean`, and `gameTime` for the most recent
+availability response. `true` means the sensor is operating and responding;
+it does not promise that a measurement exists. A scan without returns can
+therefore coexist with `sensor.available = true`. Failed acquisition or a
+heartbeat older than two scan intervals produces `false`. The Velocity Sensor
+answers live when queried; the other sensors refresh their heartbeat every
+server tick. Availability is queried live, not stored in the topology cache.
+
+```lua
+local bridge = assert(peripheral.find("avionics_network_bridge"), "Network Bridge missing")
+for _, signal in ipairs(bridge.getSignals()) do
+  if signal.name == "sensor.available" then
+    print(signal.type, signal.x, signal.y, signal.z, signal.value, signal.gameTime)
+  end
+end
+```
+
 ## Endpoints from other mods
 
 Some blocks come from other mods and cannot implement our interfaces. `AvionicsEndpoints` adapts them, one class at a

@@ -33,6 +33,12 @@ public final class VelocitySensorEndpoint {
     }
 
     public static List<AvionicsDataChannel<?>> signals(VelocitySensorBlockEntity sensor, long gameTime) {
-        return List.of(new AvionicsDataChannel<>(AXIAL_CHANNEL, reading(sensor, gameTime)));
+        SensorReading<Double> reading = reading(sensor, gameTime);
+        return List.of(new AvionicsDataChannel<>(AXIAL_CHANNEL, reading),
+                availability(reading).channel(gameTime, 0));
+    }
+
+    public static SensorAvailability availability(SensorReading<Double> reading) {
+        return new SensorAvailability(reading.status() != ReadingStatus.FAILED, reading.gameTime());
     }
 }

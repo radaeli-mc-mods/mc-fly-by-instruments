@@ -118,7 +118,8 @@ public final class AvionicsComputerScreen extends HudScreen {
                     : tr(KEY + "severity." + function.severity());
             case "inhibited" -> tr(KEY + "inhibited");
             case "unavailable" -> function.reason().isEmpty() ? tr(KEY + "inop")
-                    : tr(KEY + "inop") + ": " + tr(KEY + "reason." + function.reason());
+                    : tr(KEY + (List.of("no_clearance", "partial_coverage", "settling").contains(function.reason())
+                            ? "no_data" : "inop")) + ": " + tr(KEY + "reason." + function.reason());
             default -> function.id().equals("sensor_fail") ? tr(KEY + "ok") : tr(KEY + "armed");
         };
     }

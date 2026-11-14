@@ -1,9 +1,11 @@
 package com.radaeli.aeronauticsflybyinstruments.avionics;
 
+import com.radaeli.aeronauticsflybyinstruments.config.ModConfig;
 import dev.simulated_team.simulated.content.blocks.velocity_sensor.VelocitySensorBlockEntity;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -23,10 +25,16 @@ public final class AvionicsEndpoints {
 
     /** The channels the block entity publishes now; empty for blocks that publish nothing. */
     public static List<AvionicsDataChannel<?>> signalsOf(Level level, BlockEntity blockEntity) {
-        if (blockEntity instanceof AvionicsSignalProvider provider) return provider.avionicsSignals();
         if (blockEntity instanceof VelocitySensorBlockEntity sensor) {
             return VelocitySensorEndpoint.signals(sensor, level.getGameTime());
         }
-        return List.of();
+        List<AvionicsDataChannel<?>> result = new ArrayList<>();
+        if (blockEntity instanceof AvionicsSignalProvider provider) result.addAll(provider.avionicsSignals());
+        if (blockEntity instanceof AvionicsSensorEndpoint sensor) {
+            long now = level == null ? sensor.sensorAvailability().gameTime() : level.getGameTime();
+            long maxAge = level == null ? 0 : ModConfig.SENSOR_SCAN_INTERVAL_TICKS.get() * 2L;
+            result.add(sensor.sensorAvailability().channel(now, maxAge));
+        }
+        return List.copyOf(result);
     }
 }

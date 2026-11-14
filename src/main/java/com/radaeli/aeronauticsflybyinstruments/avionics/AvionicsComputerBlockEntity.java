@@ -224,6 +224,7 @@ public final class AvionicsComputerBlockEntity extends BlockEntity implements Av
 
         int altimeterCount = 0;
         boolean altimeterFault = false;
+        boolean noTerrainBelow = false;
         Double minimumClearance = null;
         long minimumTime = now;
         int primaryAltimeter = -1;
@@ -265,15 +266,24 @@ public final class AvionicsComputerBlockEntity extends BlockEntity implements Av
                     continue;
                 }
                 SensorReading<Double> reading = radar.reading();
-                if (!fresh(reading.status(), reading.gameTime(), now, maxAge)
-                        || !Double.isFinite(reading.value().orElse(Double.NaN))) {
+                GpwsAltimeterReading input = GpwsAltimeterReading.resolve(reading, radar.lastValidReading(),
+                        radar.sensorAvailability(),
+                        ModConfig.RADAR_ALTIMETER_MAX_RANGE.get(), now, maxAge);
+                if (input.fault()) {
                     altimeterFault = true;
                     found.add(sensor(device, "secondary", reading.status() == ReadingStatus.FAILED
                             ? AvionicsSensor.FAILED : AvionicsSensor.STALE, OptionalDouble.empty(), unit,
                             AvionicsSensor.ISSUE_NONE));
                     continue;
                 }
-                double value = reading.value().orElseThrow();
+                if (input.clearance().isEmpty()) {
+                    noTerrainBelow |= input.noTerrainBelow();
+                    found.add(sensor(device, "secondary", AvionicsSensor.OK, OptionalDouble.empty(), unit,
+                            input.noTerrainBelow() ? AvionicsSensor.ISSUE_NONE : AvionicsSensor.ISSUE_NO_READING));
+                    if (primaryAltimeter < 0 && input.noTerrainBelow()) primaryAltimeter = found.size() - 1;
+                    continue;
+                }
+                double value = input.clearance().orElseThrow();
                 found.add(sensor(device, "secondary", AvionicsSensor.OK, OptionalDouble.of(value), unit,
                         AvionicsSensor.ISSUE_NONE));
                 if (minimumClearance == null || value < minimumClearance
@@ -296,12 +306,18 @@ public final class AvionicsComputerBlockEntity extends BlockEntity implements Av
                 ScannerSide side = terrain.side();
                 String role = side.id();
                 TerrainScanSnapshot reading = terrain.reading();
-                if (!fresh(reading.status(), reading.gameTime(), now, maxAge)) {
+                if (!terrain.sensorAvailability().isOperating(now, maxAge) || reading.status() == ReadingStatus.FAILED) {
                     scannerFault = true;
                     allScannerCoverageComplete = false;
                     found.add(sensor(device, role, reading.status() == ReadingStatus.FAILED
                             ? AvionicsSensor.FAILED : AvionicsSensor.STALE, OptionalDouble.empty(), unit,
                             AvionicsSensor.ISSUE_NONE));
+                    continue;
+                }
+                if (!fresh(reading.status(), reading.gameTime(), now, maxAge)) {
+                    allScannerCoverageComplete = false;
+                    found.add(sensor(device, role, AvionicsSensor.OK, OptionalDouble.empty(), unit,
+                            AvionicsSensor.ISSUE_NO_READING));
                     continue;
                 }
                 boolean complete = reading.sampledRays() == reading.totalRays();
@@ -348,7 +364,8 @@ public final class AvionicsComputerBlockEntity extends BlockEntity implements Av
                 minimumTime, scannerCount, scannerFault,
                 scannerCount > 0 && allScannerCoverageComplete, scannerCount > 0 && pullUpCoverageComplete,
                 contacts, aruBank.isPresent() ? aruBank
-                        : bankAngle(nose.orElse(getBlockState().getValue(AvionicsComputerBlock.FACING))));
+                        : bankAngle(nose.orElse(getBlockState().getValue(AvionicsComputerBlock.FACING))),
+                noTerrainBelow && minimumClearance == null);
     }
 
     /**
@@ -368,7 +385,8 @@ public final class AvionicsComputerBlockEntity extends BlockEntity implements Av
                     || !(level.getBlockEntity(sourcePos) instanceof AttitudeReferenceUnitBlockEntity unit)
                     || containingSubLevel(unit) != host) continue;
             var reading = unit.reading();
-            if (reading.status() != AttitudeReading.Status.VALID || reading.gameTime() > now
+            if (!unit.sensorAvailability().isOperating(now, maxAge)
+                    || reading.status() != AttitudeReading.Status.VALID || reading.gameTime() > now
                     || now - reading.gameTime() > maxAge) continue;
             nearest = device;
             nearestDistance = distance;
@@ -423,8 +441,9 @@ public final class AvionicsComputerBlockEntity extends BlockEntity implements Av
             return sensor(device, "auxiliary", AvionicsSensor.OK, OptionalDouble.of(reading.value().orElseThrow()),
                     unit, AvionicsSensor.ISSUE_NONE);
         }
-        String status = reading.status() == ReadingStatus.FAILED ? AvionicsSensor.FAILED : AvionicsSensor.STALE;
-        return sensor(device, "auxiliary", status, OptionalDouble.empty(), unit, AvionicsSensor.ISSUE_NONE);
+        boolean operating = VelocitySensorEndpoint.availability(reading).isOperating(now, 0);
+        return sensor(device, "auxiliary", operating ? AvionicsSensor.OK : AvionicsSensor.FAILED,
+                OptionalDouble.empty(), unit, operating ? AvionicsSensor.ISSUE_NO_READING : AvionicsSensor.ISSUE_NONE);
     }
 
     private static AvionicsSensor sensor(NetworkDevice device, String role, String status, OptionalDouble value,

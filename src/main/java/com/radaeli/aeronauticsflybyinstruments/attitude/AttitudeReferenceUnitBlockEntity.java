@@ -3,7 +3,9 @@ package com.radaeli.aeronauticsflybyinstruments.attitude;
 import com.radaeli.aeronauticsflybyinstruments.integration.PeripheralBinding;
 import com.radaeli.aeronauticsflybyinstruments.integration.PeripheralEvents;
 import com.radaeli.aeronauticsflybyinstruments.avionics.AvionicsDataChannel;
-import com.radaeli.aeronauticsflybyinstruments.avionics.AvionicsEndpoint;
+import com.radaeli.aeronauticsflybyinstruments.avionics.AvionicsSensorEndpoint;
+import com.radaeli.aeronauticsflybyinstruments.avionics.SensorAvailability;
+import com.radaeli.aeronauticsflybyinstruments.avionics.SensorHeartbeat;
 import com.radaeli.aeronauticsflybyinstruments.avionics.AvionicsSignalProvider;
 import com.radaeli.aeronauticsflybyinstruments.avionics.SensorReading;
 import com.radaeli.aeronauticsflybyinstruments.block.ModBlocks;
@@ -35,7 +37,7 @@ import java.util.OptionalDouble;
  * and Up faces and the status light live in the blockstate.
  */
 public final class AttitudeReferenceUnitBlockEntity extends BlockEntity
-        implements AvionicsEndpoint, AvionicsSignalProvider, IHaveGoggleInformation {
+        implements AvionicsSensorEndpoint, AvionicsSignalProvider, IHaveGoggleInformation {
     public static final String PITCH_CHANNEL = "attitude.pitch";
     public static final String ROLL_CHANNEL = "attitude.roll";
     public static final String HEADING_CHANNEL = "attitude.heading";
@@ -53,6 +55,7 @@ public final class AttitudeReferenceUnitBlockEntity extends BlockEntity
     private final PeripheralBinding<PeripheralEvents.Attitude> peripheral =
             new PeripheralBinding<>(new PeripheralEvents.Attitude() {});
     private AttitudeReading reading = AttitudeReading.unavailable(0L);
+    private final SensorHeartbeat heartbeat = new SensorHeartbeat();
     private double pitchOffset;
     private double rollOffset;
     private AttitudeDamping damping = AttitudeDamping.OFF;
@@ -85,6 +88,10 @@ public final class AttitudeReferenceUnitBlockEntity extends BlockEntity
         return reading;
     }
 
+    @Override public SensorAvailability sensorAvailability() { return heartbeat.snapshot(); }
+    public void onChunkUnloaded() { heartbeat.invalidate(); }
+    @Override public void setRemoved() { heartbeat.invalidate(); super.setRemoved(); }
+
     public double pitchOffset() { return pitchOffset; }
     public double rollOffset() { return rollOffset; }
     public AttitudeDamping damping() { return damping; }
@@ -102,6 +109,7 @@ public final class AttitudeReferenceUnitBlockEntity extends BlockEntity
 
     void update(long gameTime) {
         if (level == null || level.isClientSide) return;
+        heartbeat.tick(gameTime);
         SubLevel host = containingSubLevel(this);
         if (host == null) {
             rawPitch = 0;

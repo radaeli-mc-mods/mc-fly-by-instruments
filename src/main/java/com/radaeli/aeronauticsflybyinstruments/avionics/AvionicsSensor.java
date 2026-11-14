@@ -17,6 +17,7 @@ public record AvionicsSensor(String type, String role, int x, int y, int z, Stri
     public static final String OTHER_SUBLEVEL = "other_sublevel";
 
     public static final String ISSUE_NONE = "";
+    public static final String ISSUE_NO_READING = "no_reading";
     /** A front scanner narrower than the PULL UP cone (45°). */
     public static final String ISSUE_NARROW_APERTURE = "narrow_aperture";
     /** The player has not told the scanner which side of the aircraft it looks at. */

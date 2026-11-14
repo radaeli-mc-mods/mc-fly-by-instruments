@@ -22,12 +22,15 @@ class VelocitySensorEndpointTest {
         var reading = VelocitySensorEndpoint.reading(false, 0.0, 7L);
         assertEquals(ReadingStatus.UNAVAILABLE, reading.status());
         assertTrue(reading.value().isEmpty());
+        assertTrue(VelocitySensorEndpoint.availability(reading).isOperating(7, 0));
     }
 
     @Test
     void aNonFiniteValueIsAFailure() {
         assertEquals(ReadingStatus.FAILED, VelocitySensorEndpoint.reading(true, Double.NaN, 1L).status());
         assertEquals(ReadingStatus.FAILED, VelocitySensorEndpoint.reading(true, Double.POSITIVE_INFINITY, 1L).status());
+        assertFalse(VelocitySensorEndpoint.availability(VelocitySensorEndpoint.reading(true, Double.NaN, 1))
+                .isOperating(1, 0));
     }
 
     @Test

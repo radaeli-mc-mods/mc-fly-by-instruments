@@ -161,7 +161,7 @@ public final class GpwsEngine {
     }
 
     private void updateTakeoffPeak(GpwsSample sample, FlightPhase phase) {
-        if (phase == FlightPhase.GROUND) {
+        if (phase == FlightPhase.GROUND || sample.noTerrainBelow()) {
             takeoffPeak = null;
             takeoffPeakTime = -1;
             return;
@@ -228,22 +228,25 @@ public final class GpwsEngine {
         boolean timeToGroundDanger = altitudeTrendAvailable && verticalSpeed < 0
                 && lowerValueAtRisk(sample.clearance().getAsDouble() / -verticalSpeed, timeThreshold);
         if (knownTerrainDanger || timeToGroundDanger) return Candidate.active(AlertSeverity.WARNING);
+        if (sample.noTerrainBelow()) return Candidate.inactive();
         if (altitudeTrendAvailable && (terrainOptional || terrainCoverageAvailable)) return Candidate.inactive();
         if (terrainCoverageAvailable) return Candidate.inactive();
-        if (sample.clearance().isEmpty()) return Candidate.unavailable(REASON_NO_ALTIMETER);
+        if (sample.clearance().isEmpty()) return Candidate.unavailable(altimeterReason(sample));
         if (!altitudeTrendAvailable) return Candidate.unavailable(REASON_SETTLING);
         return Candidate.unavailable(REASON_NO_FRONT_SCANNER);
     }
 
     private Candidate sinkRate(GpwsSample sample, GpwsRule rule) {
+        if (sample.noTerrainBelow()) return Candidate.inactive();
         if (verticalSpeed == null) {
-            return Candidate.unavailable(sample.clearance().isEmpty() ? REASON_NO_ALTIMETER : REASON_SETTLING);
+            return Candidate.unavailable(sample.clearance().isEmpty() ? altimeterReason(sample) : REASON_SETTLING);
         }
         return Candidate.fromSeverity(highThresholdSeverity(AlertChannel.SINK_RATE, Math.max(0, -verticalSpeed), rule));
     }
 
     private Candidate dontSink(GpwsSample sample, FlightPhase phase, GpwsRule rule) {
-        if (sample.clearance().isEmpty()) return Candidate.unavailable(REASON_NO_ALTIMETER);
+        if (sample.noTerrainBelow()) return Candidate.inactive();
+        if (sample.clearance().isEmpty()) return Candidate.unavailable(altimeterReason(sample));
         boolean takeoffOrClimb = phase == FlightPhase.TAKEOFF || phase == FlightPhase.CLIMB;
         if (!takeoffOrClimb && (takeoffPeak == null || takeoffPeakTime < 0
                 || sample.gameTime() - takeoffPeakTime > TAKEOFF_PEAK_WINDOW_TICKS)) return Candidate.inactive();
@@ -253,7 +256,8 @@ public final class GpwsEngine {
     }
 
     private Candidate tooLow(GpwsSample sample, GpwsRule rule) {
-        if (sample.clearance().isEmpty()) return Candidate.unavailable(REASON_NO_ALTIMETER);
+        if (sample.noTerrainBelow()) return Candidate.inactive();
+        if (sample.clearance().isEmpty()) return Candidate.unavailable(altimeterReason(sample));
         return Candidate.fromSeverity(lowerThresholdSeverity(AlertChannel.TOO_LOW,
                 sample.clearance().getAsDouble(), rule));
     }
@@ -268,6 +272,10 @@ public final class GpwsEngine {
         boolean failed = sample.networkStatus() != NetworkStatus.CONNECTED || sample.altimeterCount() == 0
                 || sample.altimeterFault() || sample.terrainScannerFault();
         return failed ? Candidate.active(AlertSeverity.CAUTION) : Candidate.inactive();
+    }
+
+    private static String altimeterReason(GpwsSample sample) {
+        return sample.altimeterCount() > 0 && !sample.altimeterFault() ? REASON_NO_CLEARANCE : REASON_NO_ALTIMETER;
     }
 
     private AlertSeverity lowerThresholdSeverity(AlertChannel channel, double value, GpwsRule rule) {
@@ -335,6 +343,7 @@ public final class GpwsEngine {
                              Map<AlertChannel, AlertReading> alerts, Map<AlertChannel, String> reasons) {}
 
     public static final String REASON_NO_ALTIMETER = "no_altimeter";
+    public static final String REASON_NO_CLEARANCE = "no_clearance";
     public static final String REASON_NO_SCANNER = "no_scanner";
     public static final String REASON_NO_FRONT_SCANNER = "no_front_scanner";
     public static final String REASON_PARTIAL_COVERAGE = "partial_coverage";
