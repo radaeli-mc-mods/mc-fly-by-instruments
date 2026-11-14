@@ -3,7 +3,9 @@ package com.radaeli.aeronauticsflybyinstruments.sensor;
 import com.radaeli.aeronauticsflybyinstruments.integration.PeripheralBinding;
 import com.radaeli.aeronauticsflybyinstruments.integration.PeripheralEvents;
 import com.mojang.logging.LogUtils;
-import com.radaeli.aeronauticsflybyinstruments.avionics.AvionicsEndpoint;
+import com.radaeli.aeronauticsflybyinstruments.avionics.AvionicsSensorEndpoint;
+import com.radaeli.aeronauticsflybyinstruments.avionics.SensorAvailability;
+import com.radaeli.aeronauticsflybyinstruments.avionics.SensorHeartbeat;
 import com.radaeli.aeronauticsflybyinstruments.avionics.ReadingStatus;
 import com.radaeli.aeronauticsflybyinstruments.avionics.SensorReading;
 import com.radaeli.aeronauticsflybyinstruments.block.ModBlocks;
@@ -20,11 +22,13 @@ import java.util.Map;
 import org.slf4j.Logger;
 
 /** Periodically samples clearance beneath its lower face and exposes the reading to CC:Tweaked. */
-public final class RadarAltimeterBlockEntity extends BlockEntity implements AvionicsEndpoint {
+public final class RadarAltimeterBlockEntity extends BlockEntity implements AvionicsSensorEndpoint {
     private static final Logger LOGGER = LogUtils.getLogger();
     private final PeripheralBinding<PeripheralEvents.Radar> peripheral =
             new PeripheralBinding<>(new PeripheralEvents.Radar() {});
     private SensorReading<Double> reading = SensorReading.unavailable("blocks", 0L);
+    private SensorReading<Double> lastValidReading = SensorReading.unavailable("blocks", 0L);
+    private final SensorHeartbeat heartbeat = new SensorHeartbeat();
     private boolean loggedScanFailure;
     private final SensorOutputController outputs = new SensorOutputController(this, true, false,
             128);
@@ -40,6 +44,9 @@ public final class RadarAltimeterBlockEntity extends BlockEntity implements Avio
     public SensorReading<Double> reading() {
         return reading;
     }
+
+    public SensorReading<Double> lastValidReading() { return lastValidReading; }
+    @Override public SensorAvailability sensorAvailability() { return heartbeat.snapshot(); }
 
     public SensorOutputConfig outputConfig() { return outputs.config(); }
     public int outputPower(net.minecraft.core.Direction face) { return outputs.weakPower(face); }
@@ -75,6 +82,7 @@ public final class RadarAltimeterBlockEntity extends BlockEntity implements Avio
 
     public static void serverTick(Level level, BlockPos pos, BlockState state, RadarAltimeterBlockEntity sensor) {
         if (level.isClientSide) return;
+        sensor.heartbeat.tick(level.getGameTime());
         int interval = ModConfig.SENSOR_SCAN_INTERVAL_TICKS.get();
         long offset = Math.floorMod(pos.asLong(), (long) interval);
         if (Math.floorMod(level.getGameTime(), interval) != offset) return;
@@ -97,6 +105,9 @@ public final class RadarAltimeterBlockEntity extends BlockEntity implements Avio
     void acceptReading(SensorReading<Double> updated) {
         SensorReading<Double> previous = reading;
         reading = updated;
+        heartbeat.sampled(updated.status(), updated.gameTime());
+        if (updated.status() == ReadingStatus.VALID && Double.isFinite(updated.value().orElseThrow())
+                && updated.value().orElseThrow() >= 0) lastValidReading = updated;
         if (outputs.acceptAltitude(new SensorOutputLogic.SensorReadingView(updated.status(),
                 updated.value().orElse(null)))) peripheral.events().publishOutputs();
         if (changed(previous, updated)) peripheral.events().publishReading(updated);
@@ -109,8 +120,8 @@ public final class RadarAltimeterBlockEntity extends BlockEntity implements Avio
     }
 
     @Override public void onLoad() { super.onLoad(); outputs.onLoad(); }
-    public void onChunkUnloaded() { outputs.onChunkUnloaded(); }
-    @Override public void setRemoved() { outputs.onRemoved(); super.setRemoved(); }
+    public void onChunkUnloaded() { heartbeat.invalidate(); outputs.onChunkUnloaded(); }
+    @Override public void setRemoved() { heartbeat.invalidate(); outputs.onRemoved(); super.setRemoved(); }
 
     @Override protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);

@@ -11,6 +11,98 @@ class GpwsEngineTest {
     private static final int INTERVAL = 5;
 
     @Test
+    void operatingAltimeterWithoutMeasurementReportsNoDataWithoutInop() {
+        GpwsEngine engine = new GpwsEngine();
+        GpwsConfiguration configuration = new GpwsConfiguration();
+        GpwsEngine.Evaluation result = null;
+        for (long now : List.of(0L, 5L)) {
+            var missing = SensorReading.<Double>unavailable("blocks", now);
+            var input = GpwsAltimeterReading.resolve(missing, missing,
+                    new SensorAvailability(true, now), 128, now, 10);
+            result = engine.evaluate(new GpwsSample(now, NetworkStatus.CONNECTED, 2, 1, input.fault(),
+                    input.clearance(), now, 1, false, false, false, List.of(), OptionalDouble.of(0),
+                    input.noTerrainBelow()), configuration, false, INTERVAL);
+        }
+        assertNotNull(result);
+        assertEquals(AlertState.INACTIVE, result.alerts().get(AlertChannel.SENSOR_FAIL).state());
+        assertEquals(GpwsEngine.REASON_NO_CLEARANCE, result.reasons().get(AlertChannel.TOO_LOW));
+        assertEquals(GpwsEngine.REASON_PARTIAL_COVERAGE, result.reasons().get(AlertChannel.TERRAIN));
+        assertEquals(AvionicsComputerStatus.Level.NORMAL,
+                AvionicsComputerStatus.of(result.alerts(), NetworkStatus.CONNECTED, false).level());
+    }
+
+    @Test
+    void noTerrainBelowKeepsAltitudeFunctionsHealthyWithoutInventingClearance() {
+        GpwsEngine engine = new GpwsEngine();
+        GpwsConfiguration configuration = new GpwsConfiguration();
+        engine.evaluate(noTerrain(0, List.of(), false), configuration, false, INTERVAL);
+        var result = engine.evaluate(noTerrain(5, List.of(), false), configuration, false, INTERVAL);
+        assertTrue(result.verticalSpeed().isEmpty());
+        for (var channel : List.of(AlertChannel.SENSOR_FAIL, AlertChannel.TOO_LOW, AlertChannel.SINK_RATE,
+                AlertChannel.DONT_SINK, AlertChannel.PULL_UP)) {
+            assertEquals(AlertState.INACTIVE, result.alerts().get(channel).state(), channel.toString());
+            assertFalse(result.reasons().containsKey(channel));
+        }
+        assertEquals(AvionicsComputerStatus.Level.NORMAL,
+                AvionicsComputerStatus.of(result.alerts(), NetworkStatus.CONNECTED, false).level());
+        assertEquals(GpwsEngine.REASON_NO_SCANNER, result.reasons().get(AlertChannel.TERRAIN));
+    }
+
+    @Test
+    void noTerrainBelowPreservesObstacleWarningsAndRealSensorFaults() {
+        GpwsEngine engine = new GpwsEngine();
+        GpwsConfiguration configuration = new GpwsConfiguration();
+        var contacts = List.of(new GpwsSample.TerrainContact(7, 12));
+        engine.evaluate(noTerrain(0, contacts, true), configuration, false, INTERVAL);
+        var result = engine.evaluate(noTerrain(5, contacts, true), configuration, false, INTERVAL);
+        assertEquals(AlertState.ACTIVE, result.alerts().get(AlertChannel.PULL_UP).state());
+        assertEquals(AlertState.ACTIVE, result.alerts().get(AlertChannel.TERRAIN).state());
+        assertEquals(AlertState.ACTIVE, result.alerts().get(AlertChannel.SENSOR_FAIL).state());
+    }
+
+    @Test
+    void reacquiringTerrainRestartsTrendWithoutFalseDescentOrTakeoffLoss() {
+        GpwsEngine engine = new GpwsEngine();
+        GpwsConfiguration configuration = new GpwsConfiguration();
+        engine.phaseOverride = FlightPhase.CLIMB;
+        engine.evaluate(sample(0, 120, 0), configuration, false, INTERVAL);
+        engine.evaluate(sample(5, 125, 5), configuration, false, INTERVAL);
+        engine.evaluate(noTerrain(10, List.of(), false), configuration, false, INTERVAL);
+        engine.evaluate(noTerrain(15, List.of(), false), configuration, false, INTERVAL);
+        engine.phaseOverride = FlightPhase.APPROACH;
+        var reacquired = engine.evaluate(sample(20, 20, 20), configuration, false, INTERVAL);
+        assertTrue(reacquired.verticalSpeed().isEmpty());
+        assertEquals(GpwsEngine.REASON_SETTLING, reacquired.reasons().get(AlertChannel.SINK_RATE));
+        var stable = engine.evaluate(sample(25, 20, 25), configuration, false, INTERVAL);
+        assertEquals(0, stable.verticalSpeed().orElseThrow());
+        assertEquals(AlertState.INACTIVE, stable.alerts().get(AlertChannel.DONT_SINK).state());
+        assertNotEquals(AlertState.ACTIVE, stable.alerts().get(AlertChannel.SINK_RATE).state());
+        var confirmed = engine.evaluate(sample(30, 20, 30), configuration, false, INTERVAL);
+        assertEquals(AlertState.INACTIVE, confirmed.alerts().get(AlertChannel.SINK_RATE).state());
+    }
+
+    @Test
+    void losingAltimeterAfterNoTerrainBelowStillRaisesInop() {
+        GpwsEngine engine = new GpwsEngine();
+        GpwsConfiguration configuration = new GpwsConfiguration();
+        engine.evaluate(noTerrain(0, List.of(), false), configuration, false, INTERVAL);
+        engine.evaluate(noTerrain(5, List.of(), false), configuration, false, INTERVAL);
+        engine.evaluate(sample(10, null, 10), configuration, false, INTERVAL);
+        var lost = engine.evaluate(sample(15, null, 15), configuration, false, INTERVAL);
+        assertEquals(AlertState.ACTIVE, lost.alerts().get(AlertChannel.SENSOR_FAIL).state());
+        assertEquals(GpwsEngine.REASON_NO_ALTIMETER, lost.reasons().get(AlertChannel.TOO_LOW));
+    }
+
+    private static GpwsSample noTerrain(long now, List<GpwsSample.TerrainContact> contacts, boolean fault) {
+        var input = GpwsAltimeterReading.resolve(SensorReading.unavailable("blocks", now),
+                SensorReading.valid(125.0, "blocks", 0), new SensorAvailability(true, now),
+                128, now, INTERVAL * 2L);
+        return new GpwsSample(now, NetworkStatus.CONNECTED, 2, 1, fault, input.clearance(), now,
+                contacts.isEmpty() ? 0 : 1, false, true, true, contacts, OptionalDouble.of(0),
+                input.noTerrainBelow());
+    }
+
+    @Test
     void estimatesVerticalSpeedAndStabilizesAutomaticFlightPhase() {
         GpwsEngine engine = new GpwsEngine();
         GpwsConfiguration configuration = new GpwsConfiguration();

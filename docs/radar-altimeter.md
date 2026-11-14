@@ -35,6 +35,15 @@ Editable source and export instructions: [Blockbench project](../blockbench/rada
 - Server config `radarAltimeterMaxRange` defaults to `128` blocks.
 - Server config `sensorScanIntervalTicks` defaults to `5` ticks.
 
+The sensor keeps its last valid reading and reports its availability on the
+avionics network independently of the scan value. If the last valid distance
+was within the upper 10% of the configured range and returns disappear, the
+GPWS treats that as no terrain below while the sensor continues responding.
+This uses measured clearance, so it also works above terrain at negative Y.
+The old distance is never presented as a current altitude. A newly acquired
+return replaces the history; stopped heartbeats and scan failures still make
+the sensor inoperative.
+
 ## CC:Tweaked API
 
 Each Radar Altimeter is an independent `radar_altimeter` peripheral. The

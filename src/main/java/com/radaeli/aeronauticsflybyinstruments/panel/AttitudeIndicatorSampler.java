@@ -51,20 +51,22 @@ final class AttitudeIndicatorSampler {
                 var reading = aru.reading();
                 units.add(new AttitudeIndicatorFeed.AttitudeSource(distance,
                         Sable.HELPER.getContaining(aru) == host,
-                        fresh(reading.gameTime(), now, maxAge), reading));
+                        aru.sensorAvailability().isOperating(now, maxAge)
+                                && fresh(reading.gameTime(), now, maxAge), reading));
             } else if (found instanceof RadarAltimeterBlockEntity radar) {
                 var reading = radar.reading();
                 altimeters.add(new AttitudeIndicatorFeed.AltimeterSource(
                         Sable.HELPER.getContaining(radar) == host,
-                        fresh(reading.gameTime(), now, maxAge),
-                        reading.status() != ReadingStatus.FAILED,
-                        reading.status() == ReadingStatus.VALID && Double.isFinite(reading.value().orElse(Double.NaN))
+                        radar.sensorAvailability().isOperating(now, maxAge),
+                        radar.sensorAvailability().operating(),
+                        fresh(reading.gameTime(), now, maxAge) && reading.status() == ReadingStatus.VALID
+                                && Double.isFinite(reading.value().orElse(Double.NaN))
                                 ? OptionalDouble.of(reading.value().orElseThrow()) : OptionalDouble.empty()));
             } else if (velocity && found instanceof VelocitySensorBlockEntity sensor) {
                 SensorReading<Double> reading = VelocitySensorEndpoint.reading(sensor, now);
                 speeds.add(new AttitudeIndicatorFeed.SpeedSource(distance,
                         Sable.HELPER.getContaining(sensor) == host,
-                        fresh(reading.gameTime(), now, maxAge),
+                        VelocitySensorEndpoint.availability(reading).isOperating(now, maxAge),
                         reading.status() == ReadingStatus.VALID
                                 ? OptionalDouble.of(reading.value().orElseThrow()) : OptionalDouble.empty()));
             }

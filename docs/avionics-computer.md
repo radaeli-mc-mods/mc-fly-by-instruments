@@ -7,6 +7,16 @@ e é o gateway CC:Tweaked da rede inteira. Não dispara raycasts próprios, não
 carrega chunks e avalia na mesma cadência configurável dos sensores. Leituras
 com mais de dois intervalos de amostragem são consideradas obsoletas.
 
+A disponibilidade do sensor é independente da leitura: cada bloco informa se
+continua operante mesmo sem conseguir medir. O altímetro mantém a última
+leitura válida. Se ela estava nos 10% finais do alcance e os retornos somem,
+o GPWS considera **sem terreno abaixo** enquanto o sensor continuar respondendo.
+Não usa o Y absoluto, nem transforma a leitura antiga em altitude atual. Quando
+o terreno reaparece, o cálculo de tendência recomeça para evitar uma falsa queda.
+Sem histórico próximo do limite, a função informa **SEM DADOS**; isso, por si
+só, não dispara GPWS INOP. Falha de aquisição, falta do sensor, perda da
+confirmação de funcionamento ou rede incompleta continuam indicando INOP.
+
 Princípio: **configura uma vez, depois só funciona**. Como num GPWS real, não há
 armar, perfis nem limites editáveis: o computador fica ativo enquanto estiver no
 mundo, os envelopes são fixos e o jogador só escolhe a sensibilidade e inibe
@@ -36,7 +46,7 @@ cada meio segundo:
 - **Sensores:** cada sensor com o papel atribuído e a leitura ao vivo, ou o
   problema ("sem leitura recente", "outra aeronave", "abertura < 45°",
   "varredura parcial", "lado não definido").
-- **Funções:** cada função `ativa`, em atenção/alerta, `INOP: <motivo>` ou
+- **Funções:** cada função `ativa`, em atenção/alerta, `SEM DADOS: <motivo>`, `INOP: <motivo>` ou
   `inibida`. Clicar numa função alterna a inibição (GPWS INOP não pode ser
   inibido).
 - **Rodapé:** `Sensibilidade` cicla baixa → normal → alta; `Testar` roda o autoteste.
