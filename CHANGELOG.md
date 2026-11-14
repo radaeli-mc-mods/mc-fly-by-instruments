@@ -18,6 +18,7 @@ project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- Fixed cockpit buzzers becoming inaudible when moving the Contraption Camera away from the contraption.
 - Fixed GPWS reporting healthy sensors as INOP when readings are unavailable or the Radar Altimeter goes out of range.
 - Fixed false Terrain ahead and Pull up alerts from ground below the flight path during level flight.
 - Fixed false GPWS availability warnings with Terrain Scanner apertures below 45°.

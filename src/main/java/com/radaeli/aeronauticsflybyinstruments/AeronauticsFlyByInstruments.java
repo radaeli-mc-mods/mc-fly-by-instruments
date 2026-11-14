@@ -61,6 +61,7 @@ public final class AeronauticsFlyByInstruments {
             com.radaeli.aeronauticsflybyinstruments.client.ItemTooltips.register(modEventBus);
             com.radaeli.aeronauticsflybyinstruments.client.WireClient.register(modEventBus);
             ModularTableModels.register(modEventBus);
+            NeoForge.EVENT_BUS.addListener(com.radaeli.aeronauticsflybyinstruments.client.BuzzerAudio::onPlaySound);
             NeoForge.EVENT_BUS.addListener(PanelInputHandler::onMouseScroll);
             NeoForge.EVENT_BUS.addListener(com.radaeli.aeronauticsflybyinstruments.client.AttitudeDisplayClient::onLoggingOut);
             if (!FMLEnvironment.production) {

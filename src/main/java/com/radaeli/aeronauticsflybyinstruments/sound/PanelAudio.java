@@ -26,12 +26,10 @@ public final class PanelAudio {
             if (distance >= radius) continue;
             float requestedGain = com.radaeli.aeronauticsflybyinstruments.panel.PanelAlertLogic.audibleGain(
                     volumePercent, distance);
-            // Undo the engine's standard 16-block linear falloff so the configured
-            // volume/radius curve is applied exactly once while retaining 3D panning.
-            float engineGain = (float) Math.max(0.001, 1.0 - distance / 16.0);
-            float gain = Math.min(1.0f, requestedGain / engineGain);
+            // The client preserves 3D panning but disables camera-distance attenuation.
+            // Apply the configured falloff here, using the player's physical position only.
             player.connection.send(new ClientboundSoundPacket(Holder.direct(ModSounds.BUZZER.get()),
-                    SoundSource.BLOCKS, source.x, source.y, source.z, gain, pitch,
+                    SoundSource.BLOCKS, source.x, source.y, source.z, requestedGain, pitch,
                     level.random.nextLong()));
         }
     }
