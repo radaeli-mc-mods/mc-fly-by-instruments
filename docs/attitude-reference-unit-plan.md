@@ -87,25 +87,33 @@ vetor da face `up` transformado, já com os offsets aplicados:
 `GpwsAttitude` passa a ser `AttitudeMath`, com pitch, roll e heading testados nas
 24 orientações válidas (nível, inclinado, invertido, perto da vertical).
 
-### Visual: caixa de vidro com hastes de referência (v3, 2026-11-05)
+### Visual: aviãozinho no vidro (v4, 2026-11-13)
 
-Substitui os arcos nas faces (v2.1). O bloco é um horizonte artificial visto por dentro: um
-cubo de vidro, quatro postes verticais slim de ferro industrial nas quinas, um gimbal no
-centro e duas hastes de referência que mostram o frame configurado.
+Substitui as hastes de referência e o gimbal do v3 (2026-11-05), que mal apareciam atrás dos sockets. O bloco é
+um modelo de avião de latão numa caixa de vidro, com quatro postes verticais slim de ferro industrial nas quinas.
+Fonte e detalhes: [README do bloco](../blockbench/attitude-reference-unit/README.md).
 
-- **Hastes (blockstate, sem animação):** a haste do **Nariz** tem bulbo de cobre na
-  ponta da frente e tampa lisa atrás; a haste do **Acima** tem bulbo de latão em cima e
-  tampa lisa embaixo. Um modelo-fonte por haste (`arm_nose` com a frente em NORTH, `arm_up`
-  com a frente em UP), girado por `x`/`y` do blockstate conforme `nose` e `up`.
-- **Gimbal (BER, não reage a nada):** um anel que balança ±14° em Y e um volante que gira
-  em Z, em loop fixo (`AttitudeReferenceRenderer`). Os modelos `gimbal_ring` e `gimbal_rotor`
-  são registrados como modelos adicionais e não entram no blockstate.
-- **Sockets de dados:** 6 anéis 4×4×1 no centro de cada parede, por fora do vidro; o contrato
-  de `CableSocketProvider` não muda.
+- **Avião (blockstate, sem animação):** o cone de cobre do nariz aponta para a face **Nariz**; a deriva de ponta
+  clara aponta para a face **Acima**, e o suporte sai da face oposta. Uma fonte (`airplane`, Nariz = NORTH e
+  Acima = UP) e a variante `airplane_rolled`, gerada pelo exportador com 90° de rolamento no eixo do nariz: as
+  rotações `x`/`y` do blockstate só alcançam 16 das 24 orientações de um modelo rígido, e a variante rolada
+  cobre as 8 em que Nariz e Acima são ambos horizontais.
+- **Hélice (BER, não reage a nada):** gira no eixo do nariz em loop fixo (`AttitudeReferenceRenderer`), com a pose
+  de `AttitudeOrientation.rotation()`. O modelo `propeller` é registrado como adicional e não entra no blockstate.
+- **Luz de status:** propriedade `status` (`ok`, `degraded`, `inop`), escrita pelo tick do servidor só quando muda
+  (`VALID`/`GROUND` → `ok`, `DEGRADED` → `degraded`, `UNAVAILABLE` → `inop`). Os três modelos `frame_*` só trocam a
+  textura do miolo 2×2 dos sockets: latão claro fixo, âmbar piscando, vermelho redstone piscando. 108 estados.
+- **Goggles:** o block entity implementa `IHaveGoggleInformation` e mostra Nariz, Acima, status, desvio de nível
+  e amortecimento. Offsets e amortecimento passam a ser sincronizados ao cliente (`getUpdateTag`/`getUpdatePacket`
+  e `sendBlockUpdated` ao calibrar, zerar ou trocar o amortecimento).
+- **Sockets de dados:** 6 blocos 6×6×2 no centro de cada parede; o contrato de `CableSocketProvider` e o `SHAPE`
+  não mudam.
 - **Sem `powered`:** o indicador de redstone foi removido (a propriedade nunca era ligada).
-- Testes de assets: volume dos modelos estáticos igual ao `SHAPE`; nas 24 orientações a ponta
-  de cada haste, depois das rotações do blockstate, cai na face de `nose` e de `up`.
-- Convenção registrada no [guia visual §8.7](visual-design-guide.md#87-faces-configuráveis-por-blockstate).
+- Testes de assets: volume dos modelos estáticos igual ao `SHAPE`; nas 24 orientações o cone do nariz cai na face
+  de `nose` e a deriva na de `up`; cada `(nose, up, status)` resolve um avião e um frame; os frames de status só
+  trocam textura; a hélice fica fora do blockstate. `AttitudeOrientationTest` cobre a rotação nas 24.
+- Convenção registrada no [guia visual §8.7](visual-design-guide.md#87-faces-configuráveis-por-blockstate)
+  ("miniatura orientada") e §8.3 ("socket com status").
 
 ## Canais na rede
 
@@ -185,8 +193,8 @@ Tipo `attitude_reference_unit`:
 - **Rotação do Create:** exigir RPM para o rotor (spin-up, perda de leitura sem
   rotação, como falha de vácuo). Proposta: opção de servidor, desligada por padrão.
 - **Gestos da wrench:** clique = Nariz (implementado). Scroll = Acima ainda não existe; o Acima é definido só pela tela.
-- **Hastes de referência:** validar no jogo a leitura das pontas (cobre = Nariz, latão = Acima)
-  a ~5 blocos, através do vidro.
+- **Aviãozinho no vidro:** validar no jogo a leitura do avião (cone de cobre = Nariz, deriva = Acima)
+  a ~5 blocos, através do vidro e ao redor dos sockets; no render local ele só lê bem de perto.
 - **Nome no jogo:** "Attitude Reference Unit" ou "Attitude Gyro".
 - **Footprint do display:** 2×2 (proposto) ou 3×3.
 - **Vertical speed do ARU no GPWS:** substituir a estimativa pelo histórico do Radar

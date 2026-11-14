@@ -2,121 +2,281 @@
   "multipart": [
     {
       "apply": {
-        "model": "aeronautics_fly_by_instruments:block/attitude_reference_unit_frame"
-      }
-    },
-    {
-      "apply": {
         "model": "aeronautics_fly_by_instruments:block/attitude_reference_unit_glass"
       }
     },
     {
       "when": {
-        "nose": "north"
+        "status": "ok"
       },
       "apply": {
-        "model": "aeronautics_fly_by_instruments:block/attitude_reference_unit_arm_nose"
+        "model": "aeronautics_fly_by_instruments:block/attitude_reference_unit_frame_ok"
       }
     },
     {
       "when": {
-        "nose": "east"
+        "status": "degraded"
       },
       "apply": {
-        "model": "aeronautics_fly_by_instruments:block/attitude_reference_unit_arm_nose",
-        "y": 90
+        "model": "aeronautics_fly_by_instruments:block/attitude_reference_unit_frame_degraded"
       }
     },
     {
       "when": {
-        "nose": "south"
+        "status": "inop"
       },
       "apply": {
-        "model": "aeronautics_fly_by_instruments:block/attitude_reference_unit_arm_nose",
+        "model": "aeronautics_fly_by_instruments:block/attitude_reference_unit_frame_inop"
+      }
+    },
+    {
+      "when": {
+        "nose": "north",
+        "up": "east"
+      },
+      "apply": {
+        "model": "aeronautics_fly_by_instruments:block/attitude_reference_unit_airplane_rolled"
+      }
+    },
+    {
+      "when": {
+        "nose": "north",
+        "up": "west"
+      },
+      "apply": {
+        "model": "aeronautics_fly_by_instruments:block/attitude_reference_unit_airplane_rolled",
+        "x": 180,
         "y": 180
       }
     },
     {
       "when": {
-        "nose": "west"
+        "nose": "north",
+        "up": "up"
       },
       "apply": {
-        "model": "aeronautics_fly_by_instruments:block/attitude_reference_unit_arm_nose",
+        "model": "aeronautics_fly_by_instruments:block/attitude_reference_unit_airplane"
+      }
+    },
+    {
+      "when": {
+        "nose": "north",
+        "up": "down"
+      },
+      "apply": {
+        "model": "aeronautics_fly_by_instruments:block/attitude_reference_unit_airplane",
+        "x": 180,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "nose": "east",
+        "up": "north"
+      },
+      "apply": {
+        "model": "aeronautics_fly_by_instruments:block/attitude_reference_unit_airplane_rolled",
+        "x": 180,
         "y": 270
       }
     },
     {
       "when": {
-        "nose": "up"
+        "nose": "east",
+        "up": "south"
       },
       "apply": {
-        "model": "aeronautics_fly_by_instruments:block/attitude_reference_unit_arm_nose",
+        "model": "aeronautics_fly_by_instruments:block/attitude_reference_unit_airplane_rolled",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "nose": "east",
+        "up": "up"
+      },
+      "apply": {
+        "model": "aeronautics_fly_by_instruments:block/attitude_reference_unit_airplane",
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "nose": "east",
+        "up": "down"
+      },
+      "apply": {
+        "model": "aeronautics_fly_by_instruments:block/attitude_reference_unit_airplane",
+        "x": 180,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "nose": "south",
+        "up": "east"
+      },
+      "apply": {
+        "model": "aeronautics_fly_by_instruments:block/attitude_reference_unit_airplane_rolled",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "nose": "south",
+        "up": "west"
+      },
+      "apply": {
+        "model": "aeronautics_fly_by_instruments:block/attitude_reference_unit_airplane_rolled",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "nose": "south",
+        "up": "up"
+      },
+      "apply": {
+        "model": "aeronautics_fly_by_instruments:block/attitude_reference_unit_airplane",
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "nose": "south",
+        "up": "down"
+      },
+      "apply": {
+        "model": "aeronautics_fly_by_instruments:block/attitude_reference_unit_airplane",
+        "x": 180
+      }
+    },
+    {
+      "when": {
+        "nose": "west",
+        "up": "north"
+      },
+      "apply": {
+        "model": "aeronautics_fly_by_instruments:block/attitude_reference_unit_airplane_rolled",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "nose": "west",
+        "up": "south"
+      },
+      "apply": {
+        "model": "aeronautics_fly_by_instruments:block/attitude_reference_unit_airplane_rolled",
+        "x": 180,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "nose": "west",
+        "up": "up"
+      },
+      "apply": {
+        "model": "aeronautics_fly_by_instruments:block/attitude_reference_unit_airplane",
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "nose": "west",
+        "up": "down"
+      },
+      "apply": {
+        "model": "aeronautics_fly_by_instruments:block/attitude_reference_unit_airplane",
+        "x": 180,
+        "y": 90
+      }
+    },
+    {
+      "when": {
+        "nose": "up",
+        "up": "north"
+      },
+      "apply": {
+        "model": "aeronautics_fly_by_instruments:block/attitude_reference_unit_airplane",
+        "x": 270,
+        "y": 180
+      }
+    },
+    {
+      "when": {
+        "nose": "up",
+        "up": "east"
+      },
+      "apply": {
+        "model": "aeronautics_fly_by_instruments:block/attitude_reference_unit_airplane",
+        "x": 270,
+        "y": 270
+      }
+    },
+    {
+      "when": {
+        "nose": "up",
+        "up": "south"
+      },
+      "apply": {
+        "model": "aeronautics_fly_by_instruments:block/attitude_reference_unit_airplane",
         "x": 270
       }
     },
     {
       "when": {
-        "nose": "down"
+        "nose": "up",
+        "up": "west"
       },
       "apply": {
-        "model": "aeronautics_fly_by_instruments:block/attitude_reference_unit_arm_nose",
-        "x": 90
+        "model": "aeronautics_fly_by_instruments:block/attitude_reference_unit_airplane",
+        "x": 270,
+        "y": 90
       }
     },
     {
       "when": {
+        "nose": "down",
         "up": "north"
       },
       "apply": {
-        "model": "aeronautics_fly_by_instruments:block/attitude_reference_unit_arm_up",
+        "model": "aeronautics_fly_by_instruments:block/attitude_reference_unit_airplane",
         "x": 90
       }
     },
     {
       "when": {
+        "nose": "down",
         "up": "east"
       },
       "apply": {
-        "model": "aeronautics_fly_by_instruments:block/attitude_reference_unit_arm_up",
+        "model": "aeronautics_fly_by_instruments:block/attitude_reference_unit_airplane",
         "x": 90,
         "y": 90
       }
     },
     {
       "when": {
+        "nose": "down",
         "up": "south"
       },
       "apply": {
-        "model": "aeronautics_fly_by_instruments:block/attitude_reference_unit_arm_up",
+        "model": "aeronautics_fly_by_instruments:block/attitude_reference_unit_airplane",
         "x": 90,
         "y": 180
       }
     },
     {
       "when": {
+        "nose": "down",
         "up": "west"
       },
       "apply": {
-        "model": "aeronautics_fly_by_instruments:block/attitude_reference_unit_arm_up",
+        "model": "aeronautics_fly_by_instruments:block/attitude_reference_unit_airplane",
         "x": 90,
         "y": 270
-      }
-    },
-    {
-      "when": {
-        "up": "up"
-      },
-      "apply": {
-        "model": "aeronautics_fly_by_instruments:block/attitude_reference_unit_arm_up"
-      }
-    },
-    {
-      "when": {
-        "up": "down"
-      },
-      "apply": {
-        "model": "aeronautics_fly_by_instruments:block/attitude_reference_unit_arm_up",
-        "x": 180
       }
     }
   ]

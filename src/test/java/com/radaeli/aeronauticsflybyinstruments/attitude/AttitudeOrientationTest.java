@@ -3,6 +3,7 @@ package com.radaeli.aeronauticsflybyinstruments.attitude;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.Mirror;
 import net.minecraft.world.level.block.Rotation;
+import org.joml.Vector3f;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -88,6 +89,23 @@ class AttitudeOrientationTest {
         var frame = new AttitudeOrientation(Direction.WEST, Direction.DOWN);
         assertSame(frame, frame.withNose(Direction.WEST));
         assertSame(frame, frame.withUp(Direction.DOWN));
+    }
+
+    @Test
+    void theRotationTakesTheStandardNoseAndUpToTheFrameInAllTwentyFourFrames() {
+        for (var frame : validFrames()) {
+            var rotation = frame.rotation();
+            var nose = rotation.transform(new Vector3f(0, 0, -1));
+            var up = rotation.transform(new Vector3f(0, 1, 0));
+            assertEquals(frame.nose().getStepX(), nose.x, 1e-5, frame + " nose");
+            assertEquals(frame.nose().getStepY(), nose.y, 1e-5, frame + " nose");
+            assertEquals(frame.nose().getStepZ(), nose.z, 1e-5, frame + " nose");
+            assertEquals(frame.up().getStepX(), up.x, 1e-5, frame + " up");
+            assertEquals(frame.up().getStepY(), up.y, 1e-5, frame + " up");
+            assertEquals(frame.up().getStepZ(), up.z, 1e-5, frame + " up");
+        }
+        var standard = AttitudeOrientation.standard().rotation();
+        assertEquals(1, Math.abs(standard.w), 1e-6);
     }
 
     @Test

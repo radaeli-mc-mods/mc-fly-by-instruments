@@ -6,7 +6,8 @@
 > estabeleceram na prática (seção 8) e define as regras dos módulos da mesa
 > (seção 9). Em 2026-11-04 entrou a convenção de faces configuráveis por
 > blockstate (seção 8.7); em 2026-11-05 ela ganhou as hastes de referência e a
-> caixa de vidro do ARU.
+> caixa de vidro do ARU; em 2026-11-13, a miniatura orientada (ARU v4) e o socket
+> com status (seção 8.3).
 > Ferramenta oficial de modelagem e pintura: **Blockbench**.
 >
 > **Leitura obrigatória antes de qualquer pedido de modelagem ou texturização**
@@ -190,8 +191,9 @@ carcaça: ela existe pontualmente no Create, mas nunca como material principal.
 | **Pergaminho** com marcas cinza | Leitura/medição | Mostrador de altura ou distância, se houver |
 | **Lente escura** com reflexo azul | Emissor/receptor óptico | Face de medição (raycast) dos scanners e do altímetro |
 | **Latão** | Tier "smart"/avançado | Variante avançada; instrumentos de cockpit |
-| **Cobre** na ponta de uma haste de referência | — (convenção do mod, 2026-11-05) | Haste do **Nariz** num bloco orientável por faces ([§8.7](#87-faces-configuráveis-por-blockstate)) |
-| **Latão** na ponta de uma haste de referência | — (convenção do mod, 2026-11-05) | Haste do **Acima** |
+| **Cobre** na ponta da frente de uma peça orientada | — (convenção do mod, 2026-11-05) | **Nariz** num bloco orientável por faces: bulbo da haste ou cone do nariz da miniatura ([§8.7](#87-faces-configuráveis-por-blockstate)) |
+| **Latão claro** na ponta de cima de uma peça orientada | — (convenção do mod, 2026-11-05) | **Acima**: bulbo da haste ou ponta da deriva da miniatura |
+| **Miolo de socket aceso** | — (convenção do mod, 2026-11-13) | Status do bloco ([§8.3](#83-motivos-de-pixel-padronizados)): latão claro fixo = ok, âmbar piscando = degradado, redstone piscando = sem leitura |
 
 ## 7. Famílias de material por tier
 
@@ -269,6 +271,7 @@ Reutilize estes desenhos antes de inventar outros:
 | Rebite | 1 px claro a 2 px do canto da moldura | Frente do scanner, fundo do altímetro |
 | Fenda de redstone | Moldura escura 4×8 (vertical) ou 8×4 (horizontal) com miolo 2×6 de redstone; aceso usa `R/T/U` com brilho alternado, apagado `r/s/t` | Laterais que emitem |
 | Socket de dados | Anel 4×4 de metal escuro, centro mais escuro | Traseira, onde o cabo encaixa |
+| Socket com status | O mesmo anel, com o miolo 2×2 aceso: latão claro fixo (ok), âmbar piscando (degradado), redstone piscando (sem leitura). Textura animada trocada por blockstate, como a tela do Avionics Computer (§9.4); as variantes só trocam a textura da face do socket | Attitude Reference Unit v4 |
 | Lente | Borda no tom médio da lente; reflexo claro em cima à esquerda; 1 px de brilho azul (`#5371C6`) | Toda peça óptica |
 | Placa concêntrica | Retângulos concêntricos de latão alternando claro/escuro | Tampa do advanced |
 | Bocal escalonado | Cada degrau 2 unidades mais estreito e 1 à frente; anel médio, ponta clara, lente escura | Frente do scanner |
@@ -325,7 +328,7 @@ Acima, entrada, saída) em vez de só girar o bloco.
 - **A marcação segue o blockstate, não um renderer.** A face marcada aparece igual no
   mundo, no item, no Ponder, em schematics e dentro de sublevels, sem custo por frame.
   Block entity renderer só se a marcação precisar animar.
-- **Duas formas de marcar o papel de uma face** (escolha por bloco):
+- **Três formas de marcar o papel de uma face** (escolha por bloco):
   1. *Marca na face* (convenção de 2026-11-04): corpo exportado em 6 partes multipart, uma por face, cada
      uma um único elemento com o volume do corpo e **só aquela face desenhada**, com um modelo por papel
      (`plain`, `nose`, `up`) escolhido pelo blockstate; Nariz = arco de 1 px em cobre, Acima = o mesmo arco em
@@ -335,27 +338,39 @@ Acima, entrada, saída) em vez de só girar o bloco.
      por haste girado por `x`/`y` do blockstate. Cada haste tem **uma ponta diferente da outra** (bulbo 4×4×2 na
      frente, tampa lisa 2×2 atrás): cobre = Nariz (fonte com a frente em NORTH), latão = Acima (fonte com a frente
      em UP). As hastes terminam em peças do gimbal para nunca se sobreporem, e as faces do bloco ficam todas
-     iguais.
+     iguais. Saiu do ARU no v4: atrás dos sockets, os bulbos quase não apareciam.
+  3. *Miniatura orientada* (Attitude Reference Unit v4, 2026-11-13): um modelo único e rígido que lê como objeto
+     real (um avião de latão) e mostra os dois papéis de uma vez: o cone de cobre do nariz aponta para o Nariz, a
+     deriva de ponta clara para o Acima, e o suporte sai da face oposta ao Acima. **Limite do blockstate:** `x`/`y`
+     levam um modelo rígido a só 16 das 24 orientações (faltam as 8 com os dois papéis na horizontal). O exportador
+     gera uma segunda variante da mesma fonte, rolada 90° no eixo do nariz por permutação de coordenadas inteiras
+     e remapeamento de faces (`airplane_rolled`), e o blockstate escolhe modelo + `x`/`y` por par de papéis.
 - Um papel novo ganha material e forma distintos dos existentes antes de entrar no guia; nunca reutilize
   vermelho redstone, gema azul ou lente escura (§6) como marcação.
-- **Parte decorativa animada** (só no v3): o gimbal do ARU é desenhado por um block entity renderer em loop fixo
-  (relógio do jogo), com os modelos registrados como adicionais e fora do blockstate; ele não lê nem reage ao
-  frame. A marcação do papel continua estática no blockstate. O modelo do item leva o gimbal em repouso.
-- **Caixa de vidro** (v3): vidro de 1 cubo `[1,1,1]–[15,15,15]` em modelo próprio com `render_type: translucent`
+- **Parte decorativa animada:** só uma peça pequena, desenhada por um block entity renderer em loop fixo (relógio
+  do jogo), com o modelo registrado como adicional e fora do blockstate. No ARU v4 é a hélice do avião, que gira no
+  eixo do nariz; a pose vem do par (Nariz, Acima), não das rotações do blockstate. Ela não reage à leitura nem ao
+  status, e a marcação do papel continua estática no blockstate. O modelo do item leva a peça em repouso. (No v3
+  era o gimbal: chamava mais atenção que as hastes e não informava nada.)
+- **Caixa de vidro** (v3 em diante): vidro de 1 cubo `[1,1,1]–[15,15,15]` em modelo próprio com `render_type: translucent`
   (os postes e sockets ficam no modelo cutout), 4 postes verticais de ferro industrial 2×16×2 nas quinas, sem
-  aros horizontais.
+  aros horizontais. O que fica dentro do vidro respeita os sockets: se eles entram 2 unidades, a peça vive em
+  `2..14`.
 - **Socket de dados** fica no centro de toda face onde o cabo encaixa, inclusive
   sobre a placa marcada; o contrato de `CableSocketProvider` não muda com o papel.
 - **Fenda de redstone** (marca na face) fica só nas faces neutras; a variante `powered` (§8.5) troca
-  apenas os pixels da fenda. O Attitude Reference Unit v3 não tem indicador de redstone.
+  apenas os pixels da fenda. O Attitude Reference Unit não tem indicador de redstone; o miolo dos sockets é
+  luz de status (§8.3).
 - **Legibilidade:** a marcação precisa ser reconhecida a 16 px, a ~5 blocos, sem
   tooltip. Validar no Blockbench e no jogo antes de fechar o desenho de um bloco.
 - **Código:** `rotate`/`mirror` transformam todas as propriedades de face juntas;
   combinações inválidas (ex.: Nariz colinear com Acima) nunca chegam ao blockstate.
 - **Testes de assets:** marca na face: as 6 partes cobrem exatamente o volume do corpo, cada papel usa a mesma
   textura em todas as faces e toda combinação válida resolve para um modelo. Hastes: a ponta de cada haste,
-  depois das rotações do blockstate, cai na face do papel em todas as orientações válidas. Sempre: o volume dos
-  modelos estáticos igual ao `SHAPE`.
+  depois das rotações do blockstate, cai na face do papel em todas as orientações válidas. Miniatura: nas 24
+  orientações a ponta do nariz cai na face Nariz e a deriva na face Acima, com o modelo (normal ou rolado) que o
+  blockstate escolhe; cada estado resolve exatamente uma miniatura. Sempre: o volume dos modelos estáticos igual
+  ao `SHAPE`.
 
 ## 9. Mesa modular e módulos (v2.1)
 
@@ -521,8 +536,11 @@ Compass, na mesma linguagem de material. A mesa passa a pedir os seus modelos po
 - [ ] Silhueta em camadas; peça funcional legível na distância de uso (seção 2)
 - [ ] Face funcional coerente com a direção real do código
 - [ ] Indicador de redstone escuro/aceso, se houver; variante só troca textura
-- [ ] Faces configuráveis, se houver: multipart por face, símbolos da seção 8.7
-      legíveis a ~5 blocos e corretos em todas as orientações válidas
+- [ ] Faces configuráveis, se houver: marcação da seção 8.7 (marca na face, hastes
+      ou miniatura orientada) legível a ~5 blocos e correta em todas as orientações
+      válidas, inclusive as 8 que `x`/`y` não alcançam com um modelo rígido
+- [ ] Luz de status, se houver: socket com status (seção 8.3); as variantes só
+      trocam textura
 - [ ] Ao lado de casings do Create, parece da mesma família
 - [ ] Colisão/outline e testes de assets atualizados e verdes
 - [ ] `.bbmodel` e README do bloco atualizados; o que não foi verificado no

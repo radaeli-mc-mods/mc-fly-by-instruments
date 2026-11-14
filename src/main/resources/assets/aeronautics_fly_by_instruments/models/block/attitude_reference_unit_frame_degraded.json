@@ -1,0 +1,703 @@
+{
+  "credit": "Made with Blockbench for Aeronautics: Fly by Instruments",
+  "parent": "minecraft:block/block",
+  "ambientocclusion": true,
+  "textures": {
+    "0": "aeronautics_fly_by_instruments:block/attitude_reference_unit_parts",
+    "2": "create:block/industrial_iron_block",
+    "3": "aeronautics_fly_by_instruments:block/attitude_reference_unit_socket_degraded",
+    "particle": "aeronautics_fly_by_instruments:block/attitude_reference_unit_parts"
+  },
+  "elements": [
+    {
+      "name": "post_nw",
+      "from": [
+        0,
+        0,
+        0
+      ],
+      "to": [
+        2,
+        16,
+        2
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            2,
+            16
+          ],
+          "texture": "#2"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            2,
+            16
+          ],
+          "texture": "#2"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            2,
+            16
+          ],
+          "texture": "#2"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            2,
+            16
+          ],
+          "texture": "#2"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            2,
+            2
+          ],
+          "texture": "#2"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            2,
+            2
+          ],
+          "texture": "#2"
+        }
+      }
+    },
+    {
+      "name": "post_ne",
+      "from": [
+        14,
+        0,
+        0
+      ],
+      "to": [
+        16,
+        16,
+        2
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            2,
+            16
+          ],
+          "texture": "#2"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            2,
+            16
+          ],
+          "texture": "#2"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            2,
+            16
+          ],
+          "texture": "#2"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            2,
+            16
+          ],
+          "texture": "#2"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            2,
+            2
+          ],
+          "texture": "#2"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            2,
+            2
+          ],
+          "texture": "#2"
+        }
+      }
+    },
+    {
+      "name": "post_sw",
+      "from": [
+        0,
+        0,
+        14
+      ],
+      "to": [
+        2,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            2,
+            16
+          ],
+          "texture": "#2"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            2,
+            16
+          ],
+          "texture": "#2"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            2,
+            16
+          ],
+          "texture": "#2"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            2,
+            16
+          ],
+          "texture": "#2"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            2,
+            2
+          ],
+          "texture": "#2"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            2,
+            2
+          ],
+          "texture": "#2"
+        }
+      }
+    },
+    {
+      "name": "post_se",
+      "from": [
+        14,
+        0,
+        14
+      ],
+      "to": [
+        16,
+        16,
+        16
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            2,
+            16
+          ],
+          "texture": "#2"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            2,
+            16
+          ],
+          "texture": "#2"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            2,
+            16
+          ],
+          "texture": "#2"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            2,
+            16
+          ],
+          "texture": "#2"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            2,
+            2
+          ],
+          "texture": "#2"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            2,
+            2
+          ],
+          "texture": "#2"
+        }
+      }
+    },
+    {
+      "name": "socket_north",
+      "from": [
+        5,
+        5,
+        0
+      ],
+      "to": [
+        11,
+        11,
+        2
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            6,
+            6
+          ],
+          "texture": "#3"
+        },
+        "east": {
+          "uv": [
+            4,
+            0,
+            5,
+            3
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            6,
+            6
+          ],
+          "texture": "#3"
+        },
+        "west": {
+          "uv": [
+            4,
+            0,
+            5,
+            3
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            12,
+            7,
+            15,
+            8
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            12,
+            7,
+            15,
+            8
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "socket_south",
+      "from": [
+        5,
+        5,
+        14
+      ],
+      "to": [
+        11,
+        11,
+        16
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            0,
+            6,
+            6
+          ],
+          "texture": "#3"
+        },
+        "east": {
+          "uv": [
+            4,
+            0,
+            5,
+            3
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            0,
+            0,
+            6,
+            6
+          ],
+          "texture": "#3"
+        },
+        "west": {
+          "uv": [
+            4,
+            0,
+            5,
+            3
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            12,
+            7,
+            15,
+            8
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            12,
+            7,
+            15,
+            8
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "socket_west",
+      "from": [
+        0,
+        5,
+        5
+      ],
+      "to": [
+        2,
+        11,
+        11
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            4,
+            0,
+            5,
+            3
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            6,
+            6
+          ],
+          "texture": "#3"
+        },
+        "south": {
+          "uv": [
+            4,
+            0,
+            5,
+            3
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            6,
+            6
+          ],
+          "texture": "#3"
+        },
+        "up": {
+          "uv": [
+            4,
+            0,
+            5,
+            3
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            4,
+            0,
+            5,
+            3
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "socket_east",
+      "from": [
+        14,
+        5,
+        5
+      ],
+      "to": [
+        16,
+        11,
+        11
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            4,
+            0,
+            5,
+            3
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            0,
+            0,
+            6,
+            6
+          ],
+          "texture": "#3"
+        },
+        "south": {
+          "uv": [
+            4,
+            0,
+            5,
+            3
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            0,
+            0,
+            6,
+            6
+          ],
+          "texture": "#3"
+        },
+        "up": {
+          "uv": [
+            4,
+            0,
+            5,
+            3
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            4,
+            0,
+            5,
+            3
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "socket_down",
+      "from": [
+        5,
+        0,
+        5
+      ],
+      "to": [
+        11,
+        2,
+        11
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            12,
+            7,
+            15,
+            8
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            12,
+            7,
+            15,
+            8
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            12,
+            7,
+            15,
+            8
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            12,
+            7,
+            15,
+            8
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            6,
+            6
+          ],
+          "texture": "#3"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            6,
+            6
+          ],
+          "texture": "#3"
+        }
+      }
+    },
+    {
+      "name": "socket_up",
+      "from": [
+        5,
+        14,
+        5
+      ],
+      "to": [
+        11,
+        16,
+        11
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            12,
+            7,
+            15,
+            8
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            12,
+            7,
+            15,
+            8
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            12,
+            7,
+            15,
+            8
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            12,
+            7,
+            15,
+            8
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            6,
+            6
+          ],
+          "texture": "#3"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            6,
+            6
+          ],
+          "texture": "#3"
+        }
+      }
+    }
+  ]
+}
