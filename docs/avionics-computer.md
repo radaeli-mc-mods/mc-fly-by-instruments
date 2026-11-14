@@ -44,7 +44,7 @@ cada meio segundo:
   `ATENÇÃO · <função>`, `ALERTA · <função>`, `GPWS INOP` (com o motivo de rede,
   quando é o caso) ou `AUTOTESTE`.
 - **Sensores:** cada sensor com o papel atribuído e a leitura ao vivo, ou o
-  problema ("sem leitura recente", "outra aeronave", "abertura < 45°",
+  problema ("sem leitura recente", "outra aeronave",
   "varredura parcial", "lado não definido").
 - **Funções:** cada função `ativa`, em atenção/alerta, `SEM DADOS: <motivo>`, `INOP: <motivo>` ou
   `inibida`. Clicar numa função alterna a inibição (GPWS INOP não pode ser
@@ -75,9 +75,25 @@ Sem nenhum scanner com lado, nenhum contato conta como "à frente" para o `PULL 
 (ele usa só o tempo até o solo) e o `BANK ANGLE` usa a frente do computador como
 eixo, o único caso em que a direção de um bloco ainda entra.
 
-É o scanner frontal, com varredura completa e abertura de pelo menos 45°, que
-cobre o `PULL UP` por terreno à frente; sem ele, o `PULL UP` usa só o tempo até o
-solo.
+Uma varredura frontal completa vale dentro da abertura escolhida, inclusive
+30° ou 35°. Abertura menor reduz o campo observado, sem indicar falha ou INOP.
+O `PULL UP` também pode usar o tempo até o solo pelo altímetro quando um scanner
+instalado não fornece cobertura frontal completa.
+
+### Terreno e trajetória
+
+`TERRAIN` e o ramo de obstáculos do `PULL UP` avaliam os contatos em relação à
+trajetória projetada pela velocidade mundial no ponto do scanner. Em voo
+nivelado, retornos do chão abaixo dessa trajetória não disparam esses alertas.
+Uma margem de um bloco abaixo da face do sensor continua protegida. Durante a
+descida, contatos que alcançam a trajetória voltam a contar; paredes e terreno
+elevado à frente continuam podendo alertar. Sem movimento horizontal, a
+comparação usa a altura do sensor; em descida vertical, mantém os contatos de
+solo como possíveis ameaças.
+
+As leituras brutas do scanner e suas saídas de redstone continuam incluindo o
+chão observado. `TOO LOW`, `SINK RATE` e o tempo até o solo usam suas próprias
+regras; esta filtragem não desativa a proteção de baixa altura ou descida.
 
 ## Funções e envelopes
 
@@ -93,8 +109,8 @@ segundos e graus, não limites aeronáuticos reais.
 
 | Função (canal) | Modo real | Comportamento |
 |---|---|---|
-| Terrain ahead (`terrain`) | FLTA | `CAUTION` com contato a ≤32 blocos; em aproximação, ≤8. |
-| Pull up (`pull_up`) | 2 | `WARNING` imediato para contato a ≤8 blocos no cone frontal de 45°, ou tempo até o solo ≤2 s em descida. |
+| Terrain ahead (`terrain`) | FLTA | `CAUTION` com contato que ameaça a trajetória a ≤32 blocos; em aproximação, ≤8. |
+| Pull up (`pull_up`) | 2 | `WARNING` imediato para contato que ameaça a trajetória a ≤8 blocos no cone frontal de 45°, ou tempo até o solo ≤2 s em descida. |
 | Sink rate (`sink_rate`) | 1 | `CAUTION` a partir de 6 blocos/s de descida; `WARNING` a partir de 12. |
 | Don't sink (`dont_sink`) | 3 | `WARNING` por perda ≥4 blocos frente ao pico recente na decolagem/subida (janela de 5 s). |
 | Too low (`too_low`) | 4 | Fora do solo: `CAUTION` a ≤8 blocos AGL, `WARNING` a ≤3; em aproximação, ≤3 e ≤1. |

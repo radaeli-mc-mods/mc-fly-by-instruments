@@ -322,12 +322,13 @@ public final class AvionicsComputerBlockEntity extends BlockEntity implements Av
                 }
                 boolean complete = reading.sampledRays() == reading.totalRays();
                 allScannerCoverageComplete &= complete;
-                int aperture = terrain.advanced() ? terrain.openingAngle() : TerrainScanGeometry.SIMPLE_APERTURE_DEGREES;
                 boolean front = role.equals("front");
-                if (front && complete && aperture >= 45) pullUpCoverageComplete = true;
+                if (front && complete) pullUpCoverageComplete = true;
                 String issue = !side.set() ? AvionicsSensor.ISSUE_NO_SIDE
-                        : !complete ? AvionicsSensor.ISSUE_PARTIAL_COVERAGE
-                        : front && aperture < 45 ? AvionicsSensor.ISSUE_NARROW_APERTURE : AvionicsSensor.ISSUE_NONE;
+                        : !complete ? AvionicsSensor.ISSUE_PARTIAL_COVERAGE : AvionicsSensor.ISSUE_NONE;
+                Vec3 localOrigin = Vec3.atCenterOf(sourcePos).add(facing.getStepX() * 0.501,
+                        facing.getStepY() * 0.501, facing.getStepZ() * 0.501);
+                Vec3 velocity = host == null ? Vec3.ZERO : Sable.HELPER.getVelocity(level, host, localOrigin);
                 double nearest = Double.POSITIVE_INFINITY;
                 for (TerrainScanContact contact : reading.contacts()) {
                     nearest = Math.min(nearest, contact.distance());
@@ -338,7 +339,8 @@ public final class AvionicsComputerBlockEntity extends BlockEntity implements Av
                     // Without a known nose no contact counts as ahead (PULL UP cone).
                     double angle = forward == null ? 180
                             : Math.toDegrees(Math.acos(Math.clamp(direction.dot(forward), -1.0, 1.0)));
-                    contacts.add(new GpwsSample.TerrainContact(contact.distance(), angle));
+                    contacts.add(new GpwsSample.TerrainContact(contact.distance(), angle,
+                            GpwsTerrainPath.threatens(direction.scale(contact.distance()), velocity)));
                 }
                 found.add(sensor(device, role, AvionicsSensor.OK, Double.isFinite(nearest)
                         ? OptionalDouble.of(nearest) : OptionalDouble.empty(), unit, issue));

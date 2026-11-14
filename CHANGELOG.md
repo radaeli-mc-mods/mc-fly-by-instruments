@@ -5,6 +5,23 @@ All notable changes to Aeronautics: Fly by Instruments are documented in this fi
 The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this
 project follows [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.4.2] - 2026-11-14
+
+### Added
+
+- Added independent sensor availability readings for CC:Tweaked programs.
+- Added Attitude Reference Unit status and settings to Engineer's Goggles tooltips.
+
+### Changed
+
+- Updated the Attitude Reference Unit model, animation and status lights.
+
+### Fixed
+
+- Fixed GPWS reporting healthy sensors as INOP when readings are unavailable or the Radar Altimeter goes out of range.
+- Fixed false Terrain ahead and Pull up alerts from ground below the flight path during level flight.
+- Fixed false GPWS availability warnings with Terrain Scanner apertures below 45°.
+
 ## [0.4.1] - 2026-11-11
 
 ### Changed

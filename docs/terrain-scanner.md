@@ -67,6 +67,10 @@ e **cada mudança aplica na hora**, sem Salvar/Cancelar:
 - Dicas ficam em tooltips.
 
 `Abertura` ajusta a abertura total de 30° a 180° em passos de 5°.
+Todas as aberturas válidas, inclusive 35°, são aceitas pelo GPWS sem aviso de
+abertura insuficiente. O campo observado continua limitado ao cone escolhido.
+O GPWS filtra os contatos abaixo da trajetória de voo ao avaliar obstáculos;
+as leituras do peripheral e as saídas de redstone do scanner continuam brutas.
 **Frente / Esquerda / Direita** têm faixas e frequências independentes; com
 abertura de 50° ou menos as laterais mostram só `Exige abertura acima de 50°`.
 O servidor valida cada mudança (alcance de 8 blocos medido no mundo, também com o

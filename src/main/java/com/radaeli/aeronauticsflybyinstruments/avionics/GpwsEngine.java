@@ -201,11 +201,8 @@ public final class GpwsEngine {
 
     private Candidate terrain(GpwsSample sample, GpwsRule rule) {
         if (sample.terrainScannerCount() == 0) return Candidate.unavailable(REASON_NO_SCANNER);
-        if (sample.terrainContacts().isEmpty()) {
-            return sample.terrainCoverageComplete() ? Candidate.inactive()
-                    : Candidate.unavailable(REASON_PARTIAL_COVERAGE);
-        }
-        double nearest = sample.terrainContacts().stream().mapToDouble(GpwsSample.TerrainContact::distance)
+        double nearest = sample.terrainContacts().stream().filter(GpwsSample.TerrainContact::threatensFlightPath)
+                .mapToDouble(GpwsSample.TerrainContact::distance)
                 .min().orElse(Double.POSITIVE_INFINITY);
         AlertSeverity severity = lowerThresholdSeverity(AlertChannel.TERRAIN, nearest, rule);
         if (severity != null) return Candidate.active(severity);
@@ -217,9 +214,9 @@ public final class GpwsEngine {
         boolean altitudeTrendAvailable = sample.clearance().isPresent() && verticalSpeed != null;
         boolean terrainCoverageAvailable = sample.terrainScannerCount() > 0
                 && sample.pullUpTerrainCoverageComplete();
-        boolean terrainOptional = sample.terrainScannerCount() == 0;
         boolean knownTerrainDanger = sample.terrainContacts().stream()
-                .anyMatch(contact -> contact.angleFromForwardDegrees() <= PULL_UP_CONE_HALF_ANGLE
+                .anyMatch(contact -> contact.threatensFlightPath()
+                        && contact.angleFromForwardDegrees() <= PULL_UP_CONE_HALF_ANGLE
                         && lowerThresholdSeverity(AlertChannel.PULL_UP, contact.distance(), rule) != null);
         double timeThreshold = scaledLowThreshold(rule.secondaryWarningThreshold());
         if (currentSeverity(AlertChannel.PULL_UP) == AlertSeverity.WARNING) {
@@ -229,11 +226,9 @@ public final class GpwsEngine {
                 && lowerValueAtRisk(sample.clearance().getAsDouble() / -verticalSpeed, timeThreshold);
         if (knownTerrainDanger || timeToGroundDanger) return Candidate.active(AlertSeverity.WARNING);
         if (sample.noTerrainBelow()) return Candidate.inactive();
-        if (altitudeTrendAvailable && (terrainOptional || terrainCoverageAvailable)) return Candidate.inactive();
-        if (terrainCoverageAvailable) return Candidate.inactive();
+        if (altitudeTrendAvailable || terrainCoverageAvailable) return Candidate.inactive();
         if (sample.clearance().isEmpty()) return Candidate.unavailable(altimeterReason(sample));
-        if (!altitudeTrendAvailable) return Candidate.unavailable(REASON_SETTLING);
-        return Candidate.unavailable(REASON_NO_FRONT_SCANNER);
+        return Candidate.unavailable(REASON_SETTLING);
     }
 
     private Candidate sinkRate(GpwsSample sample, GpwsRule rule) {
