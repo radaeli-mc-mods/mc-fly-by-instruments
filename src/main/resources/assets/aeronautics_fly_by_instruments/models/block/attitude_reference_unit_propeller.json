@@ -1,0 +1,80 @@
+{
+  "credit": "Made with Blockbench for Aeronautics: Fly by Instruments",
+  "parent": "minecraft:block/block",
+  "ambientocclusion": true,
+  "textures": {
+    "0": "aeronautics_fly_by_instruments:block/attitude_reference_unit_parts",
+    "particle": "aeronautics_fly_by_instruments:block/attitude_reference_unit_parts"
+  },
+  "elements": [
+    {
+      "name": "propeller",
+      "from": [
+        4,
+        7,
+        2
+      ],
+      "to": [
+        12,
+        9,
+        3
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            8,
+            7,
+            12,
+            8
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            0.5,
+            8,
+            1,
+            9
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            8,
+            7,
+            12,
+            8
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            0.5,
+            8,
+            1,
+            9
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            8,
+            9,
+            12,
+            9.5
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            12,
+            9,
+            16,
+            9.5
+          ],
+          "texture": "#0"
+        }
+      }
+    }
+  ]
+}

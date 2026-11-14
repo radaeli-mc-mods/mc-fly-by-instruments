@@ -1,0 +1,431 @@
+{
+  "credit": "Made with Blockbench for Aeronautics: Fly by Instruments",
+  "parent": "minecraft:block/block",
+  "ambientocclusion": true,
+  "textures": {
+    "0": "aeronautics_fly_by_instruments:block/attitude_reference_unit_parts",
+    "particle": "aeronautics_fly_by_instruments:block/attitude_reference_unit_parts"
+  },
+  "elements": [
+    {
+      "name": "fuselage",
+      "from": [
+        7,
+        7,
+        4
+      ],
+      "to": [
+        9,
+        9,
+        14
+      ],
+      "faces": {
+        "east": {
+          "uv": [
+            10.5,
+            5,
+            15.5,
+            6
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            10.5,
+            5,
+            15.5,
+            6
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            0,
+            0,
+            1,
+            5
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            0,
+            0,
+            1,
+            5
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "nose_cone",
+      "from": [
+        7,
+        7,
+        3
+      ],
+      "to": [
+        9,
+        9,
+        4
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            15,
+            7,
+            16,
+            8
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            0,
+            8,
+            0.5,
+            9
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            0,
+            8,
+            0.5,
+            9
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            7,
+            9.5,
+            8,
+            10
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            7,
+            9.5,
+            8,
+            10
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "wing",
+      "from": [
+        2,
+        6,
+        5
+      ],
+      "to": [
+        14,
+        7,
+        9
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            1,
+            8,
+            7,
+            8.5
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            3,
+            9.5,
+            5,
+            10
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            7,
+            8,
+            13,
+            8.5
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            5,
+            9.5,
+            7,
+            10
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            5,
+            0,
+            11,
+            2
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            0,
+            5,
+            6,
+            7
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "stabilizer",
+      "from": [
+        4,
+        6,
+        12
+      ],
+      "to": [
+        12,
+        7,
+        14
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            9,
+            4,
+            9.5
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            8,
+            9.5,
+            9,
+            10
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            4,
+            9,
+            8,
+            9.5
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            9,
+            9.5,
+            10,
+            10
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            0,
+            7,
+            4,
+            8
+          ],
+          "texture": "#0"
+        },
+        "down": {
+          "uv": [
+            4,
+            7,
+            8,
+            8
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "fin",
+      "from": [
+        7,
+        9,
+        11
+      ],
+      "to": [
+        9,
+        13,
+        14
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            7.5,
+            5,
+            8.5,
+            7
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            6,
+            5,
+            7.5,
+            7
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            7.5,
+            5,
+            8.5,
+            7
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            6,
+            5,
+            7.5,
+            7
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            8.5,
+            5,
+            9.5,
+            6.5
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "stand_rod",
+      "from": [
+        7,
+        3,
+        7
+      ],
+      "to": [
+        9,
+        6,
+        9
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            9.5,
+            5,
+            10.5,
+            6.5
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            9.5,
+            5,
+            10.5,
+            6.5
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            9.5,
+            5,
+            10.5,
+            6.5
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            9.5,
+            5,
+            10.5,
+            6.5
+          ],
+          "texture": "#0"
+        }
+      }
+    },
+    {
+      "name": "stand_base",
+      "from": [
+        5,
+        2,
+        5
+      ],
+      "to": [
+        11,
+        3,
+        11
+      ],
+      "faces": {
+        "north": {
+          "uv": [
+            0,
+            9.5,
+            3,
+            10
+          ],
+          "texture": "#0"
+        },
+        "east": {
+          "uv": [
+            0,
+            9.5,
+            3,
+            10
+          ],
+          "texture": "#0"
+        },
+        "south": {
+          "uv": [
+            0,
+            9.5,
+            3,
+            10
+          ],
+          "texture": "#0"
+        },
+        "west": {
+          "uv": [
+            0,
+            9.5,
+            3,
+            10
+          ],
+          "texture": "#0"
+        },
+        "up": {
+          "uv": [
+            1,
+            0,
+            4,
+            3
+          ],
+          "texture": "#0"
+        }
+      }
+    }
+  ]
+}

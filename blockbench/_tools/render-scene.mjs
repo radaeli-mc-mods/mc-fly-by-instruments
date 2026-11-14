@@ -77,7 +77,7 @@ const rotate = (p, axis, degrees, origin) => {
 };
 
 // Corners of each face (from = a, to = b) in the order that matches uv (u1,v1) (u2,v1) (u2,v2) (u1,v2).
-const FACE = {
+export const FACE = {
   up: (a, b) => [[a[0], b[1], a[2]], [b[0], b[1], a[2]], [b[0], b[1], b[2]], [a[0], b[1], b[2]]],
   down: (a, b) => [[a[0], a[1], b[2]], [b[0], a[1], b[2]], [b[0], a[1], a[2]], [a[0], a[1], a[2]]],
   north: (a, b) => [[b[0], b[1], a[2]], [a[0], b[1], a[2]], [a[0], a[1], a[2]], [b[0], a[1], a[2]]],

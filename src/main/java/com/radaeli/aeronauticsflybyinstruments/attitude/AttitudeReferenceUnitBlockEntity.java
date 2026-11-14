@@ -7,12 +7,16 @@ import com.radaeli.aeronauticsflybyinstruments.avionics.AvionicsEndpoint;
 import com.radaeli.aeronauticsflybyinstruments.avionics.AvionicsSignalProvider;
 import com.radaeli.aeronauticsflybyinstruments.avionics.SensorReading;
 import com.radaeli.aeronauticsflybyinstruments.block.ModBlocks;
+import com.simibubi.create.api.equipment.goggles.IHaveGoggleInformation;
 import dev.ryanhcode.sable.Sable;
 import dev.ryanhcode.sable.sublevel.SubLevel;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -20,15 +24,18 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.OptionalDouble;
 
 /**
  * Samples the aircraft's attitude every server tick from the pose of its sublevel and publishes
  * {@code attitude.pitch}, {@code attitude.roll} and {@code attitude.heading} on the cable network.
- * Keeps the level calibration and the damping mode; the Nose and Up faces live in the blockstate.
+ * Keeps the level calibration and the damping mode (synced to the client for the goggles tooltip); the Nose
+ * and Up faces and the status light live in the blockstate.
  */
-public final class AttitudeReferenceUnitBlockEntity extends BlockEntity implements AvionicsEndpoint, AvionicsSignalProvider {
+public final class AttitudeReferenceUnitBlockEntity extends BlockEntity
+        implements AvionicsEndpoint, AvionicsSignalProvider, IHaveGoggleInformation {
     public static final String PITCH_CHANNEL = "attitude.pitch";
     public static final String ROLL_CHANNEL = "attitude.roll";
     public static final String HEADING_CHANNEL = "attitude.heading";
@@ -184,6 +191,26 @@ public final class AttitudeReferenceUnitBlockEntity extends BlockEntity implemen
         AttitudeReading previous = reading;
         reading = updated;
         if (changed(previous, updated)) peripheral.events().publishReading(updated);
+        showStatus(status);
+    }
+
+    /** The socket status light is a blockstate property: write it only when it changes. */
+    private void showStatus(AttitudeReading.Status status) {
+        if (level == null) return;
+        BlockState state = getBlockState();
+        var light = AttitudeReferenceUnitBlock.Status.of(status);
+        if (state.getValue(AttitudeReferenceUnitBlock.STATUS) != light) {
+            level.setBlock(worldPosition, state.setValue(AttitudeReferenceUnitBlock.STATUS, light), Block.UPDATE_CLIENTS);
+        }
+    }
+
+    /** Calibration or damping changed: save, and send them to the clients (goggles tooltip). */
+    private void configurationChanged() {
+        primed = false;
+        setChanged();
+        if (level != null && !level.isClientSide) {
+            level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
+        }
     }
 
     private static boolean changed(AttitudeReading previous, AttitudeReading updated) {
@@ -204,23 +231,20 @@ public final class AttitudeReferenceUnitBlockEntity extends BlockEntity implemen
                 || Math.abs(rawRoll) > AttitudeMath.CALIBRATION_LIMIT) return false;
         pitchOffset = rawPitch;
         rollOffset = rawRoll;
-        primed = false;
-        setChanged();
+        configurationChanged();
         return true;
     }
 
     public void resetCalibration() {
         pitchOffset = 0;
         rollOffset = 0;
-        primed = false;
-        setChanged();
+        configurationChanged();
     }
 
     public void setDamping(AttitudeDamping mode) {
         if (mode == damping) return;
         damping = mode;
-        primed = false;
-        setChanged();
+        configurationChanged();
     }
 
     /** Moves the Nose and Up faces. Never produces an invalid pair (see {@link AttitudeOrientation}). */
@@ -278,6 +302,47 @@ public final class AttitudeReferenceUnitBlockEntity extends BlockEntity implemen
         pitchOffset = clampCalibration(tag.getDouble("PitchOffset"));
         rollOffset = clampCalibration(tag.getDouble("RollOffset"));
         damping = AttitudeDamping.parse(tag.getString("Damping")).orElse(AttitudeDamping.OFF);
+    }
+
+    @Override
+    public CompoundTag getUpdateTag(HolderLookup.Provider registries) {
+        return saveWithoutMetadata(registries);
+    }
+
+    @Override
+    public ClientboundBlockEntityDataPacket getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
+    }
+
+    /** Engineer's Goggles: the whole configuration without opening the screen. */
+    @Override
+    public boolean addToGoggleTooltip(List<Component> tooltip, boolean isPlayerSneaking) {
+        String prefix = "goggles.aeronautics_fly_by_instruments.attitude.";
+        String gui = "gui.aeronautics_fly_by_instruments.attitude_reference.";
+        BlockState state = getBlockState();
+        var light = state.getValue(AttitudeReferenceUnitBlock.STATUS);
+        tooltip.add(Component.literal("    ").append(Component.translatable(prefix + "title")));
+        tooltip.add(Component.literal("    ").append(Component.translatable(prefix + "frame",
+                Component.translatable(gui + "face." + state.getValue(AttitudeReferenceUnitBlock.NOSE).getSerializedName()),
+                Component.translatable(gui + "face." + state.getValue(AttitudeReferenceUnitBlock.UP).getSerializedName()))
+                .withStyle(ChatFormatting.GRAY)));
+        tooltip.add(Component.literal("    ").append(Component.translatable(prefix + "status",
+                Component.translatable(prefix + "status." + light.getSerializedName()).withStyle(switch (light) {
+                    case OK -> ChatFormatting.GREEN;
+                    case DEGRADED -> ChatFormatting.GOLD;
+                    case INOP -> ChatFormatting.RED;
+                })).withStyle(ChatFormatting.GRAY)));
+        boolean calibrated = pitchOffset != 0 || rollOffset != 0;
+        tooltip.add(Component.literal("    ").append((calibrated
+                ? Component.translatable(prefix + "calibration", degrees(pitchOffset), degrees(rollOffset))
+                : Component.translatable(prefix + "no_calibration")).withStyle(ChatFormatting.GRAY)));
+        tooltip.add(Component.literal("    ").append(Component.translatable(prefix + "damping",
+                Component.translatable(gui + "damping." + damping.id())).withStyle(ChatFormatting.DARK_GRAY)));
+        return true;
+    }
+
+    private static String degrees(double value) {
+        return String.format(Locale.ROOT, "%+.1f\u00B0", value);
     }
 
     private static double clampCalibration(double degrees) {

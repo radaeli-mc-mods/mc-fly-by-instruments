@@ -3,6 +3,8 @@ package com.radaeli.aeronauticsflybyinstruments.client;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.math.Axis;
 import com.radaeli.aeronauticsflybyinstruments.AeronauticsFlyByInstruments;
+import com.radaeli.aeronauticsflybyinstruments.attitude.AttitudeOrientation;
+import com.radaeli.aeronauticsflybyinstruments.attitude.AttitudeReferenceUnitBlock;
 import com.radaeli.aeronauticsflybyinstruments.attitude.AttitudeReferenceUnitBlockEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -14,20 +16,18 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.phys.AABB;
 
 /**
- * The gimbal inside the Attitude Reference Unit's glass: a ring that rocks about Y and a flywheel that spins
- * about Z, on a fixed loop. Purely decorative: it ignores Nose, Up and the attitude reading, so the
- * reference arms (static blockstate parts) are the only thing that shows the configured frame.
- * The two models are the gimbal_ring / gimbal_rotor groups of blockbench/attitude-reference-unit.
+ * The propeller of the model airplane inside the Attitude Reference Unit's glass, spinning about the nose
+ * axis on a fixed loop. Purely decorative: it ignores the attitude reading and the status. The airplane
+ * itself is a static blockstate part; the propeller follows it through {@link AttitudeOrientation#rotation()},
+ * so it is right in all 24 frames. The model is the propeller group of blockbench/attitude-reference-unit.
  */
 public final class AttitudeReferenceRenderer implements BlockEntityRenderer<AttitudeReferenceUnitBlockEntity> {
-    public static final ModelResourceLocation RING = model("attitude_reference_unit_gimbal_ring");
-    public static final ModelResourceLocation ROTOR = model("attitude_reference_unit_gimbal_rotor");
+    public static final ModelResourceLocation PROPELLER = model("attitude_reference_unit_propeller");
 
-    /** Ring swing in degrees either side of rest, and the ticks one swing cycle takes. */
-    static final float ROCK_DEGREES = 14f;
-    static final float ROCK_PERIOD_TICKS = 100f;
-    /** Flywheel turn per tick: one revolution every 40 ticks. */
-    static final float SPIN_DEGREES_PER_TICK = 9f;
+    /** Propeller turn per tick: one revolution every 15 ticks. */
+    static final float SPIN_DEGREES_PER_TICK = 24f;
+    /** The loop length in ticks, so the angle stays small on long-running worlds. */
+    private static final long SPIN_PERIOD_TICKS = 15;
 
     public AttitudeReferenceRenderer(BlockEntityRendererProvider.Context context) {
     }
@@ -39,7 +39,7 @@ public final class AttitudeReferenceRenderer implements BlockEntityRenderer<Atti
 
     /**
      * Inside a Sable sublevel the block's own 1x1x1 box can fall outside the frustum test (it is tested against the
-     * plot-space position), which made a lone unit's gimbal vanish. Like the table and wire renderers, draw it
+     * plot-space position), which made a lone unit's moving part vanish. Like the table and wire renderers, draw it
      * whenever the block is: a slightly larger box and no off-screen cull.
      */
     @Override
@@ -57,25 +57,24 @@ public final class AttitudeReferenceRenderer implements BlockEntityRenderer<Atti
                        MultiBufferSource buffers, int light, int overlay) {
         var level = unit.getLevel();
         if (level == null) return;
-        float time = level.getGameTime() + partialTick;
+        var state = unit.getBlockState();
+        var nose = state.getValue(AttitudeReferenceUnitBlock.NOSE);
+        var up = state.getValue(AttitudeReferenceUnitBlock.UP);
+        // A collinear pair has no airplane in the blockstate either.
+        if (!AttitudeOrientation.valid(nose, up)) return;
+        float time = level.getGameTime() % SPIN_PERIOD_TICKS + partialTick;
         var manager = Minecraft.getInstance().getModelManager();
         var renderer = Minecraft.getInstance().getBlockRenderer().getModelRenderer();
         // A fixed buffer of the vanilla buffer source (as the other renderers use): RenderType.cutout() is a lazily
-        // allocated one, and Sable's lone-block sublevel path never flushed it, so the gimbal vanished there.
+        // allocated one, and Sable's lone-block sublevel path never flushed it, so the moving part vanished there.
         var consumer = buffers.getBuffer(Sheets.cutoutBlockSheet());
 
         poses.pushPose();
         poses.translate(0.5, 0.5, 0.5);
-        poses.mulPose(Axis.YP.rotationDegrees(ROCK_DEGREES * (float) Math.sin(time * 2 * Math.PI / ROCK_PERIOD_TICKS)));
-        poses.translate(-0.5, -0.5, -0.5);
-        renderer.renderModel(poses.last(), consumer, null, manager.getModel(RING), 1f, 1f, 1f, light, overlay);
-        poses.popPose();
-
-        poses.pushPose();
-        poses.translate(0.5, 0.5, 0.5);
+        poses.mulPose(new AttitudeOrientation(nose, up).rotation());
         poses.mulPose(Axis.ZP.rotationDegrees(time * SPIN_DEGREES_PER_TICK));
         poses.translate(-0.5, -0.5, -0.5);
-        renderer.renderModel(poses.last(), consumer, null, manager.getModel(ROTOR), 1f, 1f, 1f, light, overlay);
+        renderer.renderModel(poses.last(), consumer, null, manager.getModel(PROPELLER), 1f, 1f, 1f, light, overlay);
         poses.popPose();
     }
 }

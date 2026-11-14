@@ -1,6 +1,9 @@
 package com.radaeli.aeronauticsflybyinstruments.attitude;
 
 import net.minecraft.core.Direction;
+import org.joml.Matrix3f;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 /**
  * The aircraft frame chosen on the block: Nose and Up, always perpendicular. Each change keeps the
@@ -37,6 +40,18 @@ public record AttitudeOrientation(Direction nose, Direction up) {
         if (face == up) return this;
         if (face.getAxis() == nose.getAxis()) return new AttitudeOrientation(up, face);
         return new AttitudeOrientation(nose, face);
+    }
+
+    /**
+     * Rotation that takes the standard frame (Nose = NORTH, Up = UP) to this one. The model airplane is
+     * authored in the standard frame, so this turns anything drawn with it (the propeller) in all 24 frames.
+     */
+    public Quaternionf rotation() {
+        Vector3f forward = new Vector3f(nose.getStepX(), nose.getStepY(), nose.getStepZ());
+        Vector3f sky = new Vector3f(up.getStepX(), up.getStepY(), up.getStepZ());
+        Vector3f right = forward.cross(sky, new Vector3f());
+        // Columns are the images of +X (right), +Y (up) and +Z (the tail, opposite to the nose).
+        return new Quaternionf().setFromNormalized(new Matrix3f(right, sky, forward.negate()));
     }
 
     public AttitudeOrientation rotated(net.minecraft.world.level.block.Rotation rotation) {

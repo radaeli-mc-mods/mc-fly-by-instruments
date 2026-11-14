@@ -18,7 +18,7 @@ Copy-Item docs/gallery/renders/*.png ../mod-docs/src/projects/flight-safety-inst
 | `table-lamps.png` | Lâmpadas 1×1 e 2×1 apagadas e acesas, e o buzzer |
 | `table-docked.png` | Mesa acoplada em cima do Avionics Computer |
 | `fms-module.png` | Módulo FMS sozinho |
-| `attitude-reference-unit.png` | Attitude Reference Unit, Nose = norte e Acima = cima, gimbal em repouso |
+| `attitude-reference-unit.png` | Attitude Reference Unit, Nose = norte e Acima = cima, hélice em repouso |
 | `attitude-indicator.png` | Mesa com a cunha do Attitude Indicator (2×2), lâmpada acesa e buzzer; o display aparece apagado |
 | `attitude-indicator-item.png` | Item de bolso do Attitude Indicator ao lado do FMS Compass, visto de cima |
 

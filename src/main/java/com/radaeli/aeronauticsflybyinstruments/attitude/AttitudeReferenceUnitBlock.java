@@ -8,6 +8,7 @@ import com.radaeli.aeronauticsflybyinstruments.network.AttitudeReferenceNetwork;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.StringRepresentable;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.context.BlockPlaceContext;
@@ -25,6 +26,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.DirectionProperty;
+import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.CollisionContext;
@@ -32,18 +34,38 @@ import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Locale;
+
 /**
  * Attitude Reference Unit: the aircraft's pitch, roll and heading, taken from the pose of its
  * sublevel. Its two faces Nose and Up define the aircraft frame in any mounting; the blockstate keeps
- * them, so they survive schematics, contraptions and item use. Its model is a glass cube: the two reference
- * arms point at the Nose and Up faces. Model: docs/attitude-reference-unit-plan.md.
+ * them, so they survive schematics, contraptions and item use. Its model is a glass cube with a model
+ * airplane inside: its nose points at the Nose face and its tail fin at the Up face. The socket cores are a
+ * status light ({@link #STATUS}). Model: docs/attitude-reference-unit-plan.md.
  */
 public final class AttitudeReferenceUnitBlock extends BaseEntityBlock implements AvionicsWrenchable, CableSocketProvider {
     public static final MapCodec<AttitudeReferenceUnitBlock> CODEC = simpleCodec(AttitudeReferenceUnitBlock::new);
     public static final DirectionProperty NOSE = DirectionProperty.create("nose");
     public static final DirectionProperty UP = DirectionProperty.create("up");
+    /** Socket status light only (same geometry): follows the unit's {@link AttitudeReading.Status}. */
+    public static final EnumProperty<Status> STATUS = EnumProperty.create("status", Status.class);
 
-    // Same geometry as blockbench/attitude-reference-unit: the glass cube, four corner posts and the six sockets.
+    public enum Status implements StringRepresentable {
+        OK, DEGRADED, INOP;
+
+        public static Status of(AttitudeReading.Status status) {
+            return switch (status) {
+                case VALID, GROUND -> OK;
+                case DEGRADED -> DEGRADED;
+                case UNAVAILABLE -> INOP;
+            };
+        }
+
+        @Override public String getSerializedName() { return name().toLowerCase(Locale.ROOT); }
+    }
+
+    // Same geometry as blockbench/attitude-reference-unit: the glass cube, four corner posts and the six sockets
+    // (the airplane is inside the glass).
     public static final VoxelShape SHAPE = Shapes.or(
             Block.box(1, 1, 1, 15, 15, 15),
             Block.box(0, 0, 0, 2, 16, 2), Block.box(14, 0, 0, 16, 16, 2),
@@ -55,12 +77,12 @@ public final class AttitudeReferenceUnitBlock extends BaseEntityBlock implements
     public AttitudeReferenceUnitBlock(Properties properties) {
         super(properties);
         registerDefaultState(stateDefinition.any()
-                .setValue(NOSE, Direction.NORTH).setValue(UP, Direction.UP));
+                .setValue(NOSE, Direction.NORTH).setValue(UP, Direction.UP).setValue(STATUS, Status.OK));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(NOSE, UP);
+        builder.add(NOSE, UP, STATUS);
     }
 
     /** The Nose faces where the player looks; Up is the block's own up. */

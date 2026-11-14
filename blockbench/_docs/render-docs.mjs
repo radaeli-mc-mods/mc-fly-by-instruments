@@ -113,25 +113,27 @@ save('avionics-computer', [
 // --- FMS module alone (v2.1) -------------------------------------------------------------------
 save('fms-module', modelQuads({ model: 'fms_module_2x3' }), { scale: 320 });
 
-// --- Attitude Reference Unit: default placement, Nose = north and Up = up (gimbal drawn at rest) ------
+// --- Attitude Reference Unit: default placement, Nose = north and Up = up (propeller drawn at rest) ---
 {
   const NS = 'aeronautics_fly_by_instruments';
   const blockstate = JSON.parse(readFileSync(new URL(
     `../../src/main/resources/assets/${NS}/blockstates/attitude_reference_unit.json`, import.meta.url), 'utf8'));
-  /** The multipart blockstate for a Nose/Up pair, plus the gimbal the block entity renderer draws in game. */
-  const reference = (at, { nose, up }) => {
+  /** The multipart blockstate for a state, plus the propeller the block entity renderer draws in game. */
+  const reference = (at, state) => {
     const quads = [];
     for (const part of blockstate.multipart) {
-      if (part.when && (part.when.nose ?? nose) !== nose) continue;
-      if (part.when && (part.when.up ?? up) !== up) continue;
-      quads.push(...modelQuads({ model: part.apply.model.split('/').pop(), at, x: part.apply.x, y: part.apply.y }));
-    }
-    for (const gimbal of ['gimbal_ring', 'gimbal_rotor']) {
-      quads.push(...modelQuads({ model: `attitude_reference_unit_${gimbal}`, at }));
+      if (part.when && Object.entries(part.when).some(([key, value]) => state[key] !== value)) continue;
+      const model = part.apply.model.split('/').pop();
+      quads.push(...modelQuads({ model, at, x: part.apply.x, y: part.apply.y }));
+      if (model.includes('_airplane')) {
+        quads.push(...modelQuads({ model: 'attitude_reference_unit_propeller', at, x: part.apply.x, y: part.apply.y }));
+      }
     }
     return quads;
   };
-  save('attitude-reference-unit', reference([0, 0, 0], { nose: 'north', up: 'up' }), { yaw: 135, scale: 192 });
+  // Off the corner: at yaw 135 the front post hides the airplane.
+  save('attitude-reference-unit', reference([0, 0, 0], { nose: 'north', up: 'up', status: 'ok' }),
+    { yaw: 160, pitch: 35, scale: 192 });
 }
 
 // --- Attitude Indicator on a floor table (wedge, 2x2) with a lamp and the buzzer ---------------------

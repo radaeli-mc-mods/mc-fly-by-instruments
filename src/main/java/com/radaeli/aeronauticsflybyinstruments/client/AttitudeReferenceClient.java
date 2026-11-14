@@ -7,7 +7,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.ModelEvent;
 
-/** Client side of the Attitude Reference Unit: the gimbal renderer and its screen. */
+/** Client side of the Attitude Reference Unit: the propeller renderer and its screen. */
 public final class AttitudeReferenceClient {
     private AttitudeReferenceClient() {}
 
@@ -20,10 +20,9 @@ public final class AttitudeReferenceClient {
         event.registerBlockEntityRenderer(ModBlocks.ATTITUDE_REFERENCE_UNIT_ENTITY.get(), AttitudeReferenceRenderer::new);
     }
 
-    /** The gimbal parts are not part of the blockstate: load them as standalone models for the renderer. */
+    /** The propeller is not part of the blockstate: load it as a standalone model for the renderer. */
     private static void registerModels(ModelEvent.RegisterAdditional event) {
-        event.register(AttitudeReferenceRenderer.RING);
-        event.register(AttitudeReferenceRenderer.ROTOR);
+        event.register(AttitudeReferenceRenderer.PROPELLER);
     }
 
     public static void openOrUpdate(AttitudeReferenceScreenPayload payload) {
